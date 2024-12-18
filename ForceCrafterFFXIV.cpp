@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "Crafter.hpp"
+#include "CrafterTwo.hpp"
 #include "Player.hpp"
 #include "Skills.hpp"
 //#include "SynthesisSkill.hpp"
@@ -10,8 +11,8 @@
 int main()
 {
     std::vector<SkillName> skills = { SkillName::MUSCLEMEMORY, SkillName::MANIPULATION, SkillName::WASTENOTII, SkillName::DELICATESYNTHESIS, SkillName::DELICATESYNTHESIS, SkillName::PREPARATORYTOUCH,
-        SkillName::GREATSTRIDES, SkillName::INNOVATION, SkillName::PREPARATORYTOUCH, SkillName::PREPARATORYTOUCH};
-    Crafter crafter(skills, 630, 3000, 11000, 40, true);
+        SkillName::GREATSTRIDES};
+    CrafterTwo crafter(skills, 630, 3000, 11000, 40, true, true, 15);
     crafter.ForceCraft();
 
 }

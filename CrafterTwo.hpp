@@ -7,9 +7,9 @@
 #include <vector>
 
 
-class Crafter {
+class CrafterTwo {
 public:
-	Crafter(std::vector<Skills::SkillName> startingMoves, int maxCP, int maxProgress, int maxQuality, int maxDurability, bool topQuality, bool greaterByregot, int maximumTurnLimit) {
+	CrafterTwo(std::vector<Skills::SkillName> startingMoves, int maxCP, int maxProgress, int maxQuality, int maxDurability, bool topQuality, bool greaterByregot, int maximumTurnLimit) {
 		player = new Player(630);
 		this->maxProgress = maxProgress;
 		this->maxQuality = maxQuality;
@@ -18,19 +18,21 @@ public:
 		forceGreaterByregot = greaterByregot;
 		this->maxTurnLimit = maximumTurnLimit;
 		player->AddItem(maxProgress, maxQuality, maxDurability);
-		
+
 
 		if (!startingMoves.empty()) {
 			for (const Skills::SkillName& move : startingMoves) {
 				if (!Craft(move)) {
-					std::cout << "Invalid. The starting moves break/finish the item.\n";
+					//std::cout << "Invalid. The starting moves break/finish the item.\n";
 					return;
 				}
+				//std::cout << "Player turn is " << player->GetCurrentTurn() << '\n';
 			}
 		}
+		//std::cout << "-----------------------------------------\n";
 	}
 
-	~Crafter() {
+	~CrafterTwo() {
 		if (successfulCrafts.empty()) {
 			return;
 		}
@@ -47,19 +49,29 @@ public:
 		}
 	}
 
+	void PrintCrafts() {
+		std::cout << "Current: ";
+		for (const auto& entry : craftingHistory) {
+			std::cout << Skills::GetSkillName(entry.skillName) << ", ";
+		}
+		std::cout << '\n';
+	}
+
+	void ValidateCraft(SkillName skillName) {
+		
+	}
+
 	void ForceCraft() {
 		bool completedCraft{ false };
 		for (const auto& move : player->fullSkillList) {
-			if(player->GetCurrentTurn() >= maxTurnLimit) {
+			
+
+			if ((craftingRecord.currentTime + 3) > bestTime) {	// worse than best time, move back down a step
+				//std::cout << "Time error, Best time is " << bestTime << " and the current time is " << craftingRecord.currentTime << '\n';
 				break;
 			}
 
-			if ((currentTime + 3) > bestTime) {	// worse than best time, move back down a step
-				//std::cout << "Time error, Best time is " << bestTime << " and the current time is " << currentTime << '\n';
-				break;
-			}
-
-			if ((currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit -1) {		// Only one move left to match the best time
+			if ((craftingRecord.currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) {		// Only one move left to match the best time
 				if (!SynthesisCheck(move)) {
 					//std::cout << "Only checking synth moves\n";
 					continue;
@@ -75,14 +87,34 @@ public:
 				}
 			}
 
+			//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
 			bool validMove = Craft(move);
+			//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
 			//std::cout << Skills::GetSkillName(move) << '\n';
 			if (validMove) {
+				if (player->GetCurrentTurn() == 11) {
+					if (move == SkillName::PREPARATORYTOUCH) {
+						//std::cout << "Prepping on turn" << player->GetCurrentTurn() << "\n";
+					}
+					
+				}
+
+				if (move == SkillName::BYREGOTSBLESSING) {
+					//std::cout << "We are blessed on turn " << player->GetCurrentTurn() << "\n";
+				}
+				
 				//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
+				AddSuccessfulCraft();
+				if (player->GetCurrentTurn() >= maxTurnLimit) {
+					//std::cout << "Run out of moves\n";
+					ContinueCraft();
+					continue;
+				}
+				//PrintCrafts();
+				//player->craftableItem->OutputStats();
 				//std::cout << "After crafting the durability is " << player->craftableItem->GetDurability() << '\n';
 				if (IsItemWorkable()) {
-					ForceCraft();			// After this path has finished
-
+					ForceCraft();			// After this path has 
 				}
 				else {
 					ContinueCraft();		// Remove the base and start a new one
@@ -95,16 +127,37 @@ public:
 		//std::cout << player->GetCurrentTurn() << " TRIED ALL POSSIBLE MOVES AT THIS LEVEL\n";
 	}
 
+	struct CraftingHistory {
+		Player::PlayerState player;
+		Item::ItemState item;
+		int currentTime{ 0 };
+		SkillName skillName;
+	}craftingRecord;
+
+	void SaveCraftingHistory(SkillName skillName) {
+		craftingRecord.player = player->GetPlayerState();
+		craftingRecord.item = player->craftableItem->GetItemState();
+		craftingRecord.currentTime += player->GetSkillTime(skillName);
+		craftingRecord.skillName = skillName;
+		craftingHistory.push_back(craftingRecord);
+	}
+
+	void DeleteCraftingHistory() {
+		craftingHistory.pop_back();
+	}
+
 private:
 	Player* player;
 	int maxProgress{}, maxQuality{}, maxDurability{};
-	std::vector<Skills::SkillName> currentCraft{};
-	int currentTime{}, bestTime{99};
+	std::vector<CraftingHistory> craftingHistory{};
+	//std::vector<Skills::SkillName> currentCraft{};
+	int bestTime{ 99 };
 	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{};
 	bool topQuality{ false };
 	bool forceGreaterByregot{ false };
 	int maxTurnLimit;
-	
+
+
 
 	bool Craft(Skills::SkillName skillName) {
 		if (!player->CastSkill(skillName)) {
@@ -113,17 +166,14 @@ private:
 		}
 
 		//std::cout << Skills::GetSkillName(skillName) << '\n';
-		currentTime += player->GetSkillTime(skillName);
-		currentCraft.push_back(skillName);
+		
+		SaveCraftingHistory(skillName);
 
 		return true;
 	}
 
 	bool IsItemWorkable() {
 		if (!player->craftableItem->IsItemWorkable()) {		// Not workable
-			if (player->craftableItem->IsItemCrafted()) {	// successful
-				AddSuccessfulCraft();
-			}
 
 			return false;
 		}
@@ -135,30 +185,43 @@ private:
 			//std::cout << "Not maximum quality when needed\n";
 			return;
 		}
-		//std::cout << "Craft successful\n";
-		if (currentTime < bestTime)	bestTime = currentTime;
-		successfulCrafts[currentTime].push_back(currentCraft);
+
+		if (player->craftableItem->IsItemCrafted()) {
+			//std::cout << "Craft successful\n";
+			if (craftingRecord.currentTime < bestTime) {
+				bestTime = craftingRecord.currentTime;
+			}
+			else {
+				return;
+			}
+			std::vector<SkillName> success{};
+			for (const auto& entry : craftingHistory) {
+				success.push_back(entry.skillName);
+			}
+			successfulCrafts[craftingRecord.currentTime].push_back(success);
+		}
+	}
+
+	void LoadLastCraftingRecord() {
+		CraftingHistory record = craftingHistory.back();
+		//std::cout << "Previous player turn was " << player->GetCurrentTurn() << '\n';
+		player->LoadPlayerStats(record.player);
+		//std::cout << "Current player turn is " << player->GetCurrentTurn() << '\n';
+		player->craftableItem->LoadItemState(record.item);
+		craftingRecord = record;
+		/*std::cout << "After loading item stats are\n";
+		player->craftableItem->OutputStats();*/
 	}
 
 	void ContinueCraft() {
-		player->RemoveItem();
-		if (player->craftableItem == nullptr) {
-			//std::cout << "Item has been deleted\n";
-		}
-		else {
-			std::cout << "Item deletion broken. Exiting...\n";
-			return;
-		}
-		player->AddItem(maxProgress, maxQuality, maxDurability);
-		std::vector<Skills::SkillName> tempCraft{};
-		currentTime = 0;
-		currentCraft.swap(tempCraft);
-		currentCraft.clear();
-		//std::cout << "------------GOING BACK A STEP--------------------\n";
-		for (int i{ 0 }; i < tempCraft.size() - 1; ++i) {
-			Craft(tempCraft[i]);
-			//std::cout << Skills::GetSkillName(tempCraft[i]) << '\n';
-		}
+		/*std::cout << "Previous item stats were\n";
+		player->craftableItem->OutputStats();*/
+		/*if (player->GetBuffDuration(SkillName::GREATSTRIDES) > 0)
+		std::cout << "Greater strides buff before is " << player->GetBuffDuration(SkillName::GREATSTRIDES) << '\n';*/
+		DeleteCraftingHistory();
+		LoadLastCraftingRecord();
+		/*if (player->GetBuffDuration(SkillName::GREATSTRIDES) > 0)
+		std::cout << "Greater strides buff after is " << player->GetBuffDuration(SkillName::GREATSTRIDES) << '\n';*/
 	}
 
 	bool SynthesisCheck(SkillName skillName) {
@@ -173,7 +236,7 @@ private:
 	bool QualityCheck(SkillName skillName) {
 		bool maxQuality = player->craftableItem->IsItemMaxQuality();
 		bool touchSkill{ false };
-		
+
 
 		if (maxQuality || !topQuality) {
 			//std::cout << "Skipping Quality\n";

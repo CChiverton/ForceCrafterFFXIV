@@ -19,7 +19,7 @@ public:
 
 	int GetSkillTime(Skills::SkillName skillName);
 	int GetCurrentTurn() {
-		return (currentTurn + 1);
+		return (playerState.currentTurn + 1);
 	}
 
 	Item* craftableItem = nullptr;
@@ -88,32 +88,31 @@ public:
 	};
 
 	int GetBuffDuration(SkillName skillName) {
-		return  buffs[skillName];
+		return playerState.buffs[skillName];
+	}
+
+	struct PlayerState {
+		int currentCP{ 0 };
+		int currentTurn{ 0 };
+		int innerQuiet{ 0 };
+		std::map<SkillName, int> buffs{};
+	}playerState;
+
+	void LoadPlayerStats(PlayerState);
+	PlayerState GetPlayerState() {
+		return playerState;
 	}
 
 private:
-	int maxCP{}, currentCP{};
-	int currentCraftTime{ 0 };
-	int currentTurn{ 0 };
-	int innerQuiet{ 0 };
+	int maxCP{};
 	bool successfulCast{ true };
-	// Buffs
-	std::map<SkillName, int> buffs = {
-		{SkillName::MUSCLEMEMORY, 0},
-		{SkillName::WASTENOTI, 0},
-		{SkillName::GREATSTRIDES, 0},
-		{SkillName::INNOVATION, 0},
-		{SkillName::VENERATION, 0},
-		{SkillName::FINALAPPRAISAL, 0},
-		{SkillName::MANIPULATION, 0}
-	};
 	
-
 	Skills::SkillName lastSkillUsed{ Skills::SkillName::NONE };
 
 	
 
 	void ResetPlayerStats();
+	
 	bool CheckItem();
 
 	int CalculateProgress(int efficiency);

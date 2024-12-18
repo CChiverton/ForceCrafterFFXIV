@@ -5,27 +5,27 @@
 class Item {
 public:
 	Item(int maxProgress, int maxQuality, int maxDurability) {
-		this->maxProgress = maxProgress;
-		currentProgress = 0;
-		this->maxQuality = maxQuality;
-		currentQuality = 0;
-		this->maxDurability = maxDurability;
-		currentDurability = this->maxDurability;
+		maxItemState.progress = maxProgress;
+		currentItemState.progress = 0;
+		maxItemState.quality = maxQuality;
+		currentItemState.quality = 0;
+		maxItemState.durability = maxDurability;
+		currentItemState.durability = maxItemState.durability;
 	}
 
 	void UpdateDurability(int durability) {
-		currentDurability += durability;
-		if (currentDurability > maxDurability)	currentDurability = maxDurability;
+		currentItemState.durability += durability;
+		if (currentItemState.durability > maxItemState.durability)	currentItemState.durability = maxItemState.durability;
 	}
 
 	
 	void AddProgress(int progress, int durabilityCost) {
-		currentProgress += progress;
+		currentItemState.progress += progress;
 		UpdateDurability(-durabilityCost);
 	}
 
 	void AddQuality(int quality, int durabilityCost) {
-		currentQuality += quality;
+		currentItemState.quality += quality;
 		UpdateDurability(-durabilityCost);
 	}
 
@@ -41,44 +41,64 @@ public:
 	}
 
 	bool IsItemCrafted() {
-		if (currentProgress < maxProgress) {
+		if (currentItemState.progress < maxItemState.progress) {
 			return false;
 		}
 		return true;
 	}
 
 	bool IsItemMaxQuality() {
-		if (currentQuality < maxQuality) {
+		if (currentItemState.quality < maxItemState.quality) {
 			return false;
 		}
 		return true;
 	}
 
 	int GetDurability() {
-		return currentDurability;
+		return currentItemState.durability;
 	}
 
 	int GetCurrentProgress() {
-		return currentProgress;
+		return currentItemState.progress;
 	}
 
 	int GetMaxProgress() {
-		return maxProgress;
+		return maxItemState.progress;
 	}
 
 	int GetCurrentQuality() {
-		return currentQuality;
+		return currentItemState.quality;
+	}
+
+
+	void OutputStats() {
+		std::cout << "Progress: " << currentItemState.progress << "/" << maxItemState.progress << '\n';
+		std::cout << "Quality: " << currentItemState.quality << "/" << maxItemState.quality << '\n';
+		std::cout << "Durability: " << currentItemState.durability << "/" << maxItemState.durability << '\n';
 	}
 
 	
 
+	struct ItemState {
+		int progress{};
+		int quality{};
+		int durability{};
+	};
+
+	void LoadItemState(ItemState itemState) {
+		currentItemState = itemState;
+	}
+
+	ItemState GetItemState() {
+		//OutputStats();
+		return currentItemState;
+	}
+
 private:
-	int currentProgress{}, maxProgress{};
-	int currentQuality{}, maxQuality{};
-	int currentDurability{}, maxDurability{};
+	ItemState currentItemState, maxItemState;
 
 	bool IsItemBroken() {
-		if (currentDurability > 0) {
+		if (currentItemState.durability > 0) {
 			return false;
 		}
 		//std::cout << "Item is broken\n";
@@ -88,16 +108,11 @@ private:
 	
 
 	bool IsItemStillCraftable() {
-		if (currentDurability <= 0) {
+		if (currentItemState.durability <= 0) {
 			return false;
 		}
 
 		return true;
 	}
 
-	void OutputStats() {
-		std::cout << "Progress: " << currentProgress << "/" << maxProgress << '\n';
-		std::cout << "Quality: " << currentQuality << "/" << maxQuality << '\n';
-		std::cout << "Durability: " << currentDurability << "/" << maxDurability << '\n';
-	}
 };
