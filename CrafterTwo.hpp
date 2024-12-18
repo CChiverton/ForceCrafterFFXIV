@@ -124,7 +124,7 @@ public:
 		SkillName skillName;
 	}craftingRecord;
 
-	void SaveCraftingHistory(SkillName skillName) {
+	inline void SaveCraftingHistory(SkillName skillName) {
 		craftingRecord.player = player->GetPlayerState();
 		craftingRecord.item = playerItem->GetItemState();
 		craftingRecord.currentTime += player->GetSkillTime(skillName);
@@ -132,7 +132,7 @@ public:
 		craftingHistory.emplace_back(craftingRecord);
 	}
 
-	void DeleteCraftingHistory() {
+	inline void DeleteCraftingHistory() {
 		craftingHistory.pop_back();
 	}
 
@@ -177,7 +177,7 @@ private:
 		}
 	}
 
-	void LoadLastCraftingRecord() {
+	inline void LoadLastCraftingRecord() {
 		CraftingHistory record = craftingHistory.back();
 		//std::cout << "Previous player turn was " << player->GetCurrentTurn() << '\n';
 		player->LoadPlayerStats(record.player);
