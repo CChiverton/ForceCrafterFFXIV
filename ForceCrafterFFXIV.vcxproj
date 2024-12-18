@@ -132,7 +132,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Crafter.hpp" />
-    <ClInclude Include="CrafterTwo.hpp" />
     <ClInclude Include="Item.hpp" />
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="Skills.hpp" />

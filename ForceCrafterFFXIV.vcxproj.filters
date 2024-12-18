@@ -35,8 +35,5 @@
     <ClInclude Include="Crafter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CrafterTwo.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
