@@ -65,19 +65,19 @@ public:
 	}
 
 	void ForceCraft() {
-		bool completedCraft{ false };
+		CraftingHistory& previousStep = craftingRecord;		// stack allocation for faster loading
 		for (const auto& move : fullSkillList) {
 			if (player->GetCurrentTurn() >= maxTurnLimit) {
 				//std::cout << "Run out of moves\n";
 				break;
 			}
 
-			if ((craftingRecord.currentTime + 3) > bestTime) {	// worse than best time, move back down a step
+			if ((previousStep.currentTime + 3) > bestTime) {	// worse than best time, move back down a step
 				//std::cout << "Time error, Best time is " << bestTime << " and the current time is " << craftingRecord.currentTime << '\n';
 				break;
 			}
 
-			if ((craftingRecord.currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) {		// Only one move left to match the best time
+			if ((previousStep.currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) {		// Only one move left to match the best time
 				if (!SynthesisCheck(move)) {
 					//std::cout << "Only checking synth moves\n";
 					continue;
@@ -99,7 +99,7 @@ public:
 				if (playerItem->IsItemCrafted()) {
 					if (topQuality && !playerItem->IsItemMaxQuality()) {
 						//std::cout << "Not maximum quality when needed\n";
-						LoadLastCraftingRecord();
+						LoadLastCraftingRecord(previousStep);
 						continue;
 					}
 					SaveCraftingHistory(move);
@@ -173,13 +173,10 @@ private:
 		successfulCrafts[craftingRecord.currentTime].emplace_back(success);
 	}
 
-	inline void LoadLastCraftingRecord() {
-		CraftingHistory record = craftingHistory.back();
-		//std::cout << "Previous player turn was " << player->GetCurrentTurn() << '\n';
-		player->LoadPlayerStats(record.player);
-		//std::cout << "Current player turn is " << player->GetCurrentTurn() << '\n';
-		playerItem->LoadItemState(record.item);
-		craftingRecord = record;
+	inline void LoadLastCraftingRecord(CraftingHistory& lastRecord) {
+		player->LoadPlayerStats(lastRecord.player);
+		playerItem->LoadItemState(lastRecord.item);
+		craftingRecord = lastRecord;
 		/*std::cout << "After loading item stats are\n";
 		player->craftableItem->OutputStats();*/
 	}
@@ -190,7 +187,8 @@ private:
 		/*if (player->GetBuffDuration(SkillName::GREATSTRIDES) > 0)
 		std::cout << "Greater strides buff before is " << player->GetBuffDuration(SkillName::GREATSTRIDES) << '\n';*/
 		DeleteCraftingHistory();
-		LoadLastCraftingRecord();
+		CraftingHistory& last = craftingHistory.back();
+		LoadLastCraftingRecord(last);
 		/*if (player->GetBuffDuration(SkillName::GREATSTRIDES) > 0)
 		std::cout << "Greater strides buff after is " << player->GetBuffDuration(SkillName::GREATSTRIDES) << '\n';*/
 	}
