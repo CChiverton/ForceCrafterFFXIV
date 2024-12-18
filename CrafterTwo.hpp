@@ -20,6 +20,7 @@ public:
 		player->AddItem(maxProgress, maxQuality, maxDurability);
 		playerItem = player->craftableItem;
 
+		//craftingHistory.reserve(maximumTurnLimit);
 
 		if (!startingMoves.empty()) {
 			for (const Skills::SkillName& move : startingMoves) {
@@ -168,6 +169,7 @@ private:
 			}
 			bestTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
 			std::vector<SkillName> success{};
+			//success.reserve(craftingHistory.size());
 			for (const auto& entry : craftingHistory) {
 				success.emplace_back(entry.skillName);
 			}
@@ -252,7 +254,7 @@ private:
 		SkillName::MUSCLEMEMORY
 	};
 
-	SkillName fullSkillList[23] = {
+	const SkillName fullSkillList[23] = {
 		SkillName::MUSCLEMEMORY,
 		SkillName::REFLECT,
 
@@ -284,7 +286,7 @@ private:
 		SkillName::FINALAPPRAISAL
 	};
 
-	SkillName finalMoveList[4] = {
+	const SkillName finalMoveList[4] = {
 		SkillName::BASICSYNTHESIS,
 		SkillName::CAREFULSYNTHESIS,
 		SkillName::PRUDENTSYNTHESIS,
@@ -292,7 +294,7 @@ private:
 	};
 
 	// All skills focused on touch regardless of category
-	SkillName qualityList[10] = {
+	const SkillName qualityList[10] = {
 		SkillName::BASICTOUCH,
 		SkillName::STANDARDTOUCH,
 		SkillName::ADVANCEDTOUCH,
@@ -305,7 +307,7 @@ private:
 		SkillName::INNOVATION
 	};
 
-	SkillName buffList[7] = {
+	const SkillName buffList[7] = {
 		SkillName::WASTENOTI,
 		SkillName::WASTENOTII,
 		SkillName::VENERATION,

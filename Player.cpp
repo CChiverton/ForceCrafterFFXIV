@@ -98,7 +98,7 @@ void Player::ResetPlayerStats() {
 	playerState.buffs[SkillName::MANIPULATION] = 0;
 }
 
-void Player::LoadPlayerStats(PlayerState state) {
+void Player::LoadPlayerStats(PlayerState& state) {
 	playerState = state;
 }
 

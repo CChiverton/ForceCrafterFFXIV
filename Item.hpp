@@ -85,7 +85,7 @@ public:
 		int durability{};
 	};
 
-	void LoadItemState(ItemState itemState) {
+	void LoadItemState(ItemState& itemState) {
 		currentItemState = itemState;
 	}
 

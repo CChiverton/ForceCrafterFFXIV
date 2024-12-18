@@ -35,7 +35,8 @@ public:
 		std::map<SkillName, int> buffs{};
 	}playerState;
 
-	void LoadPlayerStats(PlayerState);
+	void LoadPlayerStats(PlayerState&);
+
 	PlayerState GetPlayerState() {
 		return playerState;
 	}
