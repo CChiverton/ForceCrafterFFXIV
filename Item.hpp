@@ -94,9 +94,6 @@ public:
 		return currentItemState;
 	}
 
-private:
-	ItemState currentItemState, maxItemState;
-
 	bool IsItemBroken() {
 		if (currentItemState.durability > 0) {
 			return false;
@@ -104,6 +101,11 @@ private:
 		//std::cout << "Item is broken\n";
 		return true;
 	}
+
+private:
+	ItemState currentItemState, maxItemState;
+
+	
 
 	
 
