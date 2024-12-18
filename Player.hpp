@@ -24,69 +24,6 @@ public:
 
 	Item* craftableItem = nullptr;
 
-	SkillName fullSkillList[23] = {
-		SkillName::MUSCLEMEMORY,
-		SkillName::REFLECT,
-
-		SkillName::BYREGOTSBLESSING,
-		SkillName::PREPARATORYTOUCH,
-		SkillName::BASICTOUCH,
-		SkillName::STANDARDTOUCH,
-		SkillName::ADVANCEDTOUCH,		
-		SkillName::PRUDENTTOUCH,		
-		SkillName::REFINEDTOUCH,
-
-		SkillName::BASICSYNTHESIS,
-		SkillName::CAREFULSYNTHESIS,
-		SkillName::PRUDENTSYNTHESIS,
-		SkillName::GROUNDWORK,
-
-		SkillName::DELICATESYNTHESIS,
-		
-		SkillName::WASTENOTI,
-		SkillName::WASTENOTII,
-		SkillName::GREATSTRIDES,
-		SkillName::INNOVATION,
-		SkillName::VENERATION,
-		SkillName::MASTERSMEND,
-		SkillName::MANIPULATION,
-		SkillName::IMMACULATEMEND,
-		
-
-		SkillName::FINALAPPRAISAL
-	};
-
-	SkillName finalMoveList[4] = {
-		SkillName::BASICSYNTHESIS,
-		SkillName::CAREFULSYNTHESIS,
-		SkillName::PRUDENTSYNTHESIS,
-		SkillName::GROUNDWORK,
-	};
-
-	// All skills focused on touch regardless of category
-	SkillName qualityList[10] = {
-		SkillName::BASICTOUCH,
-		SkillName::STANDARDTOUCH,
-		SkillName::ADVANCEDTOUCH,
-		SkillName::BYREGOTSBLESSING,
-		SkillName::PRUDENTTOUCH,
-		SkillName::PREPARATORYTOUCH,
-		SkillName::REFLECT,
-		SkillName::REFINEDTOUCH,
-		SkillName::GREATSTRIDES,
-		SkillName::INNOVATION
-	};
-
-	SkillName buffList[7] = {
-		SkillName::WASTENOTI,
-		SkillName::WASTENOTII,
-		SkillName::VENERATION,
-		SkillName::FINALAPPRAISAL,
-		SkillName::MASTERSMEND,
-		SkillName::MANIPULATION,
-		SkillName::IMMACULATEMEND
-	};
-
 	int GetBuffDuration(SkillName skillName) {
 		return playerState.buffs[skillName];
 	}

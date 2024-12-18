@@ -49,7 +49,7 @@ public:
 
 	void ForceCraft() {
 		bool completedCraft{ false };
-		for (const auto& move : player->fullSkillList) {
+		for (const auto& move : fullSkillList) {
 			if(player->GetCurrentTurn() >= maxTurnLimit) {
 				break;
 			}
@@ -162,7 +162,7 @@ private:
 	}
 
 	bool SynthesisCheck(SkillName skillName) {
-		for (const auto& synth : player->finalMoveList) {
+		for (const auto& synth : finalMoveList) {
 			if (skillName == synth) {
 				return true;
 			}
@@ -177,7 +177,7 @@ private:
 
 		if (maxQuality || !topQuality) {
 			//std::cout << "Skipping Quality\n";
-			for (const auto& touch : player->qualityList) {
+			for (const auto& touch : qualityList) {
 				if (skillName == touch) {
 					touchSkill = true;
 					break;

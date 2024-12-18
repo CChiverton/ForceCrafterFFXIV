@@ -2,7 +2,7 @@
 //
 
 #include <iostream>
-#include "Crafter.hpp"
+//#include "Crafter.hpp"
 #include "CrafterTwo.hpp"
 #include "Player.hpp"
 #include "Skills.hpp"

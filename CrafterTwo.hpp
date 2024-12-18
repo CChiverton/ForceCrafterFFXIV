@@ -18,6 +18,7 @@ public:
 		forceGreaterByregot = greaterByregot;
 		this->maxTurnLimit = maximumTurnLimit;
 		player->AddItem(maxProgress, maxQuality, maxDurability);
+		playerItem = player->craftableItem;
 
 
 		if (!startingMoves.empty()) {
@@ -63,7 +64,7 @@ public:
 
 	void ForceCraft() {
 		bool completedCraft{ false };
-		for (const auto& move : player->fullSkillList) {
+		for (const auto& move : fullSkillList) {
 			
 
 			if ((craftingRecord.currentTime + 3) > bestTime) {	// worse than best time, move back down a step
@@ -78,13 +79,11 @@ public:
 				}
 			}
 
-			if (QualityCheck(move))	continue;
-			if (BuffCheck(move)) continue;
-
-			if (move == SkillName::BYREGOTSBLESSING && forceGreaterByregot) {
-				if (player->GetBuffDuration(SkillName::GREATSTRIDES) == 0) {
-					continue;
-				}
+			if (QualityCheck(move)) {
+				continue;
+			}
+			else if (BuffCheck(move)) {
+				continue;
 			}
 
 			//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
@@ -92,16 +91,6 @@ public:
 			//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
 			//std::cout << Skills::GetSkillName(move) << '\n';
 			if (validMove) {
-				if (player->GetCurrentTurn() == 11) {
-					if (move == SkillName::PREPARATORYTOUCH) {
-						//std::cout << "Prepping on turn" << player->GetCurrentTurn() << "\n";
-					}
-					
-				}
-
-				if (move == SkillName::BYREGOTSBLESSING) {
-					//std::cout << "We are blessed on turn " << player->GetCurrentTurn() << "\n";
-				}
 				
 				//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
 				AddSuccessfulCraft();
@@ -113,7 +102,7 @@ public:
 				//PrintCrafts();
 				//player->craftableItem->OutputStats();
 				//std::cout << "After crafting the durability is " << player->craftableItem->GetDurability() << '\n';
-				if (IsItemWorkable()) {
+				if (playerItem->IsItemWorkable()) {
 					ForceCraft();			// After this path has 
 				}
 				else {
@@ -136,10 +125,10 @@ public:
 
 	void SaveCraftingHistory(SkillName skillName) {
 		craftingRecord.player = player->GetPlayerState();
-		craftingRecord.item = player->craftableItem->GetItemState();
+		craftingRecord.item = playerItem->GetItemState();
 		craftingRecord.currentTime += player->GetSkillTime(skillName);
 		craftingRecord.skillName = skillName;
-		craftingHistory.push_back(craftingRecord);
+		craftingHistory.emplace_back(craftingRecord);
 	}
 
 	void DeleteCraftingHistory() {
@@ -156,6 +145,7 @@ private:
 	bool topQuality{ false };
 	bool forceGreaterByregot{ false };
 	int maxTurnLimit;
+	Item* playerItem;
 
 
 
@@ -164,41 +154,24 @@ private:
 			//std::cout << "Invalid move " << Skills::GetSkillName(skillName) << '\n';
 			return false;
 		}
-
 		//std::cout << Skills::GetSkillName(skillName) << '\n';
-		
 		SaveCraftingHistory(skillName);
-
-		return true;
-	}
-
-	bool IsItemWorkable() {
-		if (!player->craftableItem->IsItemWorkable()) {		// Not workable
-
-			return false;
-		}
 		return true;
 	}
 
 	void AddSuccessfulCraft() {
-		if (topQuality && !player->craftableItem->IsItemMaxQuality()) {
-			//std::cout << "Not maximum quality when needed\n";
-			return;
-		}
-
-		if (player->craftableItem->IsItemCrafted()) {
+		if (playerItem->IsItemCrafted()) {
 			//std::cout << "Craft successful\n";
-			if (craftingRecord.currentTime < bestTime) {
-				bestTime = craftingRecord.currentTime;
-			}
-			else {
+			if (topQuality && !playerItem->IsItemMaxQuality()) {
+				//std::cout << "Not maximum quality when needed\n";
 				return;
 			}
+			bestTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
 			std::vector<SkillName> success{};
 			for (const auto& entry : craftingHistory) {
-				success.push_back(entry.skillName);
+				success.emplace_back(entry.skillName);
 			}
-			successfulCrafts[craftingRecord.currentTime].push_back(success);
+			successfulCrafts[craftingRecord.currentTime].emplace_back(success);
 		}
 	}
 
@@ -207,7 +180,7 @@ private:
 		//std::cout << "Previous player turn was " << player->GetCurrentTurn() << '\n';
 		player->LoadPlayerStats(record.player);
 		//std::cout << "Current player turn is " << player->GetCurrentTurn() << '\n';
-		player->craftableItem->LoadItemState(record.item);
+		playerItem->LoadItemState(record.item);
 		craftingRecord = record;
 		/*std::cout << "After loading item stats are\n";
 		player->craftableItem->OutputStats();*/
@@ -225,7 +198,7 @@ private:
 	}
 
 	bool SynthesisCheck(SkillName skillName) {
-		for (const auto& synth : player->finalMoveList) {
+		for (const auto& synth : finalMoveList) {
 			if (skillName == synth) {
 				return true;
 			}
@@ -234,13 +207,18 @@ private:
 	}
 
 	bool QualityCheck(SkillName skillName) {
-		bool maxQuality = player->craftableItem->IsItemMaxQuality();
+		bool maxQuality = playerItem->IsItemMaxQuality();
 		bool touchSkill{ false };
 
+		if (skillName == SkillName::BYREGOTSBLESSING && forceGreaterByregot) {
+			if (player->GetBuffDuration(SkillName::GREATSTRIDES) == 0) {
+				return true;
+			}
+		}
 
 		if (maxQuality || !topQuality) {
 			//std::cout << "Skipping Quality\n";
-			for (const auto& touch : player->qualityList) {
+			for (const auto& touch : qualityList) {
 				if (skillName == touch) {
 					touchSkill = true;
 					break;
@@ -259,7 +237,7 @@ private:
 		if (player->GetBuffDuration(skillName) > 0) {
 			buffSkip = true;
 		}
-		if (!topQuality || player->craftableItem->IsItemMaxQuality()) {
+		if (!topQuality || playerItem->IsItemMaxQuality()) {
 			if (skillName == SkillName::FINALAPPRAISAL)		buffSkip = true;;
 		}
 		//std::cout << "Too high quality\n";
@@ -272,6 +250,69 @@ private:
 		SkillName::PRUDENTSYNTHESIS,
 		SkillName::GROUNDWORK,
 		SkillName::MUSCLEMEMORY
+	};
+
+	SkillName fullSkillList[23] = {
+		SkillName::MUSCLEMEMORY,
+		SkillName::REFLECT,
+
+		SkillName::BYREGOTSBLESSING,
+		SkillName::PREPARATORYTOUCH,
+		SkillName::BASICTOUCH,
+		SkillName::STANDARDTOUCH,
+		SkillName::ADVANCEDTOUCH,
+		SkillName::PRUDENTTOUCH,
+		SkillName::REFINEDTOUCH,
+
+		SkillName::BASICSYNTHESIS,
+		SkillName::CAREFULSYNTHESIS,
+		SkillName::PRUDENTSYNTHESIS,
+		SkillName::GROUNDWORK,
+
+		SkillName::DELICATESYNTHESIS,
+
+		SkillName::WASTENOTI,
+		SkillName::WASTENOTII,
+		SkillName::GREATSTRIDES,
+		SkillName::INNOVATION,
+		SkillName::VENERATION,
+		SkillName::MASTERSMEND,
+		SkillName::MANIPULATION,
+		SkillName::IMMACULATEMEND,
+
+
+		SkillName::FINALAPPRAISAL
+	};
+
+	SkillName finalMoveList[4] = {
+		SkillName::BASICSYNTHESIS,
+		SkillName::CAREFULSYNTHESIS,
+		SkillName::PRUDENTSYNTHESIS,
+		SkillName::GROUNDWORK,
+	};
+
+	// All skills focused on touch regardless of category
+	SkillName qualityList[10] = {
+		SkillName::BASICTOUCH,
+		SkillName::STANDARDTOUCH,
+		SkillName::ADVANCEDTOUCH,
+		SkillName::BYREGOTSBLESSING,
+		SkillName::PRUDENTTOUCH,
+		SkillName::PREPARATORYTOUCH,
+		SkillName::REFLECT,
+		SkillName::REFINEDTOUCH,
+		SkillName::GREATSTRIDES,
+		SkillName::INNOVATION
+	};
+
+	SkillName buffList[7] = {
+		SkillName::WASTENOTI,
+		SkillName::WASTENOTII,
+		SkillName::VENERATION,
+		SkillName::FINALAPPRAISAL,
+		SkillName::MASTERSMEND,
+		SkillName::MANIPULATION,
+		SkillName::IMMACULATEMEND
 	};
 
 };
