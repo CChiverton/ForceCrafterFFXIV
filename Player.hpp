@@ -18,6 +18,9 @@ public:
 	bool CastSkill(Skills::SkillName skillName);
 
 	int GetSkillTime(Skills::SkillName skillName);
+	int GetCurrentTime() {
+		return playerState.currentTime;
+	}
 	int GetCurrentTurn() {
 		return (playerState.currentTurn + 1);
 	}
@@ -31,6 +34,7 @@ public:
 	struct PlayerState {
 		int currentCP{ 0 };
 		int currentTurn{ 0 };
+		int currentTime{ 0 };
 		int innerQuiet{ 0 };
 		std::map<SkillName, int> buffs{};
 	}playerState;

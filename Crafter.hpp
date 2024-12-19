@@ -67,16 +67,6 @@ public:
 	void ForceCraft() {
 		CraftingHistory& previousStep = craftingRecord;		// stack allocation for faster loading
 		for (const auto& move : fullSkillList) {
-			if (player->GetCurrentTurn() >= maxTurnLimit) {
-				//std::cout << "Run out of moves\n";
-				break;
-			}
-
-			if ((previousStep.currentTime + 3) > bestTime) {	// worse than best time, move back down a step
-				//std::cout << "Time error, Best time is " << bestTime << " and the current time is " << craftingRecord.currentTime << '\n';
-				break;
-			}
-
 			if ((previousStep.currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) {		// Only one move left to match the best time
 				if (!SynthesisCheck(move)) {
 					//std::cout << "Only checking synth moves\n";
@@ -105,8 +95,11 @@ public:
 					SaveCraftingHistory(move);
 					AddSuccessfulCraft();
 					ContinueCraft();
-				}
-				else if (!playerItem->IsItemBroken()) {
+				} else if (player->GetCurrentTurn() >= maxTurnLimit || (player->GetCurrentTime() + 3) > bestTime) {
+					//std::cout << "Run out of moves\n";
+					LoadLastCraftingRecord(previousStep);
+					continue;
+				}  else if (!playerItem->IsItemBroken()) {
 					SaveCraftingHistory(move);
 					ForceCraft();
 				}
@@ -122,7 +115,7 @@ public:
 		Player::PlayerState player;
 		Item::ItemState item;
 		int currentTime{ 0 };
-		SkillName skillName;
+		SkillName skillName{ SkillName::NONE };
 	}craftingRecord;
 
 	inline void SaveCraftingHistory(SkillName skillName) {

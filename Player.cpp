@@ -69,6 +69,7 @@ bool Player::CastSkill(Skills::SkillName skillName) {
 		lastSkillUsed = skillName;
 		playerState.currentCP -= skillCPCost;
 		playerState.currentTurn++;
+		playerState.currentTime += GetSkillTime(skillName);
 		DecrementBuffs();
 	}
 
@@ -86,6 +87,7 @@ void Player::ResetPlayerStats() {
 	playerState.currentCP = maxCP;
 	playerState.innerQuiet = 0;
 	playerState.currentTurn = 0;
+	playerState.currentTime = 0;
 	lastSkillUsed = SkillName::NONE;
 	successfulCast = true; // Only turned false on failure. True by default
 	playerState.buffs[SkillName::MUSCLEMEMORY] = 0;
