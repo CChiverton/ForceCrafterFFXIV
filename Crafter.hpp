@@ -66,8 +66,9 @@ public:
 
 	void ForceCraft() {
 		CraftingHistory& previousStep = craftingRecord;		// stack allocation for faster loading
+		bool lastMove = ((previousStep.currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) ? true : false;
 		for (const auto& move : fullSkillList) {
-			if ((previousStep.currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) {		// Only one move left to match the best time
+			if (lastMove) {		// Only one move left to match the best time
 				if (!SynthesisCheck(move)) {
 					//std::cout << "Only checking synth moves\n";
 					continue;
@@ -95,7 +96,7 @@ public:
 					SaveCraftingHistory(move);
 					AddSuccessfulCraft();
 					ContinueCraft();
-				} else if (player->GetCurrentTurn() >= maxTurnLimit || (player->GetCurrentTime() + 3) > bestTime) {
+				} else if (player->GetCurrentTurn() >= maxTurnLimit || (player->GetCurrentTime() + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
 					//std::cout << "Run out of moves\n";
 					LoadLastCraftingRecord(previousStep);
 					continue;
@@ -121,7 +122,7 @@ public:
 	inline void SaveCraftingHistory(SkillName skillName) {
 		craftingRecord.player = player->GetPlayerState();
 		craftingRecord.item = playerItem->GetItemState();
-		craftingRecord.currentTime += player->GetSkillTime(skillName);
+		craftingRecord.currentTime = player->GetCurrentTime();
 		craftingRecord.skillName = skillName;
 		craftingHistory.emplace_back(craftingRecord);
 	}
@@ -223,7 +224,7 @@ private:
 
 	bool BuffCheck(SkillName skillName) {
 		bool buffSkip{ false };
-		if (player->GetBuffDuration(skillName) > 0) {
+		if (player->GetBuffDuration(skillName) > 0) {			// potentially bad logic
 			buffSkip = true;
 		}
 		if (!topQuality || playerItem->IsItemMaxQuality()) {
