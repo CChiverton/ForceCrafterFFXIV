@@ -15,7 +15,7 @@ public:
 		player->AddItem(maxProgress, maxQuality, maxDurability);
 		playerItem = player->craftableItem;
 
-		//craftingHistory.reserve(maximumTurnLimit);
+		craftingHistory.reserve(maximumTurnLimit);
 
 		if (!startingMoves.empty()) {
 			for (const Skills::SkillName& move : startingMoves) {
