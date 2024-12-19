@@ -281,14 +281,27 @@ private:
 		if (player->GetBuffDuration(skillName) > 0) {			// potentially bad logic
 			buffSkip = true;
 		}
-		if (skillName == SkillName::FINALAPPRAISAL) {
+		switch (skillName) {
+		case SkillName::WASTENOTI:
+		case SkillName::WASTENOTII:
+			break;
+		case SkillName::VENERATION:
+			break;
+		case SkillName::FINALAPPRAISAL:
 			if (player->GetCurrentTurn() + 6 >= maxTurnLimit) {
 				buffSkip = true;
 			}
 			else if (!topQuality || playerItem->IsItemMaxQuality()) {
 				buffSkip = true;
 			}
+			break;
+		case SkillName::MANIPULATION:
+			break;
+		default:
+			std::cout << "A serious error has occured for " << Skills::GetSkillName(skillName) << '\n';
+			break;
 		}
+		
 		//std::cout << "Too high quality\n";
 		return buffSkip;
 	}
