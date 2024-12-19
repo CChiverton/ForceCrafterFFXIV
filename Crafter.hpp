@@ -68,7 +68,37 @@ public:
 		CraftingHistory& previousStep = craftingRecord;		// stack allocation for faster loading
 		bool lastMove = ((previousStep.currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
 		for (const auto& move : fullSkillList) {
-			if (SynthesisCheck(move)) {
+			switch (craftLogicType.at(move)) {
+			case SkillType::SYNTHESIS:
+				if (lastMove) {
+					if (!SynthesisCheck(move))	continue;
+				}
+				break;
+			case SkillType::TOUCH:
+				if (lastMove)	continue;
+				if (QualityCheck(move)) {
+					continue;
+				}
+				break;
+			case SkillType::BUFF:
+				if (lastMove)	continue;
+				if (BuffCheck(move)) {
+					continue;
+				}
+				break;
+			case SkillType::REPAIR:
+				if (lastMove)	continue;
+				
+				break;
+			case SkillType::OTHER:
+				
+				break;
+			default:
+				std::cout << "A serious error has occured\n";
+			}
+			
+				
+			/*if (SynthesisCheck(move)) {
 
 			}
 			else if (lastMove) {
@@ -83,7 +113,7 @@ public:
 				if (BuffCheck(move)) {
 					continue;
 				}
-			}
+			}*/
 
 			if (Craft(move)) {
 
@@ -184,14 +214,14 @@ private:
 		LoadLastCraftingRecord(last);
 	}
 
-	bool IsSynthesisSkill(SkillName skillName) {
+	/*bool IsSynthesisSkill(SkillName skillName) {
 		for (const auto& synth : finalMoveList) {
 			if (skillName == synth) {
 				return true;
 			}
 		}
 		return false;
-	}
+	}*/
 
 	bool SynthesisCheck(SkillName skillName) {
 		for (const auto& synth : finalMoveList) {
@@ -202,44 +232,49 @@ private:
 		return false;
 	}
 
-	bool IsQualitySkill(SkillName skillName) {
+	/*bool IsQualitySkill(SkillName skillName) {
 		for (const auto& touch : qualityList) {
 			if (skillName == touch) {
 				return true;
 			}
 		}
 		return false;
-	}
+	}*/
 
 	bool QualityCheck(SkillName skillName) {
 		bool maxQuality = playerItem->IsItemMaxQuality();
-		bool touchSkill{ false };
-
-		if (skillName == SkillName::BYREGOTSBLESSING && forceGreaterByregot) {
-			if (player->GetBuffDuration(SkillName::GREATSTRIDES) == 0) {
-				return true;
-			}
-		}
-
-		if (maxQuality || !topQuality) {
+		if (maxQuality || !topQuality) {		// no need for touch skills
 			//std::cout << "Skipping Quality\n";
-			touchSkill = IsQualitySkill(skillName);
-			if (maxQuality) {
-				//std::cout << "Maximum quality reached!\n";
+			return true;
+		}
+		bool skipTouchSkill{ false };
+		switch (skillName) {
+		case SkillName::GREATSTRIDES:
+			skipTouchSkill = player->GetBuffDuration(skillName) != 0;
+			break;
+		case SkillName::INNOVATION:
+			skipTouchSkill = player->GetBuffDuration(skillName) > 1;		// fringe cases you want to recast innovation with 1 turn left
+			break;
+		case SkillName::BYREGOTSBLESSING:
+			if (forceGreaterByregot) {
+				skipTouchSkill = player->GetBuffDuration(SkillName::GREATSTRIDES) == 0;
 			}
+			break;
+		default:
+			break;
 		}
 		//std::cout << "Too high quality\n";
-		return touchSkill;
+		return skipTouchSkill;
 	}
 
-	bool IsBuffSkill(SkillName skillName) {
+	/*bool IsBuffSkill(SkillName skillName) {
 		for (const auto& buff : buffList) {
 			if (skillName == buff) {
 				return true;
 			}
 		}
 		return false;
-	}
+	}*/
 
 	bool BuffCheck(SkillName skillName) {
 		bool buffSkip{ false };
@@ -258,12 +293,30 @@ private:
 		return buffSkip;
 	}
 
-	const std::vector<SkillName> synthesisSkills = {
-		SkillName::BASICSYNTHESIS,
-		SkillName::CAREFULSYNTHESIS,
-		SkillName::PRUDENTSYNTHESIS,
-		SkillName::GROUNDWORK,
-		SkillName::MUSCLEMEMORY
+	const std::unordered_map<SkillName, SkillType> craftLogicType = {
+		{ SkillName::BASICSYNTHESIS,	SkillType::SYNTHESIS},
+		{ SkillName::CAREFULSYNTHESIS,	SkillType::SYNTHESIS},
+		{ SkillName::PRUDENTSYNTHESIS,	SkillType::SYNTHESIS},
+		{ SkillName::GROUNDWORK,		SkillType::SYNTHESIS},
+		{ SkillName::MUSCLEMEMORY,		SkillType::SYNTHESIS},
+		{ SkillName::BASICTOUCH,		SkillType::TOUCH},
+		{ SkillName::STANDARDTOUCH,		SkillType::TOUCH},
+		{ SkillName::ADVANCEDTOUCH,		SkillType::TOUCH},
+		{ SkillName::BYREGOTSBLESSING,	SkillType::TOUCH},
+		{ SkillName::PRUDENTTOUCH,		SkillType::TOUCH},
+		{ SkillName::PREPARATORYTOUCH,	SkillType::TOUCH},
+		{ SkillName::DELICATESYNTHESIS,	SkillType::TOUCH},
+		{ SkillName::REFLECT,			SkillType::TOUCH},
+		{ SkillName::REFINEDTOUCH,		SkillType::TOUCH},
+		{ SkillName::GREATSTRIDES,		SkillType::TOUCH},
+		{ SkillName::INNOVATION,		SkillType::TOUCH},
+		{ SkillName::WASTENOTI,			SkillType::BUFF},
+		{ SkillName::WASTENOTII,		SkillType::BUFF},
+		{ SkillName::VENERATION,		SkillType::BUFF},
+		{ SkillName::FINALAPPRAISAL,	SkillType::BUFF},
+		{ SkillName::MANIPULATION,		SkillType::BUFF},
+		{ SkillName::MASTERSMEND,		SkillType::OTHER},
+		{ SkillName::IMMACULATEMEND,	SkillType::OTHER}
 	};
 
 	const SkillName fullSkillList[23] = {
@@ -305,33 +358,41 @@ private:
 		SkillName::GROUNDWORK,
 	};
 
-	// All skills focused on touch regardless of category
-	const SkillName qualityList[11] = {
-		SkillName::BASICTOUCH,
-		SkillName::STANDARDTOUCH,
-		SkillName::ADVANCEDTOUCH,
-		SkillName::BYREGOTSBLESSING,
-		SkillName::PRUDENTTOUCH,
-		SkillName::PREPARATORYTOUCH,
-		SkillName::DELICATESYNTHESIS,
-		SkillName::REFLECT,
-		SkillName::REFINEDTOUCH,
-		SkillName::GREATSTRIDES,
-		SkillName::INNOVATION
-	};
+	/*const std::vector<SkillName> synthesisSkills = {
+		SkillName::BASICSYNTHESIS,
+		SkillName::CAREFULSYNTHESIS,
+		SkillName::PRUDENTSYNTHESIS,
+		SkillName::GROUNDWORK,
+		SkillName::MUSCLEMEMORY
+	};*/
 
-	const SkillName buffList[5] = {
-		SkillName::WASTENOTI,
-		SkillName::WASTENOTII,
-		SkillName::VENERATION,
-		SkillName::FINALAPPRAISAL,
-		SkillName::MANIPULATION,
-		
-	};
+	//// All skills focused on touch regardless of category
+	//const SkillName qualityList[11] = {
+	//	SkillName::BASICTOUCH,
+	//	SkillName::STANDARDTOUCH,
+	//	SkillName::ADVANCEDTOUCH,
+	//	SkillName::BYREGOTSBLESSING,
+	//	SkillName::PRUDENTTOUCH,
+	//	SkillName::PREPARATORYTOUCH,
+	//	SkillName::DELICATESYNTHESIS,
+	//	SkillName::REFLECT,
+	//	SkillName::REFINEDTOUCH,
+	//	SkillName::GREATSTRIDES,
+	//	SkillName::INNOVATION
+	//};
 
-	const SkillName otherList[2] = {
-		SkillName::MASTERSMEND,
-		SkillName::IMMACULATEMEND
-	};
+	//const SkillName buffList[5] = {
+	//	SkillName::WASTENOTI,
+	//	SkillName::WASTENOTII,
+	//	SkillName::VENERATION,
+	//	SkillName::FINALAPPRAISAL,
+	//	SkillName::MANIPULATION,
+	//	
+	//};
+
+	//const SkillName otherList[2] = {
+	//	SkillName::MASTERSMEND,
+	//	SkillName::IMMACULATEMEND
+	//};
 
 };
