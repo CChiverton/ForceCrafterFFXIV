@@ -59,34 +59,64 @@ public:
 
 	}
 
+	void UpdateValidBuffCheck(int& appropriateActionTurn, bool& actionUsedThisTurn) {
+		appropriateActionTurn <<= 1;
+		appropriateActionTurn |= actionUsedThisTurn;
+	}
+
+	bool ActionUsedDuringBuff(int& timeLeft, int& actionHistory, int turns) {
+		return (timeLeft == 1 && !(actionHistory & turns));
+	}
+
 	void ForceCraft() {
 		CraftingHistory& previousStep = craftingRecord;		// stack allocation for faster loading
 		bool lastMove = ((previousStep.currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
+		int innovationTimer = player->GetBuffDuration(SkillName::INNOVATION);
+		int venerationTimer = player->GetBuffDuration(SkillName::VENERATION);
+		int finalAppraisalTimer = player->GetBuffDuration(SkillName::FINALAPPRAISAL);
 		for (const auto& move : fullSkillList) {
+			/* BUFF TURN TRACKERS */
+			touchActionUsed = false;
+
+
 			switch (craftLogicType.at(move)) {
 			case SkillType::SYNTHESIS:
 				if (lastMove) {
 					if (!SynthesisCheck(move))	continue;
 				}
+				if (ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111)) continue;
+				synthActionUsed = true;
 				break;
 			case SkillType::TOUCH:
 				if (lastMove)	continue;
+				if (move == SkillName::DELICATESYNTHESIS) {
+					synthActionUsed = true;
+				}
+				if (ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111) && !synthActionUsed) continue;
+				if (ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111) && !synthActionUsed) continue;
 				if (QualityCheck(move)) {
 					continue;
 				}
 				break;
 			case SkillType::BUFF:
 				if (lastMove)	continue;
+				if (ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111)) continue;
+				if (ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111)) continue;
+				if (ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111)) continue;
 				if (BuffCheck(move)) {
 					continue;
 				}
 				break;
 			case SkillType::REPAIR:
 				if (lastMove)	continue;
-				
+				if (ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111)) continue;
+				if (ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111)) continue;
+				if (ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111)) continue;
 				break;
 			case SkillType::OTHER:
-				
+				if (ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111)) continue;
+				if (ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111)) continue;
+				if (ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111)) continue;
 				break;
 			default:
 				std::cout << "A serious error has occured\n";
@@ -112,7 +142,6 @@ public:
 
 			if (Craft(move)) {
 
-
 				//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
 
 				if (playerItem->IsItemCrafted()) {
@@ -128,7 +157,11 @@ public:
 					//std::cout << "Run out of moves\n";
 					LoadLastCraftingRecord(previousStep);
 					continue;
-				}  else if (!playerItem->IsItemBroken()) {
+				}
+				else if (finalAppraisalTimer == 1 && (playerItem->GetMaxProgress() - playerItem->GetCurrentProgress()) != 1) {		// not appraised
+					LoadLastCraftingRecord(previousStep);
+					continue;
+				} else if (!playerItem->IsItemBroken()) {
 					SaveCraftingHistory(move);
 					ForceCraft();
 				}
@@ -170,7 +203,8 @@ private:
 	const bool forceGreaterByregot;
 	const int maxTurnLimit;
 	Item* playerItem;
-
+	bool touchActionUsed{ false }, synthActionUsed{ false };
+	int touchActionsUsedSuccessfully = 0b0, synthActionsUsedSuccessfully = 0b0;
 
 
 	bool Craft(Skills::SkillName skillName) {
@@ -178,6 +212,8 @@ private:
 			//std::cout << "Invalid move " << Skills::GetSkillName(skillName) << '\n';
 			return false;
 		}
+		UpdateValidBuffCheck(touchActionsUsedSuccessfully, touchActionUsed);
+		UpdateValidBuffCheck(synthActionsUsedSuccessfully, synthActionUsed);
 		//std::cout << Skills::GetSkillName(skillName) << '\n';
 
 		return true;
@@ -207,6 +243,8 @@ private:
 		DeleteCraftingHistory();
 		CraftingHistory& last = craftingHistory.back();
 		LoadLastCraftingRecord(last);
+		touchActionsUsedSuccessfully >>= 1;
+		synthActionsUsedSuccessfully >>= 1;
 	}
 
 	/*bool IsSynthesisSkill(SkillName skillName) {
@@ -254,8 +292,10 @@ private:
 			if (forceGreaterByregot) {
 				skipTouchSkill = player->GetBuffDuration(SkillName::GREATSTRIDES) == 0;
 			}
+			touchActionUsed = true;
 			break;
-		default:
+		default:			// Should be touch action skills
+			touchActionUsed = true;
 			break;
 		}
 		//std::cout << "Too high quality\n";

@@ -9,7 +9,7 @@
 
 int main()
 {
-    std::vector<SkillName> skills = { SkillName::MUSCLEMEMORY, SkillName::MANIPULATION, SkillName::WASTENOTII, SkillName::DELICATESYNTHESIS };
+    std::vector<SkillName> skills = { SkillName::MUSCLEMEMORY, SkillName::MANIPULATION, SkillName::WASTENOTII };
     Crafter crafter(skills, 630, 3000, 11000, 40, true, true, 15);
     crafter.ForceCraft();
 
