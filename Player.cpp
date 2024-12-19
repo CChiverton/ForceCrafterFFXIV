@@ -24,7 +24,6 @@ bool Player::CastSkill(Skills::SkillName skillName) {
 	Skill skill = SkillList.at(skillName);
 	if (skill.costCP > playerState.currentCP) {
 		//std::cout << "Not enough CP\n";
-		successfulCast = false;
 		return false;
 	}
 	successfulCast = true;
@@ -78,7 +77,7 @@ bool Player::CastSkill(Skills::SkillName skillName) {
 }
 
 int Player::GetSkillTime(SkillName skillName) {
-	return SkillList[skillName].castTime;
+	return SkillList.at(skillName).castTime;
 }
 
 

@@ -68,15 +68,11 @@ public:
 		CraftingHistory& previousStep = craftingRecord;		// stack allocation for faster loading
 		bool lastMove = ((previousStep.currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
 		for (const auto& move : fullSkillList) {
-			if (lastMove) {		
-				if (!SynthesisCheck(move)) {
-					//std::cout << "Only checking synth moves\n";
-					continue;
-				}
-			}
-
 			if (SynthesisCheck(move)) {
 
+			}
+			else if (lastMove) {
+				continue;
 			}
 			else if (IsQualitySkill(move)) {
 				if (QualityCheck(move)) {

@@ -98,7 +98,7 @@ namespace Skills {
 		OTHER
 	};
 
-	struct Skill {
+	const struct Skill {
 		SkillType type;
 		int costCP;
 		int costDurability;

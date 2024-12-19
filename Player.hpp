@@ -101,7 +101,7 @@ private:
 	void TouchBuffs(int& skillEfficiency);
 	void DecrementBuffs();
 
-	std::unordered_map<Skills::SkillName, Skill> SkillList =	/* CP	Durability	Efficiency	Time*/
+	const std::unordered_map<Skills::SkillName, Skill> SkillList =/*CP	Durability	Efficiency	Time*/
 	{ {	SkillName::BASICSYNTHESIS,		{ SkillType::SYNTHESIS,		0,		10,		120,		3}},
 	{	SkillName::CAREFULSYNTHESIS,	{ SkillType::SYNTHESIS,		7,		10,		180,		3 }},
 	{	SkillName::PRUDENTSYNTHESIS,	{ SkillType::SYNTHESIS,		18,		5,		180,		3 }},
