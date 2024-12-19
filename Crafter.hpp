@@ -66,9 +66,9 @@ public:
 
 	void ForceCraft() {
 		CraftingHistory& previousStep = craftingRecord;		// stack allocation for faster loading
-		bool lastMove = ((previousStep.currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) ? true : false;
+		bool lastMove = ((previousStep.currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
 		for (const auto& move : fullSkillList) {
-			if (lastMove) {		// Only one move left to match the best time
+			if (lastMove) {		
 				if (!SynthesisCheck(move)) {
 					//std::cout << "Only checking synth moves\n";
 					continue;
@@ -227,8 +227,13 @@ private:
 		if (player->GetBuffDuration(skillName) > 0) {			// potentially bad logic
 			buffSkip = true;
 		}
-		if (!topQuality || playerItem->IsItemMaxQuality()) {
-			if (skillName == SkillName::FINALAPPRAISAL)		buffSkip = true;;
+		if (skillName == SkillName::FINALAPPRAISAL) {
+			if (player->GetCurrentTurn() + 6 >= maxTurnLimit) {
+				buffSkip = true;
+			}
+			else if (!topQuality || playerItem->IsItemMaxQuality()) {
+				buffSkip = true;
+			}
 		}
 		//std::cout << "Too high quality\n";
 		return buffSkip;
