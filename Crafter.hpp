@@ -70,10 +70,17 @@ public:
 
 	void ForceCraft() {
 		CraftingHistory& previousStep = craftingRecord;		// stack allocation for faster loading
-		bool lastMove = ((previousStep.currentTime + 3) == bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
+		bool lastMove = ((previousStep.currentTime + 3) >= bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
+		bool secondToLastMove = ((previousStep.currentTime + 6) >= bestTime || player->GetCurrentTurn() == maxTurnLimit - 2) ? true : false;
 		int innovationTimer = player->GetBuffDuration(SkillName::INNOVATION);
 		int venerationTimer = player->GetBuffDuration(SkillName::VENERATION);
 		int finalAppraisalTimer = player->GetBuffDuration(SkillName::FINALAPPRAISAL);
+		bool isMaxQuality = playerItem->IsItemMaxQuality();
+		int itemDurability = playerItem->GetDurability();
+
+		bool requireTouch = ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111);
+		bool requireSynth = ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111);
+		bool requireAppraisal = ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111);
 		for (const auto& move : fullSkillList) {
 			/* BUFF TURN TRACKERS */
 			touchActionUsed = false;
@@ -84,39 +91,43 @@ public:
 				if (lastMove) {
 					if (!SynthesisCheck(move))	continue;
 				}
-				if (ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111)) continue;
+				if (secondToLastMove && forceMaxQuality && !isMaxQuality)	continue;
+				if (requireTouch) continue;
 				synthActionUsed = true;
 				break;
 			case SkillType::TOUCH:
+				if (!forceMaxQuality)	continue;
+				if (isMaxQuality)	continue;
 				if (lastMove)	continue;
 				if (move == SkillName::DELICATESYNTHESIS) {
 					synthActionUsed = true;
 				}
-				if (ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111) && !synthActionUsed) continue;
-				if (ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111) && !synthActionUsed) continue;
+				if (requireSynth && !synthActionUsed) continue;
+				if (requireAppraisal && !synthActionUsed) continue;
 				if (QualityCheck(move)) {
 					continue;
 				}
 				break;
 			case SkillType::BUFF:
 				if (lastMove)	continue;
-				if (ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111)) continue;
-				if (ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111)) continue;
-				if (ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111)) continue;
+				if (secondToLastMove && forceMaxQuality && !isMaxQuality)	continue;
+				if (requireTouch) continue;
+				if (requireSynth) continue;
+				if (requireAppraisal) continue;
 				if (BuffCheck(move)) {
 					continue;
 				}
 				break;
 			case SkillType::REPAIR:
 				if (lastMove)	continue;
-				if (ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111)) continue;
-				if (ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111)) continue;
-				if (ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111)) continue;
+				if (secondToLastMove && itemDurability >= 20)	continue;
+				if (requireTouch) continue;
+				if (requireAppraisal) continue;
 				break;
 			case SkillType::OTHER:
-				if (ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111)) continue;
-				if (ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111)) continue;
-				if (ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111)) continue;
+				if (requireTouch) continue;
+				if (requireSynth) continue;
+				if (requireAppraisal) continue;
 				break;
 			default:
 				std::cout << "A serious error has occured\n";
@@ -275,11 +286,6 @@ private:
 	}*/
 
 	bool QualityCheck(SkillName skillName) {
-		bool maxQuality = playerItem->IsItemMaxQuality();
-		if (maxQuality || !forceMaxQuality) {		// no need for touch skills
-			//std::cout << "Skipping Quality\n";
-			return true;
-		}
 		bool skipTouchSkill{ false };
 		switch (skillName) {
 		case SkillName::GREATSTRIDES:
@@ -363,8 +369,8 @@ private:
 		{ SkillName::VENERATION,		SkillType::BUFF},
 		{ SkillName::FINALAPPRAISAL,	SkillType::BUFF},
 		{ SkillName::MANIPULATION,		SkillType::BUFF},
-		{ SkillName::MASTERSMEND,		SkillType::OTHER},
-		{ SkillName::IMMACULATEMEND,	SkillType::OTHER}
+		{ SkillName::MASTERSMEND,		SkillType::REPAIR},
+		{ SkillName::IMMACULATEMEND,	SkillType::REPAIR}
 	};
 
 	const SkillName fullSkillList[23] = {
