@@ -9,14 +9,9 @@
 
 class Crafter {
 public:
-	Crafter(std::vector<Skills::SkillName> startingMoves, int maxCP, int maxProgress, int maxQuality, int maxDurability, bool topQuality, bool greaterByregot, int maximumTurnLimit) {
+	Crafter(std::vector<Skills::SkillName> startingMoves, int maxCP, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit) 
+	: maxProgress(maxProgress), maxQuality(maxQuality), maxDurability(maxDurability), forceMaxQuality(forceQuality), forceGreaterByregot(greaterByregot), maxTurnLimit(maximumTurnLimit) {
 		player = new Player(630);
-		this->maxProgress = maxProgress;
-		this->maxQuality = maxQuality;
-		this->maxDurability = maxDurability;
-		this->topQuality = topQuality;
-		forceGreaterByregot = greaterByregot;
-		this->maxTurnLimit = maximumTurnLimit;
 		player->AddItem(maxProgress, maxQuality, maxDurability);
 		playerItem = player->craftableItem;
 
@@ -121,7 +116,7 @@ public:
 				//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
 
 				if (playerItem->IsItemCrafted()) {
-					if (topQuality && !playerItem->IsItemMaxQuality()) {
+					if (forceMaxQuality && !playerItem->IsItemMaxQuality()) {
 						//std::cout << "Not maximum quality when needed\n";
 						LoadLastCraftingRecord(previousStep);
 						continue;
@@ -166,14 +161,14 @@ public:
 
 private:
 	Player* player;
-	int maxProgress{}, maxQuality{}, maxDurability{};
+	const int maxProgress{}, maxQuality{}, maxDurability{};
 	std::vector<CraftingHistory> craftingHistory{};
 	//std::vector<Skills::SkillName> currentCraft{};
 	int bestTime{ 99 };
 	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{};
-	bool topQuality{ false };
-	bool forceGreaterByregot{ false };
-	int maxTurnLimit;
+	const bool forceMaxQuality;
+	const bool forceGreaterByregot;
+	const int maxTurnLimit;
 	Item* playerItem;
 
 
@@ -243,7 +238,7 @@ private:
 
 	bool QualityCheck(SkillName skillName) {
 		bool maxQuality = playerItem->IsItemMaxQuality();
-		if (maxQuality || !topQuality) {		// no need for touch skills
+		if (maxQuality || !forceMaxQuality) {		// no need for touch skills
 			//std::cout << "Skipping Quality\n";
 			return true;
 		}
@@ -291,7 +286,7 @@ private:
 			if (player->GetCurrentTurn() + 6 >= maxTurnLimit) {
 				buffSkip = true;
 			}
-			else if (!topQuality || playerItem->IsItemMaxQuality()) {
+			else if (!forceMaxQuality || playerItem->IsItemMaxQuality()) {
 				buffSkip = true;
 			}
 			break;
