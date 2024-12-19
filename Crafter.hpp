@@ -1,34 +1,17 @@
 #pragma once
 
+
 #include "Item.hpp"
 #include "Player.hpp"
 #include "Skills.hpp"
+#include "ActionTracker.hpp"
 #include <map>
 #include <vector>
 
 
 class Crafter {
 public:
-	Crafter(std::vector<Skills::SkillName> startingMoves, int maxCP, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit) 
-	: maxProgress(maxProgress), maxQuality(maxQuality), maxDurability(maxDurability), forceMaxQuality(forceQuality), forceGreaterByregot(greaterByregot), maxTurnLimit(maximumTurnLimit) {
-		player = new Player(630);
-		player->AddItem(maxProgress, maxQuality, maxDurability);
-		playerItem = player->craftableItem;
-
-		craftingHistory.reserve(maximumTurnLimit);
-
-		if (!startingMoves.empty()) {
-			for (const Skills::SkillName& move : startingMoves) {
-				if (!Craft(move)) {
-					std::cout << "Invalid. The starting moves break/finish the item.\n";
-					return;
-				}
-				SaveCraftingHistory(move);
-				//std::cout << "Player turn is " << player->GetCurrentTurn() << '\n';
-			}
-		}
-		//std::cout << "-----------------------------------------\n";
-	}
+	Crafter(std::vector<Skills::SkillName> startingMoves, int maxCP, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit);
 
 	~Crafter() {
 		if (successfulCrafts.empty()) {
@@ -68,23 +51,60 @@ public:
 		return (timeLeft == 1 && !(actionHistory & turns));
 	}
 
+	// For example, BasicSynthesis->CarefulSynthesis and CarefulSynthesis->BasicSynthesis are the same if both buffed or unbuffed
+	//@TODO update to include muscle memory buff
+		// Only cancel out one order pair, the other will be tried out
+	bool SimilarTrees(SkillName skillName, bool& basic, bool& careful, bool& prudent, bool& ground, int& history, int& wasteNotHistory) {
+		if (history != 0b11 && history != 0b00)	return false;	// only proceed if the veneration history is actually the same
+		if (wasteNotHistory != 0b11 && wasteNotHistory != 0b00)	return false;	// only proceed if the veneration history is actually the same
+		
+		switch (skillName) {
+		case SkillName::BASICSYNTHESIS:
+			break;
+		case SkillName::CAREFULSYNTHESIS:
+			if (basic)		return true;
+			break;
+		case SkillName::PRUDENTSYNTHESIS:
+			if (basic || careful)		return true;
+			break;
+		case SkillName::GROUNDWORK:
+			if (basic || careful || prudent)	return true;
+			break;
+		default:
+			break;
+		}
+		return false;
+	}
+
 	void ForceCraft() {
 		CraftingHistory& previousStep = craftingRecord;		// stack allocation for faster loading
 		bool lastMove = ((previousStep.currentTime + 3) >= bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
 		bool secondToLastMove = ((previousStep.currentTime + 6) >= bestTime || player->GetCurrentTurn() == maxTurnLimit - 2) ? true : false;
 		int innovationTimer = player->GetBuffDuration(SkillName::INNOVATION);
+
 		int venerationTimer = player->GetBuffDuration(SkillName::VENERATION);
+		actionTracker->ProgressBuffs(venerationTimer > 0, player->GetBuffDuration(SkillName::WASTENOTI) > 0);
 		int finalAppraisalTimer = player->GetBuffDuration(SkillName::FINALAPPRAISAL);
 		bool isMaxQuality = playerItem->IsItemMaxQuality();
 		int itemDurability = playerItem->GetDurability();
+		
 
 		bool requireTouch = ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111);
 		bool requireSynth = ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111);
 		bool requireAppraisal = ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111);
+
+		bool basic = actionTracker->basicSynthesis & 0b1;
+		bool careful = actionTracker->carefulSynthesis & 0b1;
+		bool prudent = actionTracker->prudentSynthesis & 0b1;
+		bool ground = actionTracker->groundwork & 0b1;
+		int venerationHistory = actionTracker->venerationHistory & 0b11;
+		int wasteNotHistory = actionTracker->wasteNotHistory & 0b11;
+
 		for (const auto& move : fullSkillList) {
+			
 			/* BUFF TURN TRACKERS */
 			touchActionUsed = false;
-
+			
 
 			switch (craftLogicType.at(move)) {
 			case SkillType::SYNTHESIS:
@@ -93,6 +113,7 @@ public:
 				}
 				if (secondToLastMove && forceMaxQuality && !isMaxQuality)	continue;
 				if (requireTouch) continue;
+				if (SimilarTrees(move, basic, careful, prudent, ground, venerationHistory, wasteNotHistory))	continue;
 				synthActionUsed = true;
 				break;
 			case SkillType::TOUCH:
@@ -120,7 +141,7 @@ public:
 				break;
 			case SkillType::REPAIR:
 				if (lastMove)	continue;
-				if (secondToLastMove && itemDurability >= 20)	continue;
+				if (secondToLastMove && (itemDurability >= 20 || (forceMaxQuality && !isMaxQuality)))	continue;
 				if (requireTouch) continue;
 				if (requireAppraisal) continue;
 				break;
@@ -197,6 +218,7 @@ public:
 		craftingRecord.currentTime = player->GetCurrentTime();
 		craftingRecord.skillName = skillName;
 		craftingHistory.emplace_back(craftingRecord);
+		actionTracker->ProgressSynthSkills(skillName);
 	}
 
 	inline void DeleteCraftingHistory() {
@@ -216,6 +238,8 @@ private:
 	Item* playerItem;
 	bool touchActionUsed{ false }, synthActionUsed{ false };
 	int touchActionsUsedSuccessfully = 0b0, synthActionsUsedSuccessfully = 0b0;
+	ActionTracker* actionTracker;
+
 
 
 	bool Craft(Skills::SkillName skillName) {
@@ -256,6 +280,8 @@ private:
 		LoadLastCraftingRecord(last);
 		touchActionsUsedSuccessfully >>= 1;
 		synthActionsUsedSuccessfully >>= 1;
+		actionTracker->BacktrackBuffs();
+		actionTracker->BacktrackSynthSkills();
 	}
 
 	/*bool IsSynthesisSkill(SkillName skillName) {

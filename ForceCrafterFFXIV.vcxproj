@@ -128,10 +128,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Crafter.cpp" />
     <ClCompile Include="ForceCrafterFFXIV.cpp" />
     <ClCompile Include="Player.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ActionTracker.hpp" />
     <ClInclude Include="Crafter.hpp" />
     <ClInclude Include="Item.hpp" />
     <ClInclude Include="Player.hpp" />
