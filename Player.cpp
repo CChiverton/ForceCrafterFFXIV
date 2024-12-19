@@ -32,7 +32,7 @@ bool Player::CastSkill(Skills::SkillName skillName) {
 	int skillCPCost = skill.costCP;
 	int skillDurabilityCost = skill.costDurability;
 	int skillEfficiency = skill.efficiency;
-	if (playerState.buffs[SkillName::WASTENOTI] > 0) {
+	if (playerState.wasteNot > 0) {
 		skillDurabilityCost /= 2;
 	}
 	switch (skill.type) {
@@ -58,11 +58,11 @@ bool Player::CastSkill(Skills::SkillName skillName) {
 	}
 
 	if (successfulCast) {
-		if (playerState.buffs[SkillName::FINALAPPRAISAL] > 0 && craftableItem->IsItemCrafted()) {
+		if (playerState.finalAppraisal > 0 && craftableItem->IsItemCrafted()) {
 			craftableItem->AddProgress(-(craftableItem->GetCurrentProgress() - craftableItem->GetMaxProgress() + 1), 0);
 		}
 
-		if (playerState.buffs[SkillName::MANIPULATION] < 9 && playerState.buffs[SkillName::MANIPULATION] > 0) {
+		if (playerState.manipulation < 9 && playerState.manipulation > 0) {
 			craftableItem->UpdateDurability(5);
 		}
 		//std::cout << craftableItem->GetDurability() << '\n';
@@ -90,14 +90,13 @@ void Player::ResetPlayerStats() {
 	playerState.currentTime = 0;
 	lastSkillUsed = SkillName::NONE;
 	successfulCast = true; // Only turned false on failure. True by default
-	playerState.buffs[SkillName::MUSCLEMEMORY] = 0;
-	playerState.buffs[SkillName::WASTENOTI] = 0;
-	playerState.buffs[SkillName::WASTENOTII] = 0;
-	playerState.buffs[SkillName::GREATSTRIDES] = 0;
-	playerState.buffs[SkillName::INNOVATION] = 0;
-	playerState.buffs[SkillName::VENERATION] = 0;
-	playerState.buffs[SkillName::FINALAPPRAISAL] = 0;
-	playerState.buffs[SkillName::MANIPULATION] = 0;
+	playerState.muscleMemory= 0;
+	playerState.wasteNot = 0;
+	playerState.greatStrides = 0;
+	playerState.innovation = 0;
+	playerState.veneration = 0;
+	playerState.finalAppraisal = 0;
+	playerState.manipulation = 0;
 }
 
 void Player::LoadPlayerStats(PlayerState& state) {
@@ -146,7 +145,7 @@ float Player::InnerQuietEfficiencyMultiplier() {
 void Player::SynthesisSkills(SkillName skillName, int& skillDurabilityCost, int& skillEfficiency) {
 	switch (skillName) {
 	case Skills::SkillName::PRUDENTSYNTHESIS:
-		if (playerState.buffs[SkillName::WASTENOTI] == 0) {
+		if (playerState.wasteNot == 0) {
 			craftableItem->AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
 		}
 		else {
@@ -162,7 +161,7 @@ void Player::SynthesisSkills(SkillName skillName, int& skillDurabilityCost, int&
 	case Skills::SkillName::MUSCLEMEMORY:
 		if (playerState.currentTurn == 0) {
 			craftableItem->AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
-			playerState.buffs[SkillName::MUSCLEMEMORY] = 6;
+			playerState.muscleMemory = 6;
 		}
 		else {
 			successfulCast = false;
@@ -209,7 +208,7 @@ void Player::TouchSkills(SkillName skillName, int& skillDurabilityCost, int& ski
 		}
 		break;
 	case Skills::SkillName::PRUDENTTOUCH:
-		if (playerState.buffs[SkillName::WASTENOTI] == 0) {
+		if (playerState.wasteNot == 0) {
 			craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
 		}
 		else {
@@ -248,22 +247,22 @@ void Player::TouchSkills(SkillName skillName, int& skillDurabilityCost, int& ski
 void Player::BuffSkills(SkillName skillName) {
 	switch (skillName) {
 	case SkillName::WASTENOTI:
-		playerState.buffs[SkillName::WASTENOTI] = 5;
+		playerState.wasteNot = 5;
 		break;
 	case SkillName::WASTENOTII:
-		playerState.buffs[SkillName::WASTENOTI] = 9;
+		playerState.wasteNot = 9;
 		break;
 	case SkillName::GREATSTRIDES:
-		playerState.buffs[SkillName::GREATSTRIDES] = 4;
+		playerState.greatStrides = 4;
 		break;
 	case SkillName::INNOVATION:
-		playerState.buffs[SkillName::INNOVATION] = 5;
+		playerState.innovation = 5;
 		break;
 	case SkillName::VENERATION:
-		playerState.buffs[SkillName::VENERATION] = 5;
+		playerState.veneration = 5;
 		break;
 	case SkillName::FINALAPPRAISAL:
-		playerState.buffs[SkillName::FINALAPPRAISAL] = 6;
+		playerState.finalAppraisal = 6;
 		break;
 	default:
 		break;
@@ -276,7 +275,7 @@ void Player::RepairSkills(SkillName skillName) {
 		craftableItem->UpdateDurability(30);
 		break;
 	case SkillName::MANIPULATION:
-		playerState.buffs[SkillName::MANIPULATION] = 9;
+		playerState.manipulation = 9;
 		break;
 	case SkillName::IMMACULATEMEND:
 		craftableItem->UpdateDurability(1000);
@@ -298,32 +297,32 @@ void Player::OtherSkills(SkillName skillName, int& skillDurabilityCost) {
 
 void Player::SynthesisBuffs(int& skillEfficiency) {
 	int baseSkillEfficiency = skillEfficiency;
-	if (playerState.buffs[SkillName::MUSCLEMEMORY]) {
+	if (playerState.muscleMemory) {
 		skillEfficiency += baseSkillEfficiency;
-		playerState.buffs[SkillName::MUSCLEMEMORY] = 0;
+		playerState.muscleMemory = 0;
 	}
-	if (playerState.buffs[SkillName::VENERATION] > 0) {
+	if (playerState.veneration > 0) {
 		skillEfficiency += baseSkillEfficiency / 2;
 	}
 }
 
 void Player::TouchBuffs(int& skillEfficiency) {
 	int baseSkillEfficiency = skillEfficiency;
-	if (playerState.buffs[SkillName::INNOVATION] > 0) {
+	if (playerState.innovation > 0) {
 		skillEfficiency += baseSkillEfficiency / 2;
 	}
-	if (playerState.buffs[SkillName::GREATSTRIDES] > 0) {
+	if (playerState.greatStrides > 0) {
 		skillEfficiency += baseSkillEfficiency;
-		playerState.buffs[SkillName::GREATSTRIDES] = 0;
+		playerState.greatStrides = 0;
 	}
 }
 
 void Player::DecrementBuffs() {
-	if (playerState.buffs[SkillName::MUSCLEMEMORY] > 0)	playerState.buffs[SkillName::MUSCLEMEMORY]--;
-	if (playerState.buffs[SkillName::WASTENOTI] > 0)		playerState.buffs[SkillName::WASTENOTI]--;
-	if (playerState.buffs[SkillName::GREATSTRIDES] > 0)	playerState.buffs[SkillName::GREATSTRIDES]--;
-	if (playerState.buffs[SkillName::INNOVATION] > 0)		playerState.buffs[SkillName::INNOVATION]--;
-	if (playerState.buffs[SkillName::VENERATION] > 0)		playerState.buffs[SkillName::VENERATION]--;
-	if (playerState.buffs[SkillName::FINALAPPRAISAL] > 0)	playerState.buffs[SkillName::FINALAPPRAISAL]--;
-	if (playerState.buffs[SkillName::MANIPULATION] > 0)	playerState.buffs[SkillName::MANIPULATION]--;
+	if (playerState.muscleMemory > 0)	playerState.muscleMemory--;
+	if (playerState.wasteNot > 0)		playerState.wasteNot--;
+	if (playerState.greatStrides > 0)	playerState.greatStrides--;
+	if (playerState.innovation > 0)		playerState.innovation--;
+	if (playerState.veneration > 0)		playerState.veneration--;
+	if (playerState.finalAppraisal > 0)	playerState.finalAppraisal--;
+	if (playerState.manipulation > 0)	playerState.manipulation--;
 }

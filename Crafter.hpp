@@ -75,11 +75,18 @@ public:
 				}
 			}
 
-			if (QualityCheck(move)) {
-				continue;
+			if (SynthesisCheck(move)) {
+
 			}
-			else if (BuffCheck(move)) {
-				continue;
+			else if (IsQualitySkill(move)) {
+				if (QualityCheck(move)) {
+					continue;
+				}
+			}
+			else if (IsBuffSkill(move)) {
+				if (BuffCheck(move)) {
+					continue;
+				}
 			}
 
 			if (Craft(move)) {
@@ -176,20 +183,32 @@ private:
 	}
 
 	void ContinueCraft() {
-		/*std::cout << "Previous item stats were\n";
-		player->craftableItem->OutputStats();*/
-		/*if (player->GetBuffDuration(SkillName::GREATSTRIDES) > 0)
-		std::cout << "Greater strides buff before is " << player->GetBuffDuration(SkillName::GREATSTRIDES) << '\n';*/
 		DeleteCraftingHistory();
 		CraftingHistory& last = craftingHistory.back();
 		LoadLastCraftingRecord(last);
-		/*if (player->GetBuffDuration(SkillName::GREATSTRIDES) > 0)
-		std::cout << "Greater strides buff after is " << player->GetBuffDuration(SkillName::GREATSTRIDES) << '\n';*/
+	}
+
+	bool IsSynthesisSkill(SkillName skillName) {
+		for (const auto& synth : finalMoveList) {
+			if (skillName == synth) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	bool SynthesisCheck(SkillName skillName) {
 		for (const auto& synth : finalMoveList) {
 			if (skillName == synth) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool IsQualitySkill(SkillName skillName) {
+		for (const auto& touch : qualityList) {
+			if (skillName == touch) {
 				return true;
 			}
 		}
@@ -208,18 +227,22 @@ private:
 
 		if (maxQuality || !topQuality) {
 			//std::cout << "Skipping Quality\n";
-			for (const auto& touch : qualityList) {
-				if (skillName == touch) {
-					touchSkill = true;
-					break;
-				}
-			}
+			touchSkill = IsQualitySkill(skillName);
 			if (maxQuality) {
 				//std::cout << "Maximum quality reached!\n";
 			}
 		}
 		//std::cout << "Too high quality\n";
 		return touchSkill;
+	}
+
+	bool IsBuffSkill(SkillName skillName) {
+		for (const auto& buff : buffList) {
+			if (skillName == buff) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	bool BuffCheck(SkillName skillName) {
@@ -287,26 +310,31 @@ private:
 	};
 
 	// All skills focused on touch regardless of category
-	const SkillName qualityList[10] = {
+	const SkillName qualityList[11] = {
 		SkillName::BASICTOUCH,
 		SkillName::STANDARDTOUCH,
 		SkillName::ADVANCEDTOUCH,
 		SkillName::BYREGOTSBLESSING,
 		SkillName::PRUDENTTOUCH,
 		SkillName::PREPARATORYTOUCH,
+		SkillName::DELICATESYNTHESIS,
 		SkillName::REFLECT,
 		SkillName::REFINEDTOUCH,
 		SkillName::GREATSTRIDES,
 		SkillName::INNOVATION
 	};
 
-	const SkillName buffList[7] = {
+	const SkillName buffList[5] = {
 		SkillName::WASTENOTI,
 		SkillName::WASTENOTII,
 		SkillName::VENERATION,
 		SkillName::FINALAPPRAISAL,
-		SkillName::MASTERSMEND,
 		SkillName::MANIPULATION,
+		
+	};
+
+	const SkillName otherList[2] = {
+		SkillName::MASTERSMEND,
 		SkillName::IMMACULATEMEND
 	};
 

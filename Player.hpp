@@ -28,7 +28,29 @@ public:
 	Item* craftableItem = nullptr;
 
 	int GetBuffDuration(SkillName skillName) {
-		return playerState.buffs[skillName];
+		switch (skillName) {
+		case SkillName::MUSCLEMEMORY:
+			return playerState.muscleMemory;
+		case SkillName::WASTENOTI:
+		case SkillName::WASTENOTII:
+			return playerState.wasteNot;
+		case SkillName::GREATSTRIDES:
+			return playerState.greatStrides;
+		case SkillName::INNOVATION:
+			return playerState.innovation;
+		case SkillName::VENERATION:
+			return playerState.veneration;
+		case SkillName::FINALAPPRAISAL:
+			return playerState.finalAppraisal;
+		case SkillName::MANIPULATION:
+			return playerState.manipulation;
+		default:
+			std::cout << "This is not a buff\n";
+			std::cout << Skills::GetSkillName(skillName) << '\n';
+			break;
+		}
+	
+		return 0;
 	}
 
 	struct PlayerState {
@@ -36,7 +58,13 @@ public:
 		int currentTurn{ 0 };
 		int currentTime{ 0 };
 		int innerQuiet{ 0 };
-		std::map<SkillName, int> buffs{};
+		int muscleMemory = 0;
+		int wasteNot = 0;
+		int greatStrides = 0;
+		int innovation = 0;
+		int veneration= 0;
+		int finalAppraisal = 0;
+		int manipulation = 0;
 	}playerState;
 
 	void LoadPlayerStats(PlayerState&);
