@@ -88,7 +88,6 @@ void Crafter::ForceCraft() {
 	bool isMaxQuality = playerItem->IsItemMaxQuality();
 	int itemDurability = playerItem->GetDurability();
 
-
 	bool requireTouch = ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111);
 	bool requireSynth = ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111);
 	bool requireAppraisal = ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111);
@@ -96,6 +95,7 @@ void Crafter::ForceCraft() {
 	bool skip = lastMove || requireSynth || requireAppraisal;
 	bool skipForTouch = secondToLastMove && forceMaxQuality && !isMaxQuality;
 
+	synthActionUsed = false;
 	if (!(!forceMaxQuality || isMaxQuality || skip)) {
 		QualityCraft(previousStep, finalAppraisalTimer);
 	}
@@ -105,8 +105,9 @@ void Crafter::ForceCraft() {
 	}
 	touchActionUsed = false;
 	OtherCraft(previousStep, finalAppraisalTimer);
+	synthActionUsed = false;
 	touchActionUsed = false;
-	if (!(skip || (secondToLastMove && forceMaxQuality && !isMaxQuality) || requireTouch)) {
+	if (!(skip || skipForTouch || requireTouch)) {
 		BuffCraft(previousStep, finalAppraisalTimer);
 	}
 	if (!(skip || (secondToLastMove && (itemDurability >= 20 || (forceMaxQuality && !isMaxQuality))) || requireTouch)) {
