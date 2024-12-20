@@ -11,7 +11,7 @@
 
 class Crafter {
 public:
-	Crafter(std::vector<Skills::SkillName> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit);
+	Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit);
 
 	~Crafter();
 private:
@@ -24,7 +24,7 @@ private:
 
 public:
 
-	void CraftAndRecord(SkillName move, CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void CraftAndRecord(SkillTest move, CraftingHistory& previousStep, int& finalAppraisalTimer);
 
 	void ForceCraft();
 
@@ -63,7 +63,7 @@ private:
 	inline void SaveCraftingHistory(SkillName skillName);
 	inline void DeleteCraftingHistory();
 
-	bool Craft(Skills::SkillName skillName);
+	bool Craft(Skills::SkillTest skillName);
 	void AddSuccessfulCraft();
 	inline void LoadLastCraftingRecord(CraftingHistory& lastRecord);
 	void ContinueCraft();
@@ -73,48 +73,48 @@ private:
 
 	void PrintCrafts();
 
-	const SkillName finalMoveList[4] = {
-		SkillName::BASICSYNTHESIS,
-		SkillName::CAREFULSYNTHESIS,
-		SkillName::PRUDENTSYNTHESIS,
-		SkillName::GROUNDWORK,
+	const SkillTest finalMoveList[4] = {
+		skillTest[(int)SkillName::BASICSYNTHESIS],
+		skillTest[(int)SkillName::CAREFULSYNTHESIS],
+		skillTest[(int)SkillName::PRUDENTSYNTHESIS],
+		skillTest[(int)SkillName::GROUNDWORK],
 	};
 
-	const SkillName synthesisSkills[5] = {
-		SkillName::MUSCLEMEMORY,
-		SkillName::BASICSYNTHESIS,
-		SkillName::CAREFULSYNTHESIS,
-		SkillName::PRUDENTSYNTHESIS,
-		SkillName::GROUNDWORK		
+	const SkillTest synthesisSkills[5] = {
+		skillTest[(int)SkillName::MUSCLEMEMORY],
+		skillTest[(int)SkillName::BASICSYNTHESIS],
+		skillTest[(int)SkillName::CAREFULSYNTHESIS],
+		skillTest[(int)SkillName::PRUDENTSYNTHESIS],
+		skillTest[(int)SkillName::GROUNDWORK]
 	};
 
 		// All skills focused on touch regardless of category
-	const SkillName qualitySkills[10] = {
-		SkillName::REFLECT,
-		SkillName::BYREGOTSBLESSING,
-		SkillName::PREPARATORYTOUCH,
-		SkillName::BASICTOUCH,
-		SkillName::STANDARDTOUCH,
-		SkillName::ADVANCEDTOUCH,
-		SkillName::PRUDENTTOUCH,
-		SkillName::REFINEDTOUCH,
-		SkillName::GREATSTRIDES,
-		SkillName::INNOVATION,
+	const SkillTest qualitySkills[10] = {
+		skillTest[(int)SkillName::REFLECT],
+		skillTest[(int)SkillName::BYREGOTSBLESSING],
+		skillTest[(int)SkillName::PREPARATORYTOUCH],
+		skillTest[(int)SkillName::BASICTOUCH],
+		skillTest[(int)SkillName::STANDARDTOUCH],
+		skillTest[(int)SkillName::ADVANCEDTOUCH],
+		skillTest[(int)SkillName::PRUDENTTOUCH],
+		skillTest[(int)SkillName::REFINEDTOUCH],
+		skillTest[(int)SkillName::GREATSTRIDES],
+		skillTest[(int)SkillName::INNOVATION],
 	};
 
-	const SkillName buffSkills[5] = {
-		SkillName::WASTENOTI,
-		SkillName::WASTENOTII,
-		SkillName::VENERATION,
-		SkillName::MANIPULATION,
-		SkillName::FINALAPPRAISAL,
+	const SkillTest buffSkills[5] = {
+		skillTest[(int)SkillName::WASTENOTI],
+		skillTest[(int)SkillName::WASTENOTII],
+		skillTest[(int)SkillName::VENERATION],
+		skillTest[(int)SkillName::MANIPULATION],
+		skillTest[(int)SkillName::FINALAPPRAISAL],
 	};
 
-	const SkillName repairSkills[2] = {
-		SkillName::MASTERSMEND,
-		SkillName::IMMACULATEMEND
+	const SkillTest repairSkills[2] = {
+		skillTest[(int)SkillName::MASTERSMEND],
+		skillTest[(int)SkillName::IMMACULATEMEND]
 	};
-	const SkillName otherSkills[1] = {
-		SkillName::DELICATESYNTHESIS
+	const SkillTest otherSkills[1] = {
+		skillTest[(int)SkillName::DELICATESYNTHESIS]
 	};
 };

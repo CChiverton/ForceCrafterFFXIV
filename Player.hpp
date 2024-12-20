@@ -17,7 +17,7 @@ public:
 	void AddItem(int maxProgress, int maxQuality, int maxDurability);
 	void RemoveItem();
 
-	bool CastSkill(Skills::SkillName skillName);
+	bool CastSkill(Skills::SkillTest& skillName);
 
 	int GetSkillTime(Skills::SkillName skillName) const;
 	int GetCurrentTime() const {

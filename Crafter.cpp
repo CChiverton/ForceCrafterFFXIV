@@ -1,6 +1,6 @@
 #include "Crafter.hpp"
 
-Crafter::Crafter(std::vector<Skills::SkillName> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit)
+Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit)
 	: maxProgress(maxProgress), maxQuality(maxQuality), maxDurability(maxDurability), forceMaxQuality(forceQuality), forceGreaterByregot(greaterByregot), maxTurnLimit(maximumTurnLimit) {
 	player = new Player(maxCP, progressPerHundred, qualityPerHundred);
 	player->AddItem(maxProgress, maxQuality, maxDurability);
@@ -11,14 +11,14 @@ Crafter::Crafter(std::vector<Skills::SkillName> startingMoves, int maxCP, float 
 
 	if (!startingMoves.empty()) {
 		std::cout << "For the starting moves:";
-		for (const Skills::SkillName& move : startingMoves) {
+		for (const Skills::SkillTest& move : startingMoves) {
 			if (!Craft(move)) {
 				std::cout << "Invalid. The starting moves break/finish the item.\n";
 				invalid = true;
 				return;
 			}
-			std::cout << " " << Skills::GetSkillName(move) << " |";
-			SaveCraftingHistory(move);
+			std::cout << " " << Skills::GetSkillName(move.skillName) << " |";
+			SaveCraftingHistory(move.skillName);
 			//std::cout << "Player turn is " << player->GetCurrentTurn() << '\n';
 		}
 		std::cout << '\n';
@@ -43,7 +43,7 @@ Crafter::~Crafter() {
 	}
 }
 
-void Crafter::CraftAndRecord(SkillName move, CraftingHistory& previousStep, int& finalAppraisalTimer) {
+void Crafter::CraftAndRecord(SkillTest move, CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	if (Craft(move)) {
 
 		//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
@@ -54,7 +54,7 @@ void Crafter::CraftAndRecord(SkillName move, CraftingHistory& previousStep, int&
 				LoadLastCraftingRecord(previousStep);
 				return;
 			}
-			SaveCraftingHistory(move);
+			SaveCraftingHistory(move.skillName);
 			AddSuccessfulCraft();
 			ContinueCraft();
 		}
@@ -68,7 +68,7 @@ void Crafter::CraftAndRecord(SkillName move, CraftingHistory& previousStep, int&
 			return;
 		}
 		else if (!playerItem->IsItemBroken()) {
-			SaveCraftingHistory(move);
+			SaveCraftingHistory(move.skillName);
 			ForceCraft();
 		}
 		//std::cout << "Finisheng Turn " << player->GetCurrentTurn() + 1 << ": " << Skills::GetSkillName(move) << '\n';
@@ -123,8 +123,8 @@ void Crafter::ForceCraft() {
 
 void Crafter::SynthesisCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	
-	for (const SkillName& move : synthesisSkills) {
-		if (SimilarTrees(move))	continue;
+	for (const SkillTest& move : synthesisSkills) {
+		if (SimilarTrees(move.skillName))	continue;
 		synthActionUsed = true;
 
 		CraftAndRecord(move, previousStep, finalAppraisalTimer);
@@ -132,10 +132,10 @@ void Crafter::SynthesisCraft(CraftingHistory& previousStep, int& finalAppraisalT
 }
 
 void Crafter::QualityCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
-	for (const SkillName& move : qualitySkills) {
+	for (const SkillTest& move : qualitySkills) {
 		touchActionUsed = false;
 		
-		if (QualityCheck(move)) {
+		if (QualityCheck(move.skillName)) {
 			continue;
 		}
 
@@ -144,8 +144,8 @@ void Crafter::QualityCraft(CraftingHistory& previousStep, int& finalAppraisalTim
 }
 
 void Crafter::BuffCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
-	for (const SkillName& move : buffSkills) {
-		if (BuffCheck(move)) {
+	for (const SkillTest& move : buffSkills) {
+		if (BuffCheck(move.skillName)) {
 			continue;
 		}
 
@@ -154,13 +154,13 @@ void Crafter::BuffCraft(CraftingHistory& previousStep, int& finalAppraisalTimer)
 }
 
 void Crafter::RepairCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
-	for (const SkillName& move : repairSkills) {
+	for (const SkillTest& move : repairSkills) {
 		CraftAndRecord(move, previousStep, finalAppraisalTimer);
 	}
 }
 
 void Crafter::OtherCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
-	for (const SkillName& move : otherSkills) {
+	for (const SkillTest& move : otherSkills) {
 		synthActionUsed = true;
 		touchActionUsed = true;
 
@@ -219,7 +219,7 @@ inline void Crafter::DeleteCraftingHistory() {
 }
 
 
-bool Crafter::Craft(Skills::SkillName skillName) {
+bool Crafter::Craft(Skills::SkillTest skillName) {
 	if (!player->CastSkill(skillName)) {
 		//std::cout << "Invalid move " << Skills::GetSkillName(skillName) << '\n';
 		return false;

@@ -59,8 +59,8 @@ void Player::RemoveItem() {
 	craftableItem = nullptr;
 }
 
-bool Player::CastSkill(Skills::SkillName skillName) {
-	Skill skill = SkillList.at(skillName);
+bool Player::CastSkill(Skills::SkillTest& skill) {
+	//Skill skill = SkillList.at(skillName);
 	if (skill.costCP > playerState.currentCP) {
 		//std::cout << "Not enough CP\n";
 		return false;
@@ -76,20 +76,20 @@ bool Player::CastSkill(Skills::SkillName skillName) {
 	switch (skill.type) {
 	case SkillType::SYNTHESIS:
 		//SynthesisBuffs(skillEfficiency);
-		SynthesisSkills(skillName, skillDurabilityCost, skillEfficiency);
+		SynthesisSkills(skill.skillName, skillDurabilityCost, skillEfficiency);
 		break;
 	case SkillType::TOUCH:
 		//TouchBuffs(skillEfficiency);
-		TouchSkills(skillName, skillDurabilityCost, skillEfficiency, skillCPCost);
+		TouchSkills(skill.skillName, skillDurabilityCost, skillEfficiency, skillCPCost);
 		break;
 	case SkillType::BUFF:
-		BuffSkills(skillName);
+		BuffSkills(skill.skillName);
 		break;
 	case SkillType::REPAIR:
-		RepairSkills(skillName);
+		RepairSkills(skill.skillName);
 		break;
 	case SkillType::OTHER:
-		OtherSkills(skillName, skillDurabilityCost);
+		OtherSkills(skill.skillName, skillDurabilityCost);
 		break;
 	default:
 		std::cout << "A serious error has occured\n";
@@ -104,10 +104,10 @@ bool Player::CastSkill(Skills::SkillName skillName) {
 			craftableItem->UpdateDurability(5);
 		}
 		//std::cout << craftableItem->GetDurability() << '\n';
-		lastSkillUsed = skillName;
+		lastSkillUsed = skill.skillName;
 		playerState.currentCP -= skillCPCost;
 		++playerState.currentTurn;
-		playerState.currentTime += GetSkillTime(skillName);
+		playerState.currentTime += skill.castTime;
 		DecrementBuffs();
 	}
 
