@@ -5,7 +5,6 @@
 #include "Crafter.hpp"
 #include "Player.hpp"
 #include "Skills.hpp"
-//#include "SynthesisSkill.hpp"
 
 int main()
 {
