@@ -10,8 +10,48 @@
 int main()
 {
     std::vector<SkillName> skills = { SkillName::MUSCLEMEMORY, SkillName::MANIPULATION, SkillName::WASTENOTII };
+ 
+    bool startCrafting = false;
+    while (!startCrafting) {
+        std::cout << "Current skills are: ";
+        for (const auto entry : skills) {
+            std::cout << Skills::GetSkillName(entry) << ",";
+        }
+        int move;
+        std::cout << "\nPlease select your starting moves:\n";
+        std::cout << "1:Muscle Memory\n2:Reflect\n3:Manipulation\n4:Waste Not II\n5:Start Crafting\n6:Remove last skill\n";
+        std::cin >> move;
+        switch (move) {
+        case 1:
+            skills.push_back(SkillName::MUSCLEMEMORY);
+            break;
+        case 2:
+            skills.push_back(SkillName::REFLECT);
+            break;
+        case 3:
+            skills.push_back(SkillName::MANIPULATION);
+            break;
+        case 4:
+            skills.push_back(SkillName::WASTENOTII);
+            break;
+        case 5:
+            startCrafting = true;
+            break;
+        case 6:
+            skills.pop_back();
+            break;
+        default:
+            std::cout << "Not a valid input\n";
+        }
+        std::cout << '\n';
+
+    }
     Crafter crafter(skills, 630, 3000, 11000, 40, true, true, 15);
+
+    
     crafter.ForceCraft();
+
+    std::cin;
 
 }
 

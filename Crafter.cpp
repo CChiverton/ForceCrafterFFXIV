@@ -14,6 +14,7 @@ Crafter::Crafter(std::vector<Skills::SkillName> startingMoves, int maxCP, int ma
 		for (const Skills::SkillName& move : startingMoves) {
 			if (!Craft(move)) {
 				std::cout << "Invalid. The starting moves break/finish the item.\n";
+				invalid = true;
 				return;
 			}
 			std::cout << " " << Skills::GetSkillName(move) << " |";

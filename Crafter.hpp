@@ -77,6 +77,7 @@ public:
 	}
 
 	void ForceCraft() {
+		if (invalid) return;
 		CraftingHistory& previousStep = craftingRecord;		// stack allocation for faster loading
 		bool lastMove = ((previousStep.currentTime + 3) >= bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
 		bool secondToLastMove = ((previousStep.currentTime + 6) >= bestTime || player->GetCurrentTurn() == maxTurnLimit - 2) ? true : false;
@@ -239,6 +240,7 @@ private:
 	bool touchActionUsed{ false }, synthActionUsed{ false };
 	int touchActionsUsedSuccessfully = 0b0, synthActionsUsedSuccessfully = 0b0;
 	ActionTracker* actionTracker;
+	bool invalid{ false };
 
 
 
