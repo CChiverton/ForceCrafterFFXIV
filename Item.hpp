@@ -31,7 +31,7 @@ public:
 
 	// Return false if item needs deleted and re-added
 	// Return true if the item can still be worked on
-	bool IsItemWorkable() {
+	bool IsItemWorkable() const {
 		if (IsItemCrafted() || IsItemBroken()) {
 			//OutputStats();
 			return false;
@@ -40,38 +40,38 @@ public:
 		return true;
 	}
 
-	bool IsItemCrafted() {
+	bool IsItemCrafted() const {
 		if (currentItemState.progress < maxItemState.progress) {
 			return false;
 		}
 		return true;
 	}
 
-	bool IsItemMaxQuality() {
+	bool IsItemMaxQuality() const {
 		if (currentItemState.quality < maxItemState.quality) {
 			return false;
 		}
 		return true;
 	}
 
-	int GetDurability() {
+	int GetDurability() const {
 		return currentItemState.durability;
 	}
 
-	int GetCurrentProgress() {
+	int GetCurrentProgress() const {
 		return currentItemState.progress;
 	}
 
-	int GetMaxProgress() {
+	int GetMaxProgress() const {
 		return maxItemState.progress;
 	}
 
-	int GetCurrentQuality() {
+	int GetCurrentQuality() const {
 		return currentItemState.quality;
 	}
 
 
-	void OutputStats() {
+	void OutputStats() const {
 		std::cout << "Progress: " << currentItemState.progress << "/" << maxItemState.progress << '\n';
 		std::cout << "Quality: " << currentItemState.quality << "/" << maxItemState.quality << '\n';
 		std::cout << "Durability: " << currentItemState.durability << "/" << maxItemState.durability << '\n';
@@ -89,12 +89,12 @@ public:
 		currentItemState = itemState;
 	}
 
-	ItemState GetItemState() {
+	ItemState GetItemState() const {
 		//OutputStats();
 		return currentItemState;
 	}
 
-	bool IsItemBroken() {
+	bool IsItemBroken() const {
 		if (currentItemState.durability > 0) {
 			return false;
 		}
@@ -109,7 +109,7 @@ private:
 
 	
 
-	bool IsItemStillCraftable() {
+	bool IsItemStillCraftable() const {
 		if (currentItemState.durability <= 0) {
 			return false;
 		}

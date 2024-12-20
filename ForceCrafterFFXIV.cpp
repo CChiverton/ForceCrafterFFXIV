@@ -46,7 +46,7 @@ int main()
 
     }
 #endif
-    Crafter crafter(skills, 630, 3000, 11000, 40, true, true, 15);
+    Crafter crafter(skills, 630, 331, 397, 3000, 11000, 40, true, true, 15);
 
     
     crafter.ForceCraft();

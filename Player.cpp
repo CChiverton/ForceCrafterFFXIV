@@ -3,7 +3,7 @@
 #include <iostream>
 
 /* PUBLIC */
-Player::Player(int maximumCP) {
+Player::Player(int maximumCP, float progressPerHundred, float qualityPerHundred) : progressPerOne(progressPerHundred/100.0f), qualityPerOne(qualityPerHundred/100.0f) {
 	maxCP = maximumCP;
 	ResetPlayerStats();
 	//AddItem(3000, 11000, 40);
@@ -76,7 +76,7 @@ bool Player::CastSkill(Skills::SkillName skillName) {
 	//CheckItem();
 }
 
-int Player::GetSkillTime(SkillName skillName) {
+int Player::GetSkillTime(SkillName skillName) const {
 	return SkillList.at(skillName).castTime;
 }
 
@@ -115,15 +115,16 @@ bool Player::CheckItem() {
 }
 
 int Player::CalculateProgress(int efficiency) {
-	const float perOneHundred = 331;
-	int result = perOneHundred * efficiency / 100;
+	int result = progressPerOne * efficiency;
+	/*std::cout << "Progress per one is " << progressPerOne << '\n';
+	std::cout << "Efficiency is " << efficiency << '\n';
+	std::cout << "Progress is " << result << '\n';*/
 	SynthesisBuffs(result);
 	return result;
 }
 
 int Player::CalculateQuality(int efficiency) {
-	const float perOneHundred = 397;
-	int result = perOneHundred * efficiency / 100 * InnerQuietEfficiencyMultiplier();
+	int result = qualityPerOne * efficiency * InnerQuietEfficiencyMultiplier();
 	//std::cout << "Quality addition is " << result << '\n';
 	TouchBuffs(result);
 	return result;
@@ -136,7 +137,7 @@ void Player::AddInnerQuiet(int stacks) {
 	}
 }
 
-float Player::InnerQuietEfficiencyMultiplier() {
+inline float Player::InnerQuietEfficiencyMultiplier() {
 	//std::cout << "Inner quiet multiplier " << (1 + (playerState.innerQuiet / 10.0f)) << '\n';
 	return (1 + (playerState.innerQuiet / 10.0f));
 }

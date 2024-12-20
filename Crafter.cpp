@@ -1,8 +1,8 @@
 #include "Crafter.hpp"
 
-Crafter::Crafter(std::vector<Skills::SkillName> startingMoves, int maxCP, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit)
+Crafter::Crafter(std::vector<Skills::SkillName> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit)
 	: maxProgress(maxProgress), maxQuality(maxQuality), maxDurability(maxDurability), forceMaxQuality(forceQuality), forceGreaterByregot(greaterByregot), maxTurnLimit(maximumTurnLimit) {
-	player = new Player(630);
+	player = new Player(maxCP, progressPerHundred, qualityPerHundred);
 	player->AddItem(maxProgress, maxQuality, maxDurability);
 	playerItem = player->craftableItem;
 	actionTracker = new ActionTracker();

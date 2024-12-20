@@ -10,24 +10,24 @@ using namespace Skills;
 class Player {
 
 public:
-	Player(int maximumCP);
+	Player(int maximumCP, float progressPerHundred, float qualityPerHundred);
 
 	void AddItem(int maxProgress, int maxQuality, int maxDurability);
 	void RemoveItem();
 
 	bool CastSkill(Skills::SkillName skillName);
 
-	int GetSkillTime(Skills::SkillName skillName);
-	int GetCurrentTime() {
+	int GetSkillTime(Skills::SkillName skillName) const;
+	int GetCurrentTime() const {
 		return playerState.currentTime;
 	}
-	int GetCurrentTurn() {
+	int GetCurrentTurn() const {
 		return (playerState.currentTurn + 1);
 	}
 
 	Item* craftableItem = nullptr;
 
-	int GetBuffDuration(SkillName skillName) {
+	int GetBuffDuration(SkillName skillName) const {
 		switch (skillName) {
 		case SkillName::MUSCLEMEMORY:
 			return playerState.muscleMemory;
@@ -69,12 +69,13 @@ public:
 
 	void LoadPlayerStats(PlayerState&);
 
-	PlayerState GetPlayerState() {
+	PlayerState GetPlayerState() const {
 		return playerState;
 	}
 
 private:
 	int maxCP{};
+	const float progressPerOne{}, qualityPerOne{};
 	bool successfulCast{ true };
 	
 	Skills::SkillName lastSkillUsed{ Skills::SkillName::NONE };
@@ -89,7 +90,7 @@ private:
 	int CalculateQuality(int efficiency);
 
 	void AddInnerQuiet(int stacks);
-	float InnerQuietEfficiencyMultiplier();
+	inline float InnerQuietEfficiencyMultiplier();
 
 
 	void SynthesisSkills(SkillName skillName, int& skillDurabilityCost, int& skillEfficiency);
