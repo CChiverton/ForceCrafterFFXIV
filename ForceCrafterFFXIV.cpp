@@ -10,7 +10,7 @@
 int main()
 {
     std::vector<SkillName> skills = { SkillName::MUSCLEMEMORY, SkillName::MANIPULATION, SkillName::WASTENOTII };
- 
+#if 0
     bool startCrafting = false;
     while (!startCrafting) {
         std::cout << "Current skills are: ";
@@ -46,6 +46,7 @@ int main()
         std::cout << '\n';
 
     }
+#endif
     Crafter crafter(skills, 630, 3000, 11000, 40, true, true, 15);
 
     
