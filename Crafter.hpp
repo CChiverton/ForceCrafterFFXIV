@@ -89,18 +89,6 @@ public:
 		return false;
 	}
 
-	/*void SynthCraft(bool& lastMove, bool& secondToLastMove, bool& isMaxQuality, bool& requireTouch) {
-		for (const SkillName& move : fullSkillList) {
-			if (lastMove) {
-				if (!SynthesisCheck(move))	continue;
-			}
-			if (secondToLastMove && forceMaxQuality && !isMaxQuality)	continue;
-			if (requireTouch) continue;
-			if (SimilarTrees(move, basic, careful, prudent, ground, venerationHistory, wasteNotHistory))	continue;
-			synthActionUsed = true;
-		}
-	}*/
-
 	void CraftAndRecord(SkillName move, CraftingHistory& previousStep, int& finalAppraisalTimer) {
 		if (Craft(move)) {
 
@@ -134,11 +122,13 @@ public:
 	}
 
 	void SynthesisCraft(bool& lastMove, bool& secondToLastMove, bool& requireTouch, bool& isMaxQuality, CraftingHistory& previousStep, int& finalAppraisalTimer) {
+		bool skipForTouch = secondToLastMove && forceMaxQuality && !isMaxQuality;
 		for (const SkillName& move : synthesisSkills) {
+			touchActionUsed = false;
 			if (lastMove) {
 				if (!SynthesisCheck(move))	continue;
 			}
-			if (secondToLastMove && forceMaxQuality && !isMaxQuality)	continue;
+			if (skipForTouch)	continue;
 			if (requireTouch) continue;
 			if (SimilarTrees(move))	continue;
 			synthActionUsed = true;
@@ -149,6 +139,7 @@ public:
 
 	void QualityCraft(bool& isMaxQuality, bool& skip, CraftingHistory& previousStep, int& finalAppraisalTimer) {
 		for (const SkillName& move : qualitySkills) {
+			touchActionUsed = false;
 			if (!forceMaxQuality)	continue;
 			if (isMaxQuality)	continue;
 			if (skip)	continue;
@@ -162,6 +153,7 @@ public:
 
 	void BuffCraft(bool& skip, bool& secondToLastMove, bool& requireTouch, bool& isMaxQuality, CraftingHistory& previousStep, int& finalAppraisalTimer) {
 		for (const SkillName& move : buffSkills) {
+			touchActionUsed = false;
 			if (skip)	continue;
 			if (secondToLastMove && forceMaxQuality && !isMaxQuality)	continue;
 			if (requireTouch) continue;
@@ -175,6 +167,7 @@ public:
 
 	void RepairCraft(bool& skip, bool& secondToLastMove, int& itemDurability, bool& requireTouch, bool& isMaxQuality, CraftingHistory& previousStep, int& finalAppraisalTimer) {
 		for (const SkillName& move : repairSkills) {
+			touchActionUsed = false;
 			if (skip)	continue;
 			if (secondToLastMove && (itemDurability >= 20 || (forceMaxQuality && !isMaxQuality)))	continue;
 			if (requireTouch) continue;
@@ -210,132 +203,17 @@ public:
 		bool requireSynth = ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111);
 		bool requireAppraisal = ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111);
 
-		/*bool basic = actionTracker->basicSynthesis & 0b1;
-		bool careful = actionTracker->carefulSynthesis & 0b1;
-		bool prudent = actionTracker->prudentSynthesis & 0b1;
-		bool ground = actionTracker->groundwork & 0b1;
-		int venerationHistory = actionTracker->venerationHistory & 0b11;
-		int wasteNotHistory = actionTracker->wasteNotHistory & 0b11;*/
-
 		bool skip = lastMove || requireSynth || requireAppraisal;
-#if 0
-		for (const SkillName& move : fullSkillList) {
 
-			/* BUFF TURN TRACKERS */
-			touchActionUsed = false;
-
-			switch (craftLogicType.at(move)) {
-			case SkillType::SYNTHESIS:
-				if (lastMove) {
-					if (!SynthesisCheck(move))	continue;
-				}
-				if (secondToLastMove && forceMaxQuality && !isMaxQuality)	continue;
-				if (requireTouch) continue;
-				if (SimilarTrees(move, basic, careful, prudent, ground, venerationHistory, wasteNotHistory))	continue;
-				synthActionUsed = true;
-				break;
-			case SkillType::TOUCH:
-				if (!forceMaxQuality)	continue;
-				if (isMaxQuality)	continue;
-				if (skip)	continue;
-				if (QualityCheck(move)) {
-					continue;
-				}
-				break;
-			case SkillType::BUFF:
-				if (skip)	continue;
-				if (secondToLastMove && forceMaxQuality && !isMaxQuality)	continue;
-				if (requireTouch) continue;
-				if (BuffCheck(move)) {
-					continue;
-				}
-				break;
-			case SkillType::REPAIR:
-				if (skip)	continue;
-				if (secondToLastMove && (itemDurability >= 20 || (forceMaxQuality && !isMaxQuality)))	continue;
-				if (requireTouch) continue;
-				break;
-			case SkillType::OTHER:
-				synthActionUsed = true;
-				touchActionUsed = true;
-				break;
-			default:
-				std::cout << "A serious error has occured\n";
-			}
-
-
-
-			/*if (SynthesisCheck(move)) {
-
-			}
-			else if (lastMove) {
-				continue;
-			}
-			else if (IsQualitySkill(move)) {
-				if (QualityCheck(move)) {
-					continue;
-				}
-			}
-			else if (IsBuffSkill(move)) {
-				if (BuffCheck(move)) {
-					continue;
-				}
-			}*/
-
-#if 0
-			if (Craft(move)) {
-
-				//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
-
-				if (playerItem->IsItemCrafted()) {
-					if (forceMaxQuality && !playerItem->IsItemMaxQuality()) {
-						//std::cout << "Not maximum quality when needed\n";
-						LoadLastCraftingRecord(previousStep);
-						continue;
-					}
-					SaveCraftingHistory(move);
-					AddSuccessfulCraft();
-					ContinueCraft();
-				}
-				else if (player->GetCurrentTurn() >= maxTurnLimit || (player->GetCurrentTime() + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
-					//std::cout << "Run out of moves\n";
-					LoadLastCraftingRecord(previousStep);
-					continue;
-				}
-				else if (finalAppraisalTimer == 1 && (playerItem->GetMaxProgress() - playerItem->GetCurrentProgress()) != 1) {		// not appraised
-					LoadLastCraftingRecord(previousStep);
-					continue;
-				}
-				else if (!playerItem->IsItemBroken()) {
-					SaveCraftingHistory(move);
-					ForceCraft();
-				}
-				//std::cout << "Finisheng Turn " << player->GetCurrentTurn() + 1 << ": " << Skills::GetSkillName(move) << '\n';
-			}
-#else
-			CraftAndRecord(move, previousStep, finalAppraisalTimer);
-#endif
-
-		}
-#else
 		QualityCraft(isMaxQuality, skip, previousStep, finalAppraisalTimer);
 		SynthesisCraft(lastMove, secondToLastMove, requireTouch, isMaxQuality, previousStep, finalAppraisalTimer);
 		OtherCraft(previousStep, finalAppraisalTimer);
-		//QualityCraft(isMaxQuality, skip, previousStep, finalAppraisalTimer);
 		BuffCraft(skip, secondToLastMove, requireTouch, isMaxQuality, previousStep, finalAppraisalTimer);
 		RepairCraft(skip, secondToLastMove, itemDurability, requireTouch, isMaxQuality,previousStep, finalAppraisalTimer);
-		//OtherCraft(previousStep, finalAppraisalTimer);
-#endif
+
 		ContinueCraft();
 		//std::cout << player->GetCurrentTurn() << " TRIED ALL POSSIBLE MOVES AT THIS LEVEL\n";
 	}
-
-	/*struct CraftingHistory {
-		Player::PlayerState player;
-		Item::ItemState item;
-		int currentTime{ 0 };
-		SkillName skillName{ SkillName::NONE };
-	}craftingRecord;*/
 
 	inline void SaveCraftingHistory(SkillName skillName) {
 		craftingRecord.player = player->GetPlayerState();
@@ -410,15 +288,6 @@ private:
 		actionTracker->BacktrackSynthSkills();
 	}
 
-	/*bool IsSynthesisSkill(SkillName skillName) {
-		for (const auto& synth : finalMoveList) {
-			if (skillName == synth) {
-				return true;
-			}
-		}
-		return false;
-	}*/
-
 	bool SynthesisCheck(SkillName skillName) {
 		for (const auto& synth : finalMoveList) {
 			if (skillName == synth) {
@@ -427,15 +296,6 @@ private:
 		}
 		return false;
 	}
-
-	/*bool IsQualitySkill(SkillName skillName) {
-		for (const auto& touch : qualityList) {
-			if (skillName == touch) {
-				return true;
-			}
-		}
-		return false;
-	}*/
 
 	bool QualityCheck(SkillName skillName) {
 		bool skipTouchSkill{ false };
@@ -459,15 +319,6 @@ private:
 		//std::cout << "Too high quality\n";
 		return skipTouchSkill;
 	}
-
-	/*bool IsBuffSkill(SkillName skillName) {
-		for (const auto& buff : buffList) {
-			if (skillName == buff) {
-				return true;
-			}
-		}
-		return false;
-	}*/
 
 	bool BuffCheck(SkillName skillName) {
 		bool buffSkip{ false };
@@ -499,64 +350,6 @@ private:
 		return buffSkip;
 	}
 
-	const std::unordered_map<SkillName, SkillType> craftLogicType = {
-		{ SkillName::BASICSYNTHESIS,	SkillType::SYNTHESIS},
-		{ SkillName::CAREFULSYNTHESIS,	SkillType::SYNTHESIS},
-		{ SkillName::PRUDENTSYNTHESIS,	SkillType::SYNTHESIS},
-		{ SkillName::GROUNDWORK,		SkillType::SYNTHESIS},
-		{ SkillName::MUSCLEMEMORY,		SkillType::SYNTHESIS},
-		{ SkillName::BASICTOUCH,		SkillType::TOUCH},
-		{ SkillName::STANDARDTOUCH,		SkillType::TOUCH},
-		{ SkillName::ADVANCEDTOUCH,		SkillType::TOUCH},
-		{ SkillName::BYREGOTSBLESSING,	SkillType::TOUCH},
-		{ SkillName::PRUDENTTOUCH,		SkillType::TOUCH},
-		{ SkillName::PREPARATORYTOUCH,	SkillType::TOUCH},
-		{ SkillName::DELICATESYNTHESIS,	SkillType::OTHER},
-		{ SkillName::REFLECT,			SkillType::TOUCH},
-		{ SkillName::REFINEDTOUCH,		SkillType::TOUCH},
-		{ SkillName::GREATSTRIDES,		SkillType::TOUCH},
-		{ SkillName::INNOVATION,		SkillType::TOUCH},
-		{ SkillName::WASTENOTI,			SkillType::BUFF},
-		{ SkillName::WASTENOTII,		SkillType::BUFF},
-		{ SkillName::VENERATION,		SkillType::BUFF},
-		{ SkillName::FINALAPPRAISAL,	SkillType::BUFF},
-		{ SkillName::MANIPULATION,		SkillType::BUFF},
-		{ SkillName::MASTERSMEND,		SkillType::REPAIR},
-		{ SkillName::IMMACULATEMEND,	SkillType::REPAIR}
-	};
-
-	const SkillName fullSkillList[23] = {
-		SkillName::MUSCLEMEMORY,
-		SkillName::REFLECT,
-
-		SkillName::BYREGOTSBLESSING,
-		SkillName::PREPARATORYTOUCH,
-		SkillName::BASICTOUCH,
-		SkillName::STANDARDTOUCH,
-		SkillName::ADVANCEDTOUCH,
-		SkillName::PRUDENTTOUCH,
-		SkillName::REFINEDTOUCH,
-
-		SkillName::BASICSYNTHESIS,
-		SkillName::CAREFULSYNTHESIS,
-		SkillName::PRUDENTSYNTHESIS,
-		SkillName::GROUNDWORK,
-
-		SkillName::DELICATESYNTHESIS,
-
-		SkillName::WASTENOTI,
-		SkillName::WASTENOTII,
-		SkillName::GREATSTRIDES,
-		SkillName::INNOVATION,
-		SkillName::VENERATION,
-		SkillName::MASTERSMEND,
-		SkillName::MANIPULATION,
-		SkillName::IMMACULATEMEND,
-
-
-		SkillName::FINALAPPRAISAL
-	};
-
 	const SkillName finalMoveList[4] = {
 		SkillName::BASICSYNTHESIS,
 		SkillName::CAREFULSYNTHESIS,
@@ -571,14 +364,6 @@ private:
 		SkillName::PRUDENTSYNTHESIS,
 		SkillName::GROUNDWORK		
 	};
-
-		/*const std::vector<SkillName> synthesisSkills = {
-			SkillName::BASICSYNTHESIS,
-			SkillName::CAREFULSYNTHESIS,
-			SkillName::PRUDENTSYNTHESIS,
-			SkillName::GROUNDWORK,
-			SkillName::MUSCLEMEMORY
-		};*/
 
 		// All skills focused on touch regardless of category
 	const SkillName qualitySkills[10] = {
