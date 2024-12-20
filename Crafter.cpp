@@ -97,20 +97,20 @@ void Crafter::ForceCraft() {
 	bool skipForTouch = secondToLastMove && forceMaxQuality && !isMaxQuality;
 
 	if (!(!forceMaxQuality || isMaxQuality || skip)) {
-		QualityCraft(isMaxQuality, skip, previousStep, finalAppraisalTimer);
+		QualityCraft(previousStep, finalAppraisalTimer);
 	}
 	touchActionUsed = false;
 	if (!(skipForTouch || requireTouch)) {
-		SynthesisCraft(lastMove, secondToLastMove, requireTouch, isMaxQuality, previousStep, finalAppraisalTimer);
+		SynthesisCraft(previousStep, finalAppraisalTimer);
 	}
 	touchActionUsed = false;
 	OtherCraft(previousStep, finalAppraisalTimer);
 	touchActionUsed = false;
 	if (!(skip || (secondToLastMove && forceMaxQuality && !isMaxQuality) || requireTouch)) {
-		BuffCraft(skip, secondToLastMove, requireTouch, isMaxQuality, previousStep, finalAppraisalTimer);
+		BuffCraft(previousStep, finalAppraisalTimer);
 	}
 	if (!(skip || (secondToLastMove && (itemDurability >= 20 || (forceMaxQuality && !isMaxQuality))) || requireTouch)) {
-		RepairCraft(skip, secondToLastMove, itemDurability, requireTouch, isMaxQuality, previousStep, finalAppraisalTimer);
+		RepairCraft(previousStep, finalAppraisalTimer);
 	}
 
 	ContinueCraft();
@@ -120,12 +120,9 @@ void Crafter::ForceCraft() {
 
 /*----------------------PRIVATE-------------------------------------*/
 
-void Crafter::SynthesisCraft(bool& lastMove, bool& secondToLastMove, bool& requireTouch, bool& isMaxQuality, CraftingHistory& previousStep, int& finalAppraisalTimer) {
+void Crafter::SynthesisCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	
 	for (const SkillName& move : synthesisSkills) {
-		if (lastMove) {
-			if (!SynthesisCheck(move))	continue;
-		}
 		if (SimilarTrees(move))	continue;
 		synthActionUsed = true;
 
@@ -133,7 +130,7 @@ void Crafter::SynthesisCraft(bool& lastMove, bool& secondToLastMove, bool& requi
 	}
 }
 
-void Crafter::QualityCraft(bool& isMaxQuality, bool& skip, CraftingHistory& previousStep, int& finalAppraisalTimer) {
+void Crafter::QualityCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	for (const SkillName& move : qualitySkills) {
 		touchActionUsed = false;
 		
@@ -145,7 +142,7 @@ void Crafter::QualityCraft(bool& isMaxQuality, bool& skip, CraftingHistory& prev
 	}
 }
 
-void Crafter::BuffCraft(bool& skip, bool& secondToLastMove, bool& requireTouch, bool& isMaxQuality, CraftingHistory& previousStep, int& finalAppraisalTimer) {
+void Crafter::BuffCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	for (const SkillName& move : buffSkills) {
 		if (BuffCheck(move)) {
 			continue;
@@ -155,7 +152,7 @@ void Crafter::BuffCraft(bool& skip, bool& secondToLastMove, bool& requireTouch, 
 	}
 }
 
-void Crafter::RepairCraft(bool& skip, bool& secondToLastMove, int& itemDurability, bool& requireTouch, bool& isMaxQuality, CraftingHistory& previousStep, int& finalAppraisalTimer) {
+void Crafter::RepairCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	for (const SkillName& move : repairSkills) {
 		CraftAndRecord(move, previousStep, finalAppraisalTimer);
 	}
@@ -261,15 +258,6 @@ void Crafter::ContinueCraft() {
 	synthActionsUsedSuccessfully >>= 1;
 	actionTracker->BacktrackBuffs();
 	actionTracker->BacktrackSynthSkills();
-}
-
-bool Crafter::SynthesisCheck(SkillName skillName) {
-	for (const auto& synth : finalMoveList) {
-		if (skillName == synth) {
-			return true;
-		}
-	}
-	return false;
 }
 
 bool Crafter::QualityCheck(SkillName skillName) {

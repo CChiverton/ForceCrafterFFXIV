@@ -45,10 +45,10 @@ private:
 	ActionTracker* actionTracker;
 	bool invalid{ false };
 
-	void SynthesisCraft(bool& lastMove, bool& secondToLastMove, bool& requireTouch, bool& isMaxQuality, CraftingHistory& previousStep, int& finalAppraisalTimer);
-	void QualityCraft(bool& isMaxQuality, bool& skip, CraftingHistory& previousStep, int& finalAppraisalTimer);
-	void BuffCraft(bool& skip, bool& secondToLastMove, bool& requireTouch, bool& isMaxQuality, CraftingHistory& previousStep, int& finalAppraisalTimer);
-	void RepairCraft(bool& skip, bool& secondToLastMove, int& itemDurability, bool& requireTouch, bool& isMaxQuality, CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void SynthesisCraft(CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void QualityCraft(CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void BuffCraft(CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void RepairCraft(CraftingHistory& previousStep, int& finalAppraisalTimer);
 	void OtherCraft(CraftingHistory& previousStep, int& finalAppraisalTimer);
 
 	void UpdateValidBuffCheck(int& appropriateActionTurn, bool& actionUsedThisTurn);
@@ -68,7 +68,6 @@ private:
 	inline void LoadLastCraftingRecord(CraftingHistory& lastRecord);
 	void ContinueCraft();
 
-	bool SynthesisCheck(SkillName skillName);
 	bool QualityCheck(SkillName skillName);
 	bool BuffCheck(SkillName skillName);
 
