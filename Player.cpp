@@ -6,6 +6,45 @@
 Player::Player(int maximumCP, float progressPerHundred, float qualityPerHundred) : progressPerOne(progressPerHundred/100.0f), qualityPerOne(qualityPerHundred/100.0f) {
 	maxCP = maximumCP;
 	ResetPlayerStats();
+	
+	const int basic = 100, standard = 125, advanced = 150, prep = 200, reflect = 300;
+	for (int i{ 0 }; i < 11; i++) {
+		/* Basic, Prudent, refined, delicate */
+		preComputeQualityEfficiency[i][basic] = basic * qualityPerOne * InnerQuietEfficiencyMultiplier();
+		preComputeQualityTouchEfficiency[i][basic] = preComputeQualityEfficiency[i][basic] + preComputeQualityEfficiency[i][basic] / 2;
+		preComputeQualityStrideEfficiency[i][basic] = preComputeQualityEfficiency[i][basic] * 2;
+		preComputeQualityTouchStrideEfficiency[i][basic] = preComputeQualityEfficiency[i][basic] + preComputeQualityTouchEfficiency[i][basic];
+		
+		/* Standard */
+		preComputeQualityEfficiency[i][standard] = standard * qualityPerOne * InnerQuietEfficiencyMultiplier();
+		preComputeQualityTouchEfficiency[i][standard] = preComputeQualityEfficiency[i][standard] + preComputeQualityEfficiency[i][standard] / 2;
+		preComputeQualityStrideEfficiency[i][standard] = preComputeQualityEfficiency[i][standard] * 2;
+		preComputeQualityTouchStrideEfficiency[i][standard] = preComputeQualityEfficiency[i][standard] + preComputeQualityTouchEfficiency[i][standard];
+		/* Advanced */
+		preComputeQualityEfficiency[i][advanced] = advanced * qualityPerOne * InnerQuietEfficiencyMultiplier();
+		preComputeQualityTouchEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] +  preComputeQualityEfficiency[i][advanced] / 2;
+		preComputeQualityStrideEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] * 2;
+		preComputeQualityTouchStrideEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] + preComputeQualityTouchEfficiency[i][advanced];
+		/* Preparatory */
+		preComputeQualityEfficiency[i][prep] = prep * qualityPerOne * InnerQuietEfficiencyMultiplier();
+		preComputeQualityTouchEfficiency[i][prep] = preComputeQualityEfficiency[i][prep] + preComputeQualityEfficiency[i][prep] / 2;
+		preComputeQualityStrideEfficiency[i][prep] = preComputeQualityEfficiency[i][prep] * 2;
+		preComputeQualityTouchStrideEfficiency[i][prep] = preComputeQualityEfficiency[i][prep] + preComputeQualityTouchEfficiency[i][prep];
+		/* Reflect */
+		preComputeQualityEfficiency[i][reflect] = reflect * qualityPerOne * InnerQuietEfficiencyMultiplier();
+		preComputeQualityTouchEfficiency[i][reflect] = preComputeQualityEfficiency[i][reflect] + preComputeQualityEfficiency[i][reflect] / 2;
+		preComputeQualityStrideEfficiency[i][reflect] = preComputeQualityEfficiency[i][reflect] * 2;
+		preComputeQualityTouchStrideEfficiency[i][reflect] = preComputeQualityEfficiency[i][reflect] + preComputeQualityTouchEfficiency[i][reflect];
+		/* Byregot */
+		int efficiency = 100 + (20 * i);
+		preComputeQualityEfficiency[i][efficiency] = efficiency * qualityPerOne * InnerQuietEfficiencyMultiplier();
+		preComputeQualityTouchEfficiency[i][efficiency] = preComputeQualityEfficiency[i][efficiency] + preComputeQualityEfficiency[i][efficiency] / 2;
+		preComputeQualityStrideEfficiency[i][efficiency] = preComputeQualityEfficiency[i][efficiency] * 2;
+		preComputeQualityTouchStrideEfficiency[i][efficiency] = preComputeQualityEfficiency[i][efficiency] + preComputeQualityTouchEfficiency[i][efficiency];
+
+		AddInnerQuiet(1);
+	}
+	ResetPlayerStats();
 	//AddItem(3000, 11000, 40);
 }
 
@@ -124,16 +163,28 @@ int Player::CalculateProgress(int efficiency) {
 }
 
 int Player::CalculateQuality(int efficiency) {
-	int result = qualityPerOne * efficiency * InnerQuietEfficiencyMultiplier();
-	//std::cout << "Quality addition is " << result << '\n';
-	TouchBuffs(result);
-	return result;
+	/*int result = preComputeQualityEfficiency[playerState.innerQuiet][efficiency];
+	TouchBuffs(result);*/
+	int result;
+	if (playerState.innovation > 0) {
+		if (playerState.greatStrides > 0) {
+			playerState.greatStrides = 0;
+			//std::cout << preComputeQualityTouchStrideEfficiency[playerState.innerQuiet][efficiency] << "\n\n";
+			return preComputeQualityTouchStrideEfficiency[playerState.innerQuiet][efficiency];
+		}
+		return preComputeQualityTouchEfficiency[playerState.innerQuiet][efficiency];
+	}
+	if (playerState.greatStrides > 0) {
+		playerState.greatStrides = 0; 
+		return preComputeQualityStrideEfficiency[playerState.innerQuiet][efficiency];
+	}
+	return preComputeQualityEfficiency[playerState.innerQuiet][efficiency];
 }
 
 void Player::AddInnerQuiet(int stacks) {
 	playerState.innerQuiet += stacks;
-	if (stacks > 10) {
-		stacks = 10;
+	if (playerState.innerQuiet > 10) {
+		playerState.innerQuiet = 10;
 	}
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+//@TODO create synth table lookup. May be more expensive to do so as there are generally fewer calculations with it
+
 #include "Item.hpp"
 #include "Skills.hpp"
 
@@ -77,6 +79,9 @@ private:
 	int maxCP{};
 	const float progressPerOne{}, qualityPerOne{};
 	bool successfulCast{ true };
+	static const int maxInnerQuiet{ 10 };
+	int preComputeQualityEfficiency[maxInnerQuiet + 1][300]{}, preComputeQualityTouchEfficiency[maxInnerQuiet + 1][300]{},
+		preComputeQualityStrideEfficiency[maxInnerQuiet + 1][300]{}, preComputeQualityTouchStrideEfficiency[maxInnerQuiet + 1][300]{};
 	
 	Skills::SkillName lastSkillUsed{ Skills::SkillName::NONE };
 
