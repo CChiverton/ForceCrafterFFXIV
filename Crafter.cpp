@@ -110,13 +110,14 @@ void Crafter::ForceCraft() {
 
 void Crafter::SynthesisCraft(bool& lastMove, bool& secondToLastMove, bool& requireTouch, bool& isMaxQuality, CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	bool skipForTouch = secondToLastMove && forceMaxQuality && !isMaxQuality;
+	if (skipForTouch)	return;
+	if (requireTouch) return;
+	
 	for (const SkillName& move : synthesisSkills) {
 		touchActionUsed = false;
 		if (lastMove) {
 			if (!SynthesisCheck(move))	continue;
 		}
-		if (skipForTouch)	continue;
-		if (requireTouch) continue;
 		if (SimilarTrees(move))	continue;
 		synthActionUsed = true;
 
@@ -125,11 +126,12 @@ void Crafter::SynthesisCraft(bool& lastMove, bool& secondToLastMove, bool& requi
 }
 
 void Crafter::QualityCraft(bool& isMaxQuality, bool& skip, CraftingHistory& previousStep, int& finalAppraisalTimer) {
+	if (!forceMaxQuality)	return;
+	if (isMaxQuality)	return;
+	if (skip)	return;
 	for (const SkillName& move : qualitySkills) {
 		touchActionUsed = false;
-		if (!forceMaxQuality)	continue;
-		if (isMaxQuality)	continue;
-		if (skip)	continue;
+		
 		if (QualityCheck(move)) {
 			continue;
 		}
@@ -139,11 +141,12 @@ void Crafter::QualityCraft(bool& isMaxQuality, bool& skip, CraftingHistory& prev
 }
 
 void Crafter::BuffCraft(bool& skip, bool& secondToLastMove, bool& requireTouch, bool& isMaxQuality, CraftingHistory& previousStep, int& finalAppraisalTimer) {
+	if (skip)	return;
+	if (secondToLastMove && forceMaxQuality && !isMaxQuality)	return;
+	if (requireTouch) return;
+	
 	for (const SkillName& move : buffSkills) {
 		touchActionUsed = false;
-		if (skip)	continue;
-		if (secondToLastMove && forceMaxQuality && !isMaxQuality)	continue;
-		if (requireTouch) continue;
 		if (BuffCheck(move)) {
 			continue;
 		}
@@ -153,12 +156,12 @@ void Crafter::BuffCraft(bool& skip, bool& secondToLastMove, bool& requireTouch, 
 }
 
 void Crafter::RepairCraft(bool& skip, bool& secondToLastMove, int& itemDurability, bool& requireTouch, bool& isMaxQuality, CraftingHistory& previousStep, int& finalAppraisalTimer) {
+	if (skip)	return;
+	if (secondToLastMove && (itemDurability >= 20 || (forceMaxQuality && !isMaxQuality)))	return;
+	if (requireTouch) return;
+
 	for (const SkillName& move : repairSkills) {
 		touchActionUsed = false;
-		if (skip)	continue;
-		if (secondToLastMove && (itemDurability >= 20 || (forceMaxQuality && !isMaxQuality)))	continue;
-		if (requireTouch) continue;
-
 		CraftAndRecord(move, previousStep, finalAppraisalTimer);
 	}
 }
