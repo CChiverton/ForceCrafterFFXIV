@@ -67,7 +67,7 @@ bool Player::CastSkill(Skills::SkillName skillName) {
 		//std::cout << craftableItem->GetDurability() << '\n';
 		lastSkillUsed = skillName;
 		playerState.currentCP -= skillCPCost;
-		playerState.currentTurn++;
+		++playerState.currentTurn;
 		playerState.currentTime += GetSkillTime(skillName);
 		DecrementBuffs();
 	}
@@ -317,11 +317,11 @@ void Player::TouchBuffs(int& skillEfficiency) {
 }
 
 void Player::DecrementBuffs() {
-	if (playerState.muscleMemory > 0)	playerState.muscleMemory--;
-	if (playerState.wasteNot > 0)		playerState.wasteNot--;
-	if (playerState.greatStrides > 0)	playerState.greatStrides--;
-	if (playerState.innovation > 0)		playerState.innovation--;
-	if (playerState.veneration > 0)		playerState.veneration--;
-	if (playerState.finalAppraisal > 0)	playerState.finalAppraisal--;
-	if (playerState.manipulation > 0)	playerState.manipulation--;
+	if (playerState.muscleMemory > 0)	--playerState.muscleMemory;
+	if (playerState.wasteNot > 0)		--playerState.wasteNot;
+	if (playerState.greatStrides > 0)	--playerState.greatStrides;
+	if (playerState.innovation > 0)		--playerState.innovation;
+	if (playerState.veneration > 0)		--playerState.veneration;
+	if (playerState.finalAppraisal > 0)	--playerState.finalAppraisal;
+	if (playerState.manipulation > 0)	--playerState.manipulation;
 }
