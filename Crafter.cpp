@@ -282,7 +282,7 @@ bool Crafter::QualityCheck(SkillName skillName) {
 		if (forceGreaterByregot) {
 			skipTouchSkill = player->GetBuffDuration(SkillName::GREATSTRIDES) == 0;
 		}
-		touchActionUsed = true;
+		touchActionUsed = !skipTouchSkill;
 		break;
 	case SkillName::BASICTOUCH:
 		if (player->GetPlayerState().lastSkillUsed == SkillName::BASICTOUCH || player->GetPlayerState().lastSkillUsed == SkillName::STANDARDTOUCH)	return true;
