@@ -131,11 +131,14 @@ void Crafter::ForceCraft() {
 /*----------------------PRIVATE-------------------------------------*/
 
 void Crafter::SynthesisCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
-	
+	bool checkForCarefulGroundWork = (((actionTracker->prudentSynthesis & 0b11) | (actionTracker->groundwork & 0b11)) == 0b11);	// either have been used for the past two turns	
 	for (const SkillTest& move : synthesisSkills) {
 		if (SimilarTrees(move.skillName))	continue;
-		synthActionUsed = true;
 
+		if (checkForCarefulGroundWork && (move.skillName == SkillName::CAREFULSYNTHESIS 
+										|| move.skillName == SkillName::GROUNDWORK))	continue;	// will be faster and same with veneration buff
+
+		synthActionUsed = true;
 		CraftAndRecord(move, previousStep, finalAppraisalTimer);
 	}
 }
