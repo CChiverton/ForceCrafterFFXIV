@@ -44,6 +44,7 @@ private:
 	int touchActionsUsedSuccessfully = 0b0, synthActionsUsedSuccessfully = 0b0;
 	ActionTracker* actionTracker;
 	bool invalid{ false };
+	int baseTurn{};
 
 	void SynthesisCraft(CraftingHistory& previousStep, int& finalAppraisalTimer);
 	void QualityCraft(CraftingHistory& previousStep, int& finalAppraisalTimer);

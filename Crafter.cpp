@@ -23,6 +23,7 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 		}
 		std::cout << '\n';
 	}
+	baseTurn = player->GetCurrentTurn();
 	//std::cout << "-----------------------------------------\n";
 }
 
@@ -71,6 +72,11 @@ void Crafter::CraftAndRecord(SkillTest move, CraftingHistory& previousStep, int&
 			SaveCraftingHistory(move.skillName);
 			ForceCraft();
 		}
+#if 1
+		if (player->GetCurrentTurn() == baseTurn) {
+			std::cout << Skills::GetSkillName(move.skillName) << " completed\n";
+		}
+#endif
 		//std::cout << "Finisheng Turn " << player->GetCurrentTurn() + 1 << ": " << Skills::GetSkillName(move) << '\n';
 	}
 }
