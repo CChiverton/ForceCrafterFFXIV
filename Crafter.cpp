@@ -1,5 +1,7 @@
 #include "Crafter.hpp"
 
+#define ProgressUpdate 1
+
 Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit)
 	: maxProgress(maxProgress), maxQuality(maxQuality), maxDurability(maxDurability), forceMaxQuality(forceQuality), forceGreaterByregot(greaterByregot), maxTurnLimit(maximumTurnLimit) {
 	player = new Player(maxCP, progressPerHundred, qualityPerHundred);
@@ -72,7 +74,7 @@ void Crafter::CraftAndRecord(SkillTest move, CraftingHistory& previousStep, int&
 			SaveCraftingHistory(move.skillName);
 			ForceCraft();
 		}
-#if 1
+#if ProgressUpdate
 		if (player->GetCurrentTurn() == baseTurn) {
 			std::cout << Skills::GetSkillName(move.skillName) << " completed\n";
 		}
@@ -280,6 +282,14 @@ bool Crafter::QualityCheck(SkillName skillName) {
 		if (forceGreaterByregot) {
 			skipTouchSkill = player->GetBuffDuration(SkillName::GREATSTRIDES) == 0;
 		}
+		touchActionUsed = true;
+		break;
+	case SkillName::BASICTOUCH:
+		if (player->GetPlayerState().lastSkillUsed == SkillName::BASICTOUCH || player->GetPlayerState().lastSkillUsed == SkillName::STANDARDTOUCH)	return true;
+		touchActionUsed = true;
+		break;
+	case SkillName::STANDARDTOUCH:
+		if (player->GetPlayerState().lastSkillUsed == SkillName::STANDARDTOUCH)	return true;
 		touchActionUsed = true;
 		break;
 	default:			// Should be touch action skills

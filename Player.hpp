@@ -67,6 +67,7 @@ public:
 		int veneration= 0;
 		int finalAppraisal = 0;
 		int manipulation = 0;
+		Skills::SkillName lastSkillUsed{ Skills::SkillName::NONE };
 	}playerState;
 
 	void LoadPlayerStats(PlayerState&);
@@ -82,8 +83,6 @@ private:
 	static const int maxInnerQuiet{ 10 };
 	int preComputeQualityEfficiency[maxInnerQuiet + 1][300]{}, preComputeQualityTouchEfficiency[maxInnerQuiet + 1][300]{},
 		preComputeQualityStrideEfficiency[maxInnerQuiet + 1][300]{}, preComputeQualityTouchStrideEfficiency[maxInnerQuiet + 1][300]{};
-	
-	Skills::SkillName lastSkillUsed{ Skills::SkillName::NONE };
 
 	
 

@@ -104,7 +104,7 @@ bool Player::CastSkill(Skills::SkillTest& skill) {
 			craftableItem->UpdateDurability(5);
 		}
 		//std::cout << craftableItem->GetDurability() << '\n';
-		lastSkillUsed = skill.skillName;
+		playerState.lastSkillUsed = skill.skillName;
 		playerState.currentCP -= skillCPCost;
 		++playerState.currentTurn;
 		playerState.currentTime += skill.castTime;
@@ -126,7 +126,7 @@ void Player::ResetPlayerStats() {
 	playerState.innerQuiet = 0;
 	playerState.currentTurn = 0;
 	playerState.currentTime = 0;
-	lastSkillUsed = SkillName::NONE;
+	playerState.lastSkillUsed = SkillName::NONE;
 	successfulCast = true; // Only turned false on failure. True by default
 	playerState.muscleMemory= 0;
 	playerState.wasteNot = 0;
@@ -235,14 +235,14 @@ void Player::TouchSkills(SkillName skillName, int& skillDurabilityCost, int& ski
 		AddInnerQuiet(1);
 		break;
 	case Skills::SkillName::STANDARDTOUCH:
-		if (lastSkillUsed == SkillName::BASICTOUCH) {
+		if (playerState.lastSkillUsed == SkillName::BASICTOUCH) {
 			skillCPCost = 18;
 		}
 		craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
 		AddInnerQuiet(1);
 		break;
 	case Skills::SkillName::ADVANCEDTOUCH:
-		if (lastSkillUsed == SkillName::STANDARDTOUCH) {
+		if (playerState.lastSkillUsed == SkillName::STANDARDTOUCH) {
 			skillCPCost = 18;
 		}
 		craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
@@ -284,7 +284,7 @@ void Player::TouchSkills(SkillName skillName, int& skillDurabilityCost, int& ski
 		break;
 	case Skills::SkillName::REFINEDTOUCH:
 		craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
-		if (lastSkillUsed == Skills::SkillName::BASICTOUCH) {
+		if (playerState.lastSkillUsed == Skills::SkillName::BASICTOUCH) {
 			AddInnerQuiet(1);
 		}
 		AddInnerQuiet(1);

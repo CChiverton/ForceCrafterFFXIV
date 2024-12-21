@@ -8,7 +8,7 @@
 
 int main()
 {
-    std::vector<SkillTest> skills = { skillTest[4], skillTest[20], skillTest[14]};
+    std::vector<SkillTest> skills = { skillTest[4], skillTest[20]};
 #if 0
     bool startCrafting = false;
     while (!startCrafting) {
