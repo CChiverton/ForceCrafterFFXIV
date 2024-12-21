@@ -296,6 +296,10 @@ bool Crafter::QualityCheck(SkillName skillName) {
 		if (player->GetPlayerState().lastSkillUsed == SkillName::STANDARDTOUCH)	return true;
 		touchActionUsed = true;
 		break;
+	case SkillName::REFINEDTOUCH:
+		skipTouchSkill = player->GetPlayerState().lastSkillUsed != SkillName::BASICTOUCH;
+		touchActionUsed = !skipTouchSkill;
+		break;
 	default:			// Should be touch action skills
 		touchActionUsed = true;
 		break;
