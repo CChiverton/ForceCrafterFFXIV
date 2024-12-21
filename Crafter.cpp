@@ -283,7 +283,10 @@ bool Crafter::QualityCheck(SkillName skillName) {
 		skipTouchSkill = player->GetBuffDuration(skillName) > 1;		// fringe cases you want to recast innovation with 1 turn left
 		break;
 	case SkillName::BYREGOTSBLESSING:
-		if (forceGreaterByregot) {
+		if ((player->GetPlayerState().lastSkillUsed == SkillName::BASICTOUCH && player->GetPlayerState().innerQuiet < 2) ||			// possible logic flaw with combo implementation
+			(player->GetPlayerState().lastSkillUsed == SkillName::STANDARDTOUCH && player->GetPlayerState().innerQuiet < 3)) {
+			skipTouchSkill = false;
+		} else if (forceGreaterByregot) {
 			skipTouchSkill = player->GetBuffDuration(SkillName::GREATSTRIDES) == 0;
 		}
 		touchActionUsed = !skipTouchSkill;
