@@ -58,6 +58,10 @@ public:
 		return currentItemState.durability;
 	}
 
+	int GetMaxDurability() const {
+		return maxItemState.durability;
+	}
+
 	int GetCurrentProgress() const {
 		return currentItemState.progress;
 	}

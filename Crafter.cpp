@@ -167,6 +167,7 @@ void Crafter::BuffCraft(CraftingHistory& previousStep, int& finalAppraisalTimer)
 
 void Crafter::RepairCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	for (const SkillTest& move : repairSkills) {
+		if ((playerItem->GetMaxDurability() - playerItem->GetDurability()) > 15)	continue;		// Arbritrary number, more of a logical "Why repair at this stage"
 		CraftAndRecord(move, previousStep, finalAppraisalTimer);
 	}
 }
