@@ -91,12 +91,13 @@ void Crafter::ForceCraft() {
 	int innovationTimer = player->GetBuffDuration(SkillName::INNOVATION);
 
 	int venerationTimer = player->GetBuffDuration(SkillName::VENERATION);
-	actionTracker->ProgressBuffs(venerationTimer > 0, player->GetBuffDuration(SkillName::WASTENOTI) > 0);
+	int strideTimer = player->GetBuffDuration(SkillName::GREATSTRIDES);
+	actionTracker->ProgressBuffs(venerationTimer > 0, player->GetBuffDuration(SkillName::WASTENOTI) > 0, strideTimer > 0);
 	int finalAppraisalTimer = player->GetBuffDuration(SkillName::FINALAPPRAISAL);
 	bool isMaxQuality = playerItem->IsItemMaxQuality();
 	int itemDurability = playerItem->GetDurability();
 
-	bool requireTouch = ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111);
+	bool requireTouch = ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111) || ActionUsedDuringBuff(strideTimer, touchActionsUsedSuccessfully, 0b11);
 	bool requireSynth = ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111);
 	bool requireAppraisal = ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111);
 

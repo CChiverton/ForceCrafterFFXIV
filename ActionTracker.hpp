@@ -7,7 +7,7 @@ public:
 	ActionTracker() { std::cout << "Hello\n"; };
 	~ActionTracker() {};
 
-	int venerationHistory{ 0b0 }, wasteNotHistory{ 0b0 };
+	int venerationHistory{ 0b0 }, wasteNotHistory{ 0b0 }, strideHistory{ 0b0 };
 	int basicSynthesis{ 0b0 }, carefulSynthesis{ 0b0 }, prudentSynthesis{ 0b0 }, groundwork{ 0b0 };
 
 	void PrintHistory() {
@@ -53,15 +53,18 @@ public:
 		groundwork >>= 1;
 	}
 
-	void ProgressBuffs(bool venerationBuff, bool wasteNotBuff) {
+	void ProgressBuffs(bool venerationBuff, bool wasteNotBuff, bool strideBuff) {
 		venerationHistory <<= 1;
 		venerationHistory |= venerationBuff;
 		wasteNotHistory <<= 1;
 		wasteNotHistory |= wasteNotBuff;
+		strideHistory <<= 1;
+		strideHistory |= strideBuff;
 	}
 
 	void BacktrackBuffs() {
 		venerationHistory >>= 1;
 		wasteNotHistory >>= 1;
+		strideHistory >>= 1;
 	}
 };
