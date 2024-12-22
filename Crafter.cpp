@@ -167,6 +167,8 @@ void Crafter::BuffCraft(CraftingHistory& previousStep, int& finalAppraisalTimer)
 
 void Crafter::RepairCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	for (const SkillTest& move : repairSkills) {
+		if (player->playerState.lastSkillUsed == SkillName::MASTERSMEND)	continue;		//If previously used this skill, it would have been more effective to use Immaculate Mend
+		if (move.skillName == SkillName::IMMACULATEMEND && (playerItem->GetMaxDurability() - playerItem->GetDurability()) <= 30)	continue;	// better to use masters mend here
 		if ((playerItem->GetMaxDurability() - playerItem->GetDurability()) > 15)	continue;		// Arbritrary number, more of a logical "Why repair at this stage"
 		CraftAndRecord(move, previousStep, finalAppraisalTimer);
 	}
