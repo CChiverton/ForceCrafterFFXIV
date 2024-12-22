@@ -15,22 +15,23 @@ class Player {
 public:
 	Player(int maximumCP, float progressPerHundred, float qualityPerHundred);
 
-	void AddItem(int maxProgress, int maxQuality, int maxDurability);
+	inline void PreComputeQualityEfficiency();
+	void AddItem(const int& maxProgress, const int& maxQuality, const int& maxDurability);
 	void RemoveItem();
 
-	bool CastSkill(Skills::SkillTest& skillName);
+	bool CastSkill(const Skills::SkillTest& skillName);
 
-	int GetSkillTime(Skills::SkillName skillName) const;
-	int GetCurrentTime() const {
+	const int& GetSkillTime(Skills::SkillName& skillName) const;
+	const int& GetCurrentTime() const {
 		return playerState.currentTime;
 	}
-	int GetCurrentTurn() const {
+	const int& GetCurrentTurn() const {
 		return (playerState.currentTurn + 1);
 	}
 
 	std::unique_ptr<Item> craftableItem = nullptr;
 
-	int GetBuffDuration(SkillName skillName) const {
+	const int& GetBuffDuration(SkillName skillName) const {
 		switch (skillName) {
 		case SkillName::MUSCLEMEMORY:
 			return playerState.muscleMemory;
@@ -73,12 +74,12 @@ public:
 
 	void LoadPlayerStats(PlayerState&);
 
-	PlayerState GetPlayerState() const {
+	const PlayerState& GetPlayerState() const {
 		return playerState;
 	}
 
 private:
-	int maxCP{};
+	const int maxCP{};
 	const float progressPerOne{}, qualityPerOne{};
 	bool successfulCast{ true };
 	static const int maxInnerQuiet{ 10 };
@@ -91,18 +92,18 @@ private:
 	
 	bool CheckItem();
 
-	int CalculateProgress(int efficiency);
-	int CalculateQuality(int efficiency);
+	const int CalculateProgress(const int& efficiency);
+	const int& CalculateQuality(const int& efficiency);
 
 	void AddInnerQuiet(int stacks);
-	inline float InnerQuietEfficiencyMultiplier();
+	inline const float InnerQuietEfficiencyMultiplier() const;
 
 
-	void SynthesisSkills(SkillName skillName, int& skillDurabilityCost, int& skillEfficiency);
-	void TouchSkills(SkillName skillName, int& skillDurabilityCost, int& skillEfficiency, int& skillCPCost);
-	void BuffSkills(SkillName skillName);
-	void RepairSkills(SkillName skillName);
-	void OtherSkills(SkillName skillName, int& skillDurabilityCost);
+	void SynthesisSkills(const SkillName& skillName, const int& skillDurabilityCost, int& skillEfficiency);
+	void TouchSkills(const SkillName& skillName, const int& skillDurabilityCost, const int& skillEfficiency, int& skillCPCost);
+	void BuffSkills(const SkillName& skillName);
+	void RepairSkills(const SkillName& skillName);
+	void OtherSkills(const SkillName& skillName, const int& skillDurabilityCost);
 	void SynthesisBuffs(int& skillEfficiency);
 	void TouchBuffs(int& skillEfficiency);
 	void DecrementBuffs();

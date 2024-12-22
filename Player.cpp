@@ -3,10 +3,15 @@
 #include <iostream>
 
 /* PUBLIC */
-Player::Player(int maximumCP, float progressPerHundred, float qualityPerHundred) : progressPerOne(progressPerHundred/100.0f), qualityPerOne(qualityPerHundred/100.0f) {
-	maxCP = maximumCP;
+Player::Player(int maximumCP, float progressPerHundred, float qualityPerHundred) : 
+	progressPerOne(progressPerHundred/100.0f), qualityPerOne(qualityPerHundred/100.0f), maxCP(maximumCP) {
 	ResetPlayerStats();
 	
+	PreComputeQualityEfficiency();
+	ResetPlayerStats();
+}
+
+inline void Player::PreComputeQualityEfficiency() {
 	const int basic = 100, standard = 125, advanced = 150, prep = 200, reflect = 300;
 	for (int i{ 0 }; i < 11; i++) {
 		/* Basic, Prudent, refined, delicate */
@@ -22,7 +27,7 @@ Player::Player(int maximumCP, float progressPerHundred, float qualityPerHundred)
 		preComputeQualityTouchStrideEfficiency[i][standard] = preComputeQualityEfficiency[i][standard] + preComputeQualityTouchEfficiency[i][standard];
 		/* Advanced */
 		preComputeQualityEfficiency[i][advanced] = advanced * qualityPerOne * InnerQuietEfficiencyMultiplier();
-		preComputeQualityTouchEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] +  preComputeQualityEfficiency[i][advanced] / 2;
+		preComputeQualityTouchEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] + preComputeQualityEfficiency[i][advanced] / 2;
 		preComputeQualityStrideEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] * 2;
 		preComputeQualityTouchStrideEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] + preComputeQualityTouchEfficiency[i][advanced];
 		/* Preparatory */
@@ -44,11 +49,9 @@ Player::Player(int maximumCP, float progressPerHundred, float qualityPerHundred)
 
 		AddInnerQuiet(1);
 	}
-	ResetPlayerStats();
-	//AddItem(3000, 11000, 40);
 }
 
-void Player::AddItem(int maxProgress, int maxQuality, int maxDurability) {
+void Player::AddItem(const int& maxProgress, const int& maxQuality, const int& maxDurability) {
 	RemoveItem();
 	ResetPlayerStats();
 	craftableItem.reset(new Item(maxProgress, maxQuality, maxDurability));
@@ -59,8 +62,7 @@ void Player::RemoveItem() {
 	craftableItem = nullptr;
 }
 
-bool Player::CastSkill(Skills::SkillTest& skill) {
-	//Skill skill = SkillList.at(skillName);
+bool Player::CastSkill(const Skills::SkillTest& skill) {
 	if (skill.costCP > playerState.currentCP) {
 		//std::cout << "Not enough CP\n";
 		return false;
@@ -115,7 +117,7 @@ bool Player::CastSkill(Skills::SkillTest& skill) {
 	//CheckItem();
 }
 
-int Player::GetSkillTime(SkillName skillName) const {
+const int& Player::GetSkillTime(SkillName& skillName) const {
 	return SkillList.at(skillName).castTime;
 }
 
@@ -153,7 +155,7 @@ bool Player::CheckItem() {
 	return true;
 }
 
-int Player::CalculateProgress(int efficiency) {
+const int Player::CalculateProgress(const int& efficiency) {
 	int result = progressPerOne * efficiency;
 	/*std::cout << "Progress per one is " << progressPerOne << '\n';
 	std::cout << "Efficiency is " << efficiency << '\n';
@@ -162,10 +164,7 @@ int Player::CalculateProgress(int efficiency) {
 	return result;
 }
 
-int Player::CalculateQuality(int efficiency) {
-	/*int result = preComputeQualityEfficiency[playerState.innerQuiet][efficiency];
-	TouchBuffs(result);*/
-	int result;
+const int& Player::CalculateQuality(const int& efficiency) {
 	if (playerState.innovation > 0) {
 		if (playerState.greatStrides > 0) {
 			playerState.greatStrides = 0;
@@ -188,12 +187,12 @@ void Player::AddInnerQuiet(int stacks) {
 	}
 }
 
-inline float Player::InnerQuietEfficiencyMultiplier() {
+inline const float Player::InnerQuietEfficiencyMultiplier() const {
 	//std::cout << "Inner quiet multiplier " << (1 + (playerState.innerQuiet / 10.0f)) << '\n';
 	return (1 + (playerState.innerQuiet / 10.0f));
 }
 
-void Player::SynthesisSkills(SkillName skillName, int& skillDurabilityCost, int& skillEfficiency) {
+void Player::SynthesisSkills(const SkillName& skillName, const int& skillDurabilityCost, int& skillEfficiency) {
 	switch (skillName) {
 	case Skills::SkillName::PRUDENTSYNTHESIS:
 		if (playerState.wasteNot == 0) {
@@ -205,9 +204,12 @@ void Player::SynthesisSkills(SkillName skillName, int& skillDurabilityCost, int&
 		break;
 	case Skills::SkillName::GROUNDWORK:
 		if (craftableItem->GetDurability() < skillDurabilityCost) {
-			skillEfficiency /= 2;
+			craftableItem->AddProgress(CalculateProgress(skillEfficiency/2), skillDurabilityCost);
 		}
-		craftableItem->AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
+		else {
+			craftableItem->AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
+		}
+		
 		break;
 	case Skills::SkillName::MUSCLEMEMORY:
 		if (playerState.currentTurn == 0) {
@@ -225,7 +227,7 @@ void Player::SynthesisSkills(SkillName skillName, int& skillDurabilityCost, int&
 }
 
 //@TODO Change the way cp cost is checked so combo works
-void Player::TouchSkills(SkillName skillName, int& skillDurabilityCost, int& skillEfficiency, int& skillCPCost) {
+void Player::TouchSkills(const SkillName& skillName, const int& skillDurabilityCost, const int& skillEfficiency, int& skillCPCost) {
 	//std::cout << "Touch skill efficiency is " << skillEfficiency << '\n';
 	
 	//std::cout << "After inner quiet is " << skillEfficiency << '\n';
@@ -250,8 +252,7 @@ void Player::TouchSkills(SkillName skillName, int& skillDurabilityCost, int& ski
 		break;
 	case Skills::SkillName::BYREGOTSBLESSING:
 		if (playerState.innerQuiet > 0) {
-			skillEfficiency = 100 + (20 * playerState.innerQuiet);
-			craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
+			craftableItem->AddQuality(CalculateQuality(100 + (20 * playerState.innerQuiet)), skillDurabilityCost);
 			playerState.innerQuiet = 0;
 		}
 		else {
@@ -267,9 +268,6 @@ void Player::TouchSkills(SkillName skillName, int& skillDurabilityCost, int& ski
 		}
 		break;
 	case Skills::SkillName::PREPARATORYTOUCH:
-		if (craftableItem->GetDurability() < skillDurabilityCost) {
-			skillEfficiency /= 2;
-		}
 		craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
 		AddInnerQuiet(2);
 		break;
@@ -295,7 +293,7 @@ void Player::TouchSkills(SkillName skillName, int& skillDurabilityCost, int& ski
 }
 
 // buffs are 1 turn higher than they should be due to immediately losing a turn to buffs upon cast
-void Player::BuffSkills(SkillName skillName) {
+void Player::BuffSkills(const SkillName& skillName) {
 	switch (skillName) {
 	case SkillName::WASTENOTI:
 		playerState.wasteNot = 5;
@@ -320,7 +318,7 @@ void Player::BuffSkills(SkillName skillName) {
 	}
 }
 
-void Player::RepairSkills(SkillName skillName) {
+void Player::RepairSkills(const SkillName& skillName) {
 	switch (skillName) {
 	case SkillName::MASTERSMEND:
 		craftableItem->UpdateDurability(30);
@@ -336,7 +334,7 @@ void Player::RepairSkills(SkillName skillName) {
 	}
 }
 
-void Player::OtherSkills(SkillName skillName, int& skillDurabilityCost) {
+void Player::OtherSkills(const SkillName& skillName, const int& skillDurabilityCost) {
 	switch (skillName) {
 	case SkillName::DELICATESYNTHESIS:
 		craftableItem->AddQuality(CalculateQuality(100), 0);
