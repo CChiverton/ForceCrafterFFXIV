@@ -97,31 +97,35 @@ void Crafter::ForceCraft() {
 	bool isMaxQuality = playerItem->IsItemMaxQuality();
 	int itemDurability = playerItem->GetDurability();
 
-	bool requireTouch = ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111) || ActionUsedDuringBuff(strideTimer, touchActionsUsedSuccessfully, 0b11);
+	bool requireTouch = ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111) ||	ActionUsedDuringBuff(strideTimer, touchActionsUsedSuccessfully, 0b11)
+						|| (secondToLastMove && forceMaxQuality && !isMaxQuality);
 	bool requireSynth = ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111);
 	bool requireAppraisal = ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111);
 
-	bool skip = lastMove || requireSynth || requireAppraisal;
-	bool skipForTouch = secondToLastMove && forceMaxQuality && !isMaxQuality;
+	bool synthActionRequired = lastMove || requireSynth || requireAppraisal;
+	//bool skipForTouch = secondToLastMove && forceMaxQuality && !isMaxQuality;
 
 	synthActionUsed = false;
-	if (!(!forceMaxQuality || isMaxQuality || skip)) {
+	if (!(!forceMaxQuality || isMaxQuality || synthActionRequired)) {
 		QualityCraft(previousStep, finalAppraisalTimer);
 	}
 	touchActionUsed = false;
-	if (!(skipForTouch || requireTouch)) {
+	if (!requireTouch) {
 		SynthesisCraft(previousStep, finalAppraisalTimer);
 	}
 	touchActionUsed = false;
 	OtherCraft(previousStep, finalAppraisalTimer);
 	synthActionUsed = false;
 	touchActionUsed = false;
-	if (!(skip || skipForTouch || requireTouch)) {
+	if (!(synthActionRequired || requireTouch)) {
 		BuffCraft(previousStep, finalAppraisalTimer);
+		if (!(secondToLastMove && itemDurability >= 20)) {
+			RepairCraft(previousStep, finalAppraisalTimer);
+		}
 	}
-	if (!(skip || (secondToLastMove && (itemDurability >= 20 || (forceMaxQuality && !isMaxQuality))) || requireTouch)) {
+	/*if (!(synthActionRequired || (secondToLastMove && itemDurability >= 20) || requireTouch)) {
 		RepairCraft(previousStep, finalAppraisalTimer);
-	}
+	}*/
 
 	ContinueCraft();
 	//std::cout << player->GetCurrentTurn() << " TRIED ALL POSSIBLE MOVES AT THIS LEVEL\n";
