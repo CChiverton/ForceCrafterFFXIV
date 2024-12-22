@@ -51,11 +51,11 @@ Player::Player(int maximumCP, float progressPerHundred, float qualityPerHundred)
 void Player::AddItem(int maxProgress, int maxQuality, int maxDurability) {
 	RemoveItem();
 	ResetPlayerStats();
-	craftableItem = new Item(maxProgress, maxQuality, maxDurability);
+	craftableItem.reset(new Item(maxProgress, maxQuality, maxDurability));
 }
 
 void Player::RemoveItem() {
-	if (craftableItem != nullptr)	delete craftableItem;
+	if (craftableItem != nullptr)	craftableItem.reset(nullptr);
 	craftableItem = nullptr;
 }
 

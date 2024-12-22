@@ -3,11 +3,12 @@
 #define ProgressUpdate 1
 
 Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit)
-	: maxProgress(maxProgress), maxQuality(maxQuality), maxDurability(maxDurability), forceMaxQuality(forceQuality), forceGreaterByregot(greaterByregot), maxTurnLimit(maximumTurnLimit) {
-	player = new Player(maxCP, progressPerHundred, qualityPerHundred);
+	: maxProgress(maxProgress), maxQuality(maxQuality), maxDurability(maxDurability), forceMaxQuality(forceQuality), forceGreaterByregot(greaterByregot), maxTurnLimit(maximumTurnLimit),
+	player(new Player(maxCP, progressPerHundred, qualityPerHundred)), actionTracker(new ActionTracker()) {
+	//player = new Player(maxCP, progressPerHundred, qualityPerHundred);
 	player->AddItem(maxProgress, maxQuality, maxDurability);
-	playerItem = player->craftableItem;
-	actionTracker = new ActionTracker();
+	//playerItem = player->craftableItem;
+	//actionTracker = new ActionTracker();
 
 	craftingHistory.reserve(maximumTurnLimit);
 
@@ -51,8 +52,8 @@ void Crafter::CraftAndRecord(SkillTest move, CraftingHistory& previousStep, int&
 
 		//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
 
-		if (playerItem->IsItemCrafted()) {
-			if (forceMaxQuality && !playerItem->IsItemMaxQuality()) {
+		if (player->craftableItem->IsItemCrafted()) {
+			if (forceMaxQuality && !player->craftableItem->IsItemMaxQuality()) {
 				//std::cout << "Not maximum quality when needed\n";
 				LoadLastCraftingRecord(previousStep);
 				return;
@@ -66,11 +67,11 @@ void Crafter::CraftAndRecord(SkillTest move, CraftingHistory& previousStep, int&
 			LoadLastCraftingRecord(previousStep);
 			return;
 		}
-		else if (finalAppraisalTimer == 1 && (playerItem->GetMaxProgress() - playerItem->GetCurrentProgress()) != 1) {		// not appraised
+		else if (finalAppraisalTimer == 1 && (player->craftableItem->GetMaxProgress() - player->craftableItem->GetCurrentProgress()) != 1) {		// not appraised
 			LoadLastCraftingRecord(previousStep);
 			return;
 		}
-		else if (!playerItem->IsItemBroken()) {
+		else if (!player->craftableItem->IsItemBroken()) {
 			SaveCraftingHistory(move.skillName);
 			ForceCraft();
 		}
@@ -94,8 +95,8 @@ void Crafter::ForceCraft() {
 	int strideTimer = player->GetBuffDuration(SkillName::GREATSTRIDES);
 	actionTracker->ProgressBuffs(venerationTimer > 0, player->GetBuffDuration(SkillName::WASTENOTI) > 0, strideTimer > 0);
 	int finalAppraisalTimer = player->GetBuffDuration(SkillName::FINALAPPRAISAL);
-	bool isMaxQuality = playerItem->IsItemMaxQuality();
-	int itemDurability = playerItem->GetDurability();
+	bool isMaxQuality = player->craftableItem->IsItemMaxQuality();
+	int itemDurability = player->craftableItem->GetDurability();
 
 	bool requireTouch = ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111) ||	ActionUsedDuringBuff(strideTimer, touchActionsUsedSuccessfully, 0b11)
 						|| (secondToLastMove && forceMaxQuality && !isMaxQuality);
@@ -172,8 +173,8 @@ void Crafter::BuffCraft(CraftingHistory& previousStep, int& finalAppraisalTimer)
 void Crafter::RepairCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	for (const SkillTest& move : repairSkills) {
 		if (player->playerState.lastSkillUsed == SkillName::MASTERSMEND)	continue;		//If previously used this skill, it would have been more effective to use Immaculate Mend
-		if (move.skillName == SkillName::IMMACULATEMEND && (playerItem->GetMaxDurability() - playerItem->GetDurability()) <= 30)	continue;	// better to use masters mend here
-		if ((playerItem->GetMaxDurability() - playerItem->GetDurability()) > 15)	continue;		// Arbritrary number, more of a logical "Why repair at this stage"
+		if (move.skillName == SkillName::IMMACULATEMEND && (player->craftableItem->GetMaxDurability() - player->craftableItem->GetDurability()) <= 30)	continue;	// better to use masters mend here
+		if ((player->craftableItem->GetMaxDurability() - player->craftableItem->GetDurability()) > 15)	continue;		// Arbritrary number, more of a logical "Why repair at this stage"
 		CraftAndRecord(move, previousStep, finalAppraisalTimer);
 	}
 }
@@ -226,7 +227,7 @@ bool Crafter::SimilarTrees(SkillName skillName) {
 
 inline void Crafter::SaveCraftingHistory(SkillName skillName) {
 	craftingRecord.player = player->GetPlayerState();
-	craftingRecord.item = playerItem->GetItemState();
+	craftingRecord.item = player->craftableItem->GetItemState();
 	craftingRecord.currentTime = player->GetCurrentTime();
 	craftingRecord.skillName = skillName;
 	craftingHistory.emplace_back(craftingRecord);
@@ -264,7 +265,7 @@ void Crafter::AddSuccessfulCraft() {
 
 inline void Crafter::LoadLastCraftingRecord(CraftingHistory& lastRecord) {
 	player->LoadPlayerStats(lastRecord.player);
-	playerItem->LoadItemState(lastRecord.item);
+	player->craftableItem->LoadItemState(lastRecord.item);
 	craftingRecord = lastRecord;
 	/*std::cout << "After loading item stats are\n";
 	player->craftableItem->OutputStats();*/
@@ -333,7 +334,7 @@ bool Crafter::BuffCheck(SkillName skillName) {
 		if (player->GetCurrentTurn() + 6 >= maxTurnLimit) {
 			buffSkip = true;
 		}
-		else if (!forceMaxQuality || playerItem->IsItemMaxQuality()) {
+		else if (!forceMaxQuality || player->craftableItem->IsItemMaxQuality()) {
 			buffSkip = true;
 		}
 		break;

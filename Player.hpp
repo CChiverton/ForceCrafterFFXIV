@@ -28,7 +28,7 @@ public:
 		return (playerState.currentTurn + 1);
 	}
 
-	Item* craftableItem = nullptr;
+	std::unique_ptr<Item> craftableItem = nullptr;
 
 	int GetBuffDuration(SkillName skillName) const {
 		switch (skillName) {

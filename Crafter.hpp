@@ -31,7 +31,7 @@ public:
 
 private:
 
-	Player* player;
+	std::unique_ptr<Player> player;
 	const int maxProgress{}, maxQuality{}, maxDurability{};
 	std::vector<CraftingHistory> craftingHistory{};
 	//std::vector<Skills::SkillName> currentCraft{};
@@ -40,10 +40,10 @@ private:
 	const bool forceMaxQuality;
 	const bool forceGreaterByregot;
 	const int maxTurnLimit;
-	Item* playerItem;
+	std::unique_ptr<Item> playerItem;
 	bool touchActionUsed{ false }, synthActionUsed{ false };
 	int touchActionsUsedSuccessfully = 0b0, synthActionsUsedSuccessfully = 0b0;
-	ActionTracker* actionTracker;
+	std::unique_ptr<ActionTracker> actionTracker;
 	bool invalid{ false };
 	int baseTurn{};
 
