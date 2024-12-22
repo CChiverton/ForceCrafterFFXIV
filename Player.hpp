@@ -5,6 +5,7 @@
 #include "Item.hpp"
 #include "Skills.hpp"
 
+#include <array>
 #include <unordered_map>
 
 using namespace Skills;
@@ -81,8 +82,8 @@ private:
 	const float progressPerOne{}, qualityPerOne{};
 	bool successfulCast{ true };
 	static const int maxInnerQuiet{ 10 };
-	int preComputeQualityEfficiency[maxInnerQuiet + 1][300 + 1]{}, preComputeQualityTouchEfficiency[maxInnerQuiet + 1][300 + 1]{},
-		preComputeQualityStrideEfficiency[maxInnerQuiet + 1][300 + 1]{}, preComputeQualityTouchStrideEfficiency[maxInnerQuiet + 1][300 + 1]{};
+	std::array<std::array<int, 300+1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
+		preComputeQualityStrideEfficiency, preComputeQualityTouchStrideEfficiency;
 
 	
 

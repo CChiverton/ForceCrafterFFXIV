@@ -7,6 +7,7 @@
 #include "ActionTracker.hpp"
 #include <map>
 #include <vector>
+#include <array>
 
 
 class Crafter {
@@ -74,14 +75,14 @@ private:
 
 	void PrintCrafts();
 
-	const SkillTest finalMoveList[4] = {
+	const std::array<SkillTest, 4> finalMoveList = {
 		skillTest[(int)SkillName::BASICSYNTHESIS],
 		skillTest[(int)SkillName::CAREFULSYNTHESIS],
 		skillTest[(int)SkillName::PRUDENTSYNTHESIS],
 		skillTest[(int)SkillName::GROUNDWORK],
 	};
 
-	const SkillTest synthesisSkills[5] = {
+	const std::array<SkillTest, 5> synthesisSkills = {
 		skillTest[(int)SkillName::MUSCLEMEMORY],
 		skillTest[(int)SkillName::BASICSYNTHESIS],
 		skillTest[(int)SkillName::CAREFULSYNTHESIS],
@@ -90,7 +91,7 @@ private:
 	};
 
 		// All skills focused on touch regardless of category
-	const SkillTest qualitySkills[10] = {
+	const std::array<SkillTest, 10> qualitySkills = {
 		skillTest[(int)SkillName::REFLECT],
 		skillTest[(int)SkillName::BYREGOTSBLESSING],
 		skillTest[(int)SkillName::PREPARATORYTOUCH],
@@ -103,7 +104,7 @@ private:
 		skillTest[(int)SkillName::INNOVATION],
 	};
 
-	const SkillTest buffSkills[5] = {
+	const std::array<SkillTest, 5> buffSkills = {
 		skillTest[(int)SkillName::WASTENOTI],
 		skillTest[(int)SkillName::WASTENOTII],
 		skillTest[(int)SkillName::VENERATION],
@@ -111,11 +112,11 @@ private:
 		skillTest[(int)SkillName::FINALAPPRAISAL],
 	};
 
-	const SkillTest repairSkills[2] = {
+	const std::array<SkillTest, 2> repairSkills = {
 		skillTest[(int)SkillName::MASTERSMEND],
 		skillTest[(int)SkillName::IMMACULATEMEND]
 	};
-	const SkillTest otherSkills[1] = {
+	const std::array <SkillTest, 1> otherSkills = {
 		skillTest[(int)SkillName::DELICATESYNTHESIS]
 	};
 };
