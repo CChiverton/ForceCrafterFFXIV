@@ -25,7 +25,7 @@ private:
 
 public:
 
-	void CraftAndRecord(const SkillTest& move, const CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void CraftAndRecord(const SkillTest& move, const CraftingHistory& previousStep, int finalAppraisalTimer);
 
 	void ForceCraft();
 
@@ -47,15 +47,15 @@ private:
 	bool invalid{ false };
 	int baseTurn{};
 
-	void SynthesisCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer);
-	void QualityCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer);
-	void BuffCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer);
-	void RepairCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer);
-	void OtherCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void SynthesisCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
+	void QualityCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
+	void BuffCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
+	void RepairCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
+	void OtherCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
 
-	void UpdateValidBuffCheck(int& appropriateActionTurn, bool& actionUsedThisTurn);
+	void UpdateValidBuffCheck(int appropriateActionTurn, bool actionUsedThisTurn);
 
-	bool ActionUsedDuringBuff(int& timeLeft, int& actionHistory, int turns);
+	bool ActionUsedDuringBuff(int timeLeft, int actionHistory, int turns);
 
 	// For example, BasicSynthesis->CarefulSynthesis and CarefulSynthesis->BasicSynthesis are the same if both buffed or unbuffed
 	//@TODO update to include muscle memory buff
