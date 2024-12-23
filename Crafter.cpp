@@ -87,41 +87,42 @@ void Crafter::CraftAndRecord(const SkillTest& move, const CraftingHistory& previ
 void Crafter::ForceCraft() {
 	if (invalid) return;
 	CraftingHistory& previousStep = craftingRecord;		// stack allocation for faster loading
-	bool lastMove = ((previousStep.currentTime + 3) >= bestTime || player->GetCurrentTurn() == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
-	bool secondToLastMove = ((previousStep.currentTime + 6) >= bestTime || player->GetCurrentTurn() == maxTurnLimit - 2) ? true : false;
-	int innovationTimer = player->GetBuffDuration(SkillName::INNOVATION);
+	bool lastMove = ((previousStep.currentTime + 3) >= bestTime || previousStep.player.currentTurn == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
+	bool secondToLastMove = ((previousStep.currentTime + 6) >= bestTime || previousStep.player.currentTurn == maxTurnLimit - 2) ? true : false;
+	//int innovationTimer = previousStep.player.buffInfo.innovation;
 
-	int venerationTimer = player->GetBuffDuration(SkillName::VENERATION);
-	int strideTimer = player->GetBuffDuration(SkillName::GREATSTRIDES);
-	actionTracker->ProgressBuffs(venerationTimer > 0, player->GetBuffDuration(SkillName::WASTENOTI) > 0, strideTimer > 0);
-	int finalAppraisalTimer = player->GetBuffDuration(SkillName::FINALAPPRAISAL);
+	//int venerationTimer = previousStep.player.buffInfo.veneration;
+	//int strideTimer = previousStep.player.buffInfo.greatStrides;
+	actionTracker->ProgressBuffs(previousStep.player.buffInfo.innovationActive, previousStep.player.buffInfo.wasteNotActive, previousStep.player.buffInfo.greatStridesActive);
+	//int finalAppraisalTimer = previousStep.player.buffInfo.finalAppraisal;
 	bool isMaxQuality = player->craftableItem->IsItemMaxQuality();
 	int itemDurability = player->craftableItem->GetMaxDurability() - player->craftableItem->GetDurability();
 
-	bool requireTouch = ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111) ||	ActionUsedDuringBuff(strideTimer, touchActionsUsedSuccessfully, 0b11)
+	bool requireTouch = ActionUsedDuringBuff(previousStep.player.buffInfo.innovation, touchActionsUsedSuccessfully, 0b111) 
+						||	ActionUsedDuringBuff(previousStep.player.buffInfo.greatStrides, touchActionsUsedSuccessfully, 0b11)
 						|| (secondToLastMove && forceMaxQuality && !isMaxQuality);
-	bool requireSynth = ActionUsedDuringBuff(venerationTimer, synthActionsUsedSuccessfully, 0b111);
-	bool requireAppraisal = ActionUsedDuringBuff(finalAppraisalTimer, synthActionsUsedSuccessfully, 0b1111);
+	bool requireSynth = ActionUsedDuringBuff(previousStep.player.buffInfo.veneration, synthActionsUsedSuccessfully, 0b111);
+	bool requireAppraisal = ActionUsedDuringBuff(previousStep.player.buffInfo.finalAppraisal, synthActionsUsedSuccessfully, 0b1111);
 
 	bool synthActionRequired = lastMove || requireSynth || requireAppraisal;
 	//bool skipForTouch = secondToLastMove && forceMaxQuality && !isMaxQuality;
 
 	synthActionUsed = false;
 	if (!(!forceMaxQuality || isMaxQuality || synthActionRequired)) {
-		QualityCraft(previousStep, finalAppraisalTimer);
+		QualityCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
 	}
 	touchActionUsed = false;
 	if (!requireTouch) {
-		SynthesisCraft(previousStep, finalAppraisalTimer);
+		SynthesisCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
 	}
 	touchActionUsed = false;
-	OtherCraft(previousStep, finalAppraisalTimer);
+	OtherCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
 	synthActionUsed = false;
 	touchActionUsed = false;
 	if (!(synthActionRequired || requireTouch)) {
-		BuffCraft(previousStep, finalAppraisalTimer);
+		BuffCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
 		if (!(secondToLastMove && itemDurability >= 20)) {
-			RepairCraft(previousStep, finalAppraisalTimer, itemDurability);
+			RepairCraft(previousStep, previousStep.player.buffInfo.finalAppraisal, itemDurability);
 		}
 	}
 	/*if (!(synthActionRequired || (secondToLastMove && itemDurability >= 20) || requireTouch)) {
