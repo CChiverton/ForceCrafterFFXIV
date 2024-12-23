@@ -53,6 +53,10 @@ public:
 		groundwork >>= 1;
 	}
 
+	static constexpr int BuffHistory(int history, int bitmask) {
+		return history & bitmask;
+	}
+
 	void ProgressBuffs(bool venerationBuff, bool wasteNotBuff, bool strideBuff) {
 		venerationHistory <<= 1;
 		venerationHistory |= venerationBuff;
