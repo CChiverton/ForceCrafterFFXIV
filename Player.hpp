@@ -34,20 +34,20 @@ public:
 	inline const int& GetBuffDuration(SkillName skillName) const {
 		switch (skillName) {
 		case SkillName::MUSCLEMEMORY:
-			return playerState.muscleMemory;
+			return playerState.buffInfo.muscleMemory;
 		case SkillName::WASTENOTI:
 		case SkillName::WASTENOTII:
-			return playerState.wasteNot;
+			return playerState.buffInfo.wasteNot;
 		case SkillName::GREATSTRIDES:
-			return playerState.greatStrides;
+			return playerState.buffInfo.greatStrides;
 		case SkillName::INNOVATION:
-			return playerState.innovation;
+			return playerState.buffInfo.innovation;
 		case SkillName::VENERATION:
-			return playerState.veneration;
+			return playerState.buffInfo.veneration;
 		case SkillName::FINALAPPRAISAL:
-			return playerState.finalAppraisal;
+			return playerState.buffInfo.finalAppraisal;
 		case SkillName::MANIPULATION:
-			return playerState.manipulation;
+			return playerState.buffInfo.manipulation;
 		default:
 			std::cout << "This is not a buff\n";
 			std::cout << Skills::GetSkillName(skillName) << '\n';
@@ -57,18 +57,29 @@ public:
 		return 0;
 	}
 
+	struct BuffInfo {
+		int muscleMemory = 0;
+		bool muscleMemoryActive = false;
+		int wasteNot = 0;
+		bool wasteNotActive = false;
+		int greatStrides = 0;
+		bool greatStridesActive = false;
+		int innovation = 0;
+		bool innovationActive = false;
+		int veneration = 0;
+		bool venerationActive = false;
+		int finalAppraisal = 0;
+		bool finalAppraisalActive = false;
+		int manipulation = 0;
+		bool manipulationActive = false;
+	};
+
 	struct PlayerState {
 		int currentCP{ 0 };
 		int currentTurn{ 0 };
 		int currentTime{ 0 };
-		int innerQuiet{ 0 };
-		int muscleMemory = 0;
-		int wasteNot = 0;
-		int greatStrides = 0;
-		int innovation = 0;
-		int veneration= 0;
-		int finalAppraisal = 0;
-		int manipulation = 0;
+		int innerQuiet{ 0 };;
+		BuffInfo buffInfo{};
 		Skills::SkillName lastSkillUsed{ Skills::SkillName::NONE };
 	}playerState;
 

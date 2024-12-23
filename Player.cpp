@@ -72,7 +72,7 @@ bool Player::CastSkill(const Skills::SkillTest& skill) {
 	int skillCPCost = skill.costCP;
 	int skillDurabilityCost = skill.costDurability;
 	int skillEfficiency = skill.efficiency;
-	if (playerState.wasteNot > 0) {
+	if (playerState.buffInfo.wasteNotActive) {
 		skillDurabilityCost /= 2;
 	}
 	switch (skill.type) {
@@ -98,11 +98,11 @@ bool Player::CastSkill(const Skills::SkillTest& skill) {
 	}
 
 	if (successfulCast) {
-		if (playerState.finalAppraisal > 0 && craftableItem->IsItemCrafted()) {
+		if (playerState.buffInfo.finalAppraisalActive && craftableItem->IsItemCrafted()) {
 			craftableItem->AddProgress(-(craftableItem->GetCurrentProgress() - craftableItem->GetMaxProgress() + 1), 0);
 		}
 
-		if (playerState.manipulation < 9 && playerState.manipulation > 0) {
+		if (playerState.buffInfo.manipulation < 9 && playerState.buffInfo.manipulationActive) {
 			craftableItem->UpdateDurability(5);
 		}
 		//std::cout << craftableItem->GetDurability() << '\n';
@@ -132,13 +132,21 @@ void Player::ResetPlayerStats() {
 	playerState.currentTime = 0;
 	playerState.lastSkillUsed = SkillName::NONE;
 	successfulCast = true; // Only turned false on failure. True by default
-	playerState.muscleMemory= 0;
-	playerState.wasteNot = 0;
-	playerState.greatStrides = 0;
-	playerState.innovation = 0;
-	playerState.veneration = 0;
-	playerState.finalAppraisal = 0;
-	playerState.manipulation = 0;
+	playerState.buffInfo.muscleMemory = 0;
+	playerState.buffInfo.muscleMemoryActive = false;
+	playerState.buffInfo.wasteNot = 0;
+	playerState.buffInfo.wasteNotActive = false;
+	playerState.buffInfo.greatStrides = 0;
+	playerState.buffInfo.greatStridesActive = false;
+	playerState.buffInfo.innovation = 0;
+	playerState.buffInfo.innovationActive = false;
+	playerState.buffInfo.veneration = 0;
+	playerState.buffInfo.venerationActive = false;
+	playerState.buffInfo.finalAppraisal = 0;
+	playerState.buffInfo.finalAppraisalActive = false;
+	playerState.buffInfo.manipulation = 0;
+	playerState.buffInfo.manipulationActive = false;
+	
 }
 
 void Player::LoadPlayerStats(const PlayerState& state) {
@@ -167,16 +175,18 @@ const int Player::CalculateProgress(const int efficiency) {
 }
 
 const int& Player::CalculateQuality(const int efficiency) {
-	if (playerState.innovation > 0) {
-		if (playerState.greatStrides > 0) {
-			playerState.greatStrides = 0;
+	if (playerState.buffInfo.innovationActive) {
+		if (playerState.buffInfo.greatStridesActive) {
+			playerState.buffInfo.greatStrides = 0;
+			playerState.buffInfo.greatStridesActive = false;
 			//std::cout << preComputeQualityTouchStrideEfficiency[playerState.innerQuiet][efficiency] << "\n\n";
 			return preComputeQualityTouchStrideEfficiency[playerState.innerQuiet][efficiency];
 		}
 		return preComputeQualityTouchEfficiency[playerState.innerQuiet][efficiency];
 	}
-	if (playerState.greatStrides > 0) {
-		playerState.greatStrides = 0; 
+	if (playerState.buffInfo.greatStridesActive) {
+		playerState.buffInfo.greatStrides = 0;
+		playerState.buffInfo.greatStridesActive = false;
 		return preComputeQualityStrideEfficiency[playerState.innerQuiet][efficiency];
 	}
 	return preComputeQualityEfficiency[playerState.innerQuiet][efficiency];
@@ -197,7 +207,7 @@ inline const float Player::InnerQuietEfficiencyMultiplier() const {
 void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabilityCost, int& skillEfficiency) {
 	switch (skillName) {
 	case Skills::SkillName::PRUDENTSYNTHESIS:
-		if (playerState.wasteNot == 0) {
+		if (!playerState.buffInfo.wasteNotActive) {
 			craftableItem->AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
 		}
 		else {
@@ -216,7 +226,8 @@ void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabili
 	case Skills::SkillName::MUSCLEMEMORY:
 		if (playerState.currentTurn == 0) {
 			craftableItem->AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
-			playerState.muscleMemory = 6;
+			playerState.buffInfo.muscleMemory = 6;
+			playerState.buffInfo.muscleMemoryActive = true;
 		}
 		else {
 			successfulCast = false;
@@ -262,7 +273,7 @@ void Player::TouchSkills(const SkillName skillName, const int& skillDurabilityCo
 		}
 		break;
 	case Skills::SkillName::PRUDENTTOUCH:
-		if (playerState.wasteNot == 0) {
+		if (!playerState.buffInfo.wasteNotActive) {
 			craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
 		}
 		else {
@@ -298,22 +309,28 @@ void Player::TouchSkills(const SkillName skillName, const int& skillDurabilityCo
 void Player::BuffSkills(const SkillName skillName) {
 	switch (skillName) {
 	case SkillName::WASTENOTI:
-		playerState.wasteNot = 5;
+		playerState.buffInfo.wasteNot = 5;
+		playerState.buffInfo.wasteNotActive = true;
 		break;
 	case SkillName::WASTENOTII:
-		playerState.wasteNot = 9;
+		playerState.buffInfo.wasteNot = 9;
+		playerState.buffInfo.wasteNotActive = true;
 		break;
 	case SkillName::GREATSTRIDES:
-		playerState.greatStrides = 4;
+		playerState.buffInfo.greatStrides = 4;
+		playerState.buffInfo.greatStridesActive = true;
 		break;
 	case SkillName::INNOVATION:
-		playerState.innovation = 5;
+		playerState.buffInfo.innovation = 5;
+		playerState.buffInfo.innovationActive = true;
 		break;
 	case SkillName::VENERATION:
-		playerState.veneration = 5;
+		playerState.buffInfo.veneration = 5;
+		playerState.buffInfo.venerationActive = true;
 		break;
 	case SkillName::FINALAPPRAISAL:
-		playerState.finalAppraisal = 5;		// not incremented by 1 like the others as buff decrements are paused for the cast
+		playerState.buffInfo.finalAppraisal = 5;		// not incremented by 1 like the others as buff decrements are paused for the cast
+		playerState.buffInfo.finalAppraisalActive = true;
 		break;
 	default:
 		break;
@@ -326,7 +343,8 @@ void Player::RepairSkills(const SkillName skillName) {
 		craftableItem->UpdateDurability(30);
 		break;
 	case SkillName::MANIPULATION:
-		playerState.manipulation = 9;
+		playerState.buffInfo.manipulation = 9;
+		playerState.buffInfo.manipulationActive = true;
 		break;
 	case SkillName::IMMACULATEMEND:
 		craftableItem->UpdateDurability(1000);
@@ -348,32 +366,48 @@ void Player::OtherSkills(const SkillName skillName, const int& skillDurabilityCo
 
 void Player::SynthesisBuffs(int& skillEfficiency) {
 	int baseSkillEfficiency = skillEfficiency;
-	if (playerState.muscleMemory) {
+	if (playerState.buffInfo.muscleMemory) {
 		skillEfficiency += baseSkillEfficiency;
-		playerState.muscleMemory = 0;
+		playerState.buffInfo.muscleMemory = 0;
+		playerState.buffInfo.muscleMemoryActive = false;
 	}
-	if (playerState.veneration > 0) {
+	if (playerState.buffInfo.venerationActive) {
 		skillEfficiency += baseSkillEfficiency / 2;
 	}
 }
 
 void Player::TouchBuffs(int& skillEfficiency) {
 	int baseSkillEfficiency = skillEfficiency;
-	if (playerState.innovation > 0) {
+	if (playerState.buffInfo.innovationActive) {
 		skillEfficiency += baseSkillEfficiency / 2;
 	}
-	if (playerState.greatStrides > 0) {
+	if (playerState.buffInfo.greatStridesActive) {
 		skillEfficiency += baseSkillEfficiency;
-		playerState.greatStrides = 0;
+		playerState.buffInfo.greatStrides = 0;
+		playerState.buffInfo.greatStridesActive = false;
 	}
 }
 
-void Player::DecrementBuffs() {
-	if (playerState.muscleMemory > 0)	--playerState.muscleMemory;
-	if (playerState.wasteNot > 0)		--playerState.wasteNot;
-	if (playerState.greatStrides > 0)	--playerState.greatStrides;
-	if (playerState.innovation > 0)		--playerState.innovation;
-	if (playerState.veneration > 0)		--playerState.veneration;
-	if (playerState.finalAppraisal > 0)	--playerState.finalAppraisal;
-	if (playerState.manipulation > 0)	--playerState.manipulation;
+void Player::DecrementBuffs() {	
+	if (playerState.buffInfo.muscleMemoryActive) {
+		playerState.buffInfo.muscleMemoryActive = --playerState.buffInfo.muscleMemory;
+	}
+	if (playerState.buffInfo.wasteNotActive) {
+		playerState.buffInfo.wasteNotActive = --playerState.buffInfo.wasteNot;
+	}
+	if (playerState.buffInfo.greatStridesActive) {
+		playerState.buffInfo.greatStridesActive = --playerState.buffInfo.greatStrides;
+	}
+	if (playerState.buffInfo.innovationActive) {
+		playerState.buffInfo.innovationActive = --playerState.buffInfo.innovation;
+	}
+	if (playerState.buffInfo.venerationActive) {
+		playerState.buffInfo.venerationActive = --playerState.buffInfo.veneration;
+	}
+	if (playerState.buffInfo.finalAppraisalActive) {
+		playerState.buffInfo.finalAppraisalActive = --playerState.buffInfo.finalAppraisal;
+	}
+	if (playerState.buffInfo.manipulationActive) {
+		playerState.buffInfo.manipulationActive = --playerState.buffInfo.manipulation;
+	}
 }
