@@ -117,7 +117,7 @@ bool Player::CastSkill(const Skills::SkillTest& skill) {
 	//CheckItem();
 }
 
-const int& Player::GetSkillTime(SkillName& skillName) const {
+const int& Player::GetSkillTime(SkillName skillName) const {
 	return SkillList.at(skillName).castTime;
 }
 
@@ -155,7 +155,7 @@ bool Player::CheckItem() {
 	return true;
 }
 
-const int Player::CalculateProgress(const int& efficiency) {
+const int Player::CalculateProgress(const int efficiency) {
 	int result = progressPerOne * efficiency;
 	/*std::cout << "Progress per one is " << progressPerOne << '\n';
 	std::cout << "Efficiency is " << efficiency << '\n';
@@ -164,7 +164,7 @@ const int Player::CalculateProgress(const int& efficiency) {
 	return result;
 }
 
-const int& Player::CalculateQuality(const int& efficiency) {
+const int& Player::CalculateQuality(const int efficiency) {
 	if (playerState.innovation > 0) {
 		if (playerState.greatStrides > 0) {
 			playerState.greatStrides = 0;
@@ -192,7 +192,7 @@ inline const float Player::InnerQuietEfficiencyMultiplier() const {
 	return (1 + (playerState.innerQuiet / 10.0f));
 }
 
-void Player::SynthesisSkills(const SkillName& skillName, const int& skillDurabilityCost, int& skillEfficiency) {
+void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabilityCost, int& skillEfficiency) {
 	switch (skillName) {
 	case Skills::SkillName::PRUDENTSYNTHESIS:
 		if (playerState.wasteNot == 0) {
@@ -227,7 +227,7 @@ void Player::SynthesisSkills(const SkillName& skillName, const int& skillDurabil
 }
 
 //@TODO Change the way cp cost is checked so combo works
-void Player::TouchSkills(const SkillName& skillName, const int& skillDurabilityCost, const int& skillEfficiency, int& skillCPCost) {
+void Player::TouchSkills(const SkillName skillName, const int& skillDurabilityCost, const int& skillEfficiency, int& skillCPCost) {
 	//std::cout << "Touch skill efficiency is " << skillEfficiency << '\n';
 	
 	//std::cout << "After inner quiet is " << skillEfficiency << '\n';
@@ -293,7 +293,7 @@ void Player::TouchSkills(const SkillName& skillName, const int& skillDurabilityC
 }
 
 // buffs are 1 turn higher than they should be due to immediately losing a turn to buffs upon cast
-void Player::BuffSkills(const SkillName& skillName) {
+void Player::BuffSkills(const SkillName skillName) {
 	switch (skillName) {
 	case SkillName::WASTENOTI:
 		playerState.wasteNot = 5;
@@ -318,7 +318,7 @@ void Player::BuffSkills(const SkillName& skillName) {
 	}
 }
 
-void Player::RepairSkills(const SkillName& skillName) {
+void Player::RepairSkills(const SkillName skillName) {
 	switch (skillName) {
 	case SkillName::MASTERSMEND:
 		craftableItem->UpdateDurability(30);
@@ -334,7 +334,7 @@ void Player::RepairSkills(const SkillName& skillName) {
 	}
 }
 
-void Player::OtherSkills(const SkillName& skillName, const int& skillDurabilityCost) {
+void Player::OtherSkills(const SkillName skillName, const int& skillDurabilityCost) {
 	switch (skillName) {
 	case SkillName::DELICATESYNTHESIS:
 		craftableItem->AddQuality(CalculateQuality(100), 0);

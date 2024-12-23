@@ -21,7 +21,7 @@ public:
 
 	bool CastSkill(const Skills::SkillTest& skillName);
 
-	const int& GetSkillTime(Skills::SkillName& skillName) const;
+	const int& GetSkillTime(Skills::SkillName skillName) const;
 	const int& GetCurrentTime() const {
 		return playerState.currentTime;
 	}
@@ -92,18 +92,18 @@ private:
 	
 	bool CheckItem();
 
-	const int CalculateProgress(const int& efficiency);
-	const int& CalculateQuality(const int& efficiency);
+	const int CalculateProgress(const int efficiency);
+	const int& CalculateQuality(const int efficiency);
 
 	void AddInnerQuiet(int stacks);
 	inline const float InnerQuietEfficiencyMultiplier() const;
 
 
-	void SynthesisSkills(const SkillName& skillName, const int& skillDurabilityCost, int& skillEfficiency);
-	void TouchSkills(const SkillName& skillName, const int& skillDurabilityCost, const int& skillEfficiency, int& skillCPCost);
-	void BuffSkills(const SkillName& skillName);
-	void RepairSkills(const SkillName& skillName);
-	void OtherSkills(const SkillName& skillName, const int& skillDurabilityCost);
+	void SynthesisSkills(const SkillName skillName, const int& skillDurabilityCost, int& skillEfficiency);
+	void TouchSkills(const SkillName skillName, const int& skillDurabilityCost, const int& skillEfficiency, int& skillCPCost);
+	void BuffSkills(const SkillName skillName);
+	void RepairSkills(const SkillName skillName);
+	void OtherSkills(const SkillName skillName, const int& skillDurabilityCost);
 	void SynthesisBuffs(int& skillEfficiency);
 	void TouchBuffs(int& skillEfficiency);
 	void DecrementBuffs();
