@@ -96,7 +96,7 @@ void Crafter::ForceCraft() {
 	actionTracker->ProgressBuffs(venerationTimer > 0, player->GetBuffDuration(SkillName::WASTENOTI) > 0, strideTimer > 0);
 	int finalAppraisalTimer = player->GetBuffDuration(SkillName::FINALAPPRAISAL);
 	bool isMaxQuality = player->craftableItem->IsItemMaxQuality();
-	int itemDurability = player->craftableItem->GetDurability();
+	int itemDurability = player->craftableItem->GetMaxDurability() - player->craftableItem->GetDurability();
 
 	bool requireTouch = ActionUsedDuringBuff(innovationTimer, touchActionsUsedSuccessfully, 0b111) ||	ActionUsedDuringBuff(strideTimer, touchActionsUsedSuccessfully, 0b11)
 						|| (secondToLastMove && forceMaxQuality && !isMaxQuality);
@@ -121,7 +121,7 @@ void Crafter::ForceCraft() {
 	if (!(synthActionRequired || requireTouch)) {
 		BuffCraft(previousStep, finalAppraisalTimer);
 		if (!(secondToLastMove && itemDurability >= 20)) {
-			RepairCraft(previousStep, finalAppraisalTimer);
+			RepairCraft(previousStep, finalAppraisalTimer, itemDurability);
 		}
 	}
 	/*if (!(synthActionRequired || (secondToLastMove && itemDurability >= 20) || requireTouch)) {
@@ -170,11 +170,11 @@ void Crafter::BuffCraft(const CraftingHistory& previousStep, int finalAppraisalT
 	}
 }
 
-void Crafter::RepairCraft(const CraftingHistory& previousStep, int finalAppraisalTimer) {
+void Crafter::RepairCraft(const CraftingHistory& previousStep, int finalAppraisalTimer, int remainingDurability) {
 	for (const SkillTest& move : repairSkills) {
 		if (player->playerState.lastSkillUsed == SkillName::MASTERSMEND)	continue;		//If previously used this skill, it would have been more effective to use Immaculate Mend
-		if (move.skillName == SkillName::IMMACULATEMEND && (player->craftableItem->GetMaxDurability() - player->craftableItem->GetDurability()) <= 30)	continue;	// better to use masters mend here
-		if ((player->craftableItem->GetMaxDurability() - player->craftableItem->GetDurability()) > 15)	continue;		// Arbritrary number, more of a logical "Why repair at this stage"
+		if (move.skillName == SkillName::IMMACULATEMEND && remainingDurability <= 30)	continue;	// better to use masters mend here
+		if (remainingDurability > 15)	continue;		// Arbritrary number, more of a logical "Why repair at this stage"
 		CraftAndRecord(move, previousStep, finalAppraisalTimer);
 	}
 }

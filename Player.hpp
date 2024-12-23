@@ -21,17 +21,17 @@ public:
 
 	bool CastSkill(const Skills::SkillTest& skillName);
 
-	const int& GetSkillTime(Skills::SkillName skillName) const;
-	const int& GetCurrentTime() const {
+	inline const int& GetSkillTime(Skills::SkillName skillName) const;
+	inline const int& GetCurrentTime() const {
 		return playerState.currentTime;
 	}
-	const int& GetCurrentTurn() const {
+	inline const int& GetCurrentTurn() const {
 		return (playerState.currentTurn + 1);
 	}
 
 	std::unique_ptr<Item> craftableItem = nullptr;
 
-	const int& GetBuffDuration(SkillName skillName) const {
+	inline const int& GetBuffDuration(SkillName skillName) const {
 		switch (skillName) {
 		case SkillName::MUSCLEMEMORY:
 			return playerState.muscleMemory;

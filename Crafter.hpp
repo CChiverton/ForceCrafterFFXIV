@@ -50,7 +50,7 @@ private:
 	void SynthesisCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
 	void QualityCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
 	void BuffCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
-	void RepairCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
+	void RepairCraft(const CraftingHistory& previousStep, int finalAppraisalTimer, int remainingDurability);
 	void OtherCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
 
 	void UpdateValidBuffCheck(int appropriateActionTurn, bool actionUsedThisTurn);
