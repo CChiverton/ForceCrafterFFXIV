@@ -110,7 +110,9 @@ bool Player::CastSkill(const Skills::SkillTest& skill) {
 		playerState.currentCP -= skillCPCost;
 		++playerState.currentTurn;
 		playerState.currentTime += skill.castTime;
-		DecrementBuffs();
+		if (playerState.finalAppraisal == 0) {
+			DecrementBuffs();
+		}
 	}
 
 	return successfulCast;
