@@ -47,7 +47,7 @@ Crafter::~Crafter() {
 	}
 }
 
-void Crafter::CraftAndRecord(SkillTest move, CraftingHistory& previousStep, int& finalAppraisalTimer) {
+void Crafter::CraftAndRecord(const SkillTest& move, const CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	if (Craft(move)) {
 
 		//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
@@ -135,7 +135,7 @@ void Crafter::ForceCraft() {
 
 /*----------------------PRIVATE-------------------------------------*/
 
-void Crafter::SynthesisCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
+void Crafter::SynthesisCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	bool checkForCarefulGroundWork = (((actionTracker->prudentSynthesis & 0b11) | (actionTracker->groundwork & 0b11)) == 0b11);	// either have been used for the past two turns	
 	for (const SkillTest& move : synthesisSkills) {
 		if (SimilarTrees(move.skillName))	continue;
@@ -148,7 +148,7 @@ void Crafter::SynthesisCraft(CraftingHistory& previousStep, int& finalAppraisalT
 	}
 }
 
-void Crafter::QualityCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
+void Crafter::QualityCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	for (const SkillTest& move : qualitySkills) {
 		touchActionUsed = false;
 		
@@ -160,7 +160,7 @@ void Crafter::QualityCraft(CraftingHistory& previousStep, int& finalAppraisalTim
 	}
 }
 
-void Crafter::BuffCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
+void Crafter::BuffCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	for (const SkillTest& move : buffSkills) {
 		if (BuffCheck(move.skillName)) {
 			continue;
@@ -170,7 +170,7 @@ void Crafter::BuffCraft(CraftingHistory& previousStep, int& finalAppraisalTimer)
 	}
 }
 
-void Crafter::RepairCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
+void Crafter::RepairCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	for (const SkillTest& move : repairSkills) {
 		if (player->playerState.lastSkillUsed == SkillName::MASTERSMEND)	continue;		//If previously used this skill, it would have been more effective to use Immaculate Mend
 		if (move.skillName == SkillName::IMMACULATEMEND && (player->craftableItem->GetMaxDurability() - player->craftableItem->GetDurability()) <= 30)	continue;	// better to use masters mend here
@@ -179,7 +179,7 @@ void Crafter::RepairCraft(CraftingHistory& previousStep, int& finalAppraisalTime
 	}
 }
 
-void Crafter::OtherCraft(CraftingHistory& previousStep, int& finalAppraisalTimer) {
+void Crafter::OtherCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer) {
 	for (const SkillTest& move : otherSkills) {
 		synthActionUsed = true;
 		touchActionUsed = true;
@@ -263,7 +263,7 @@ void Crafter::AddSuccessfulCraft() {
 	successfulCrafts[craftingRecord.currentTime].emplace_back(success);
 }
 
-inline void Crafter::LoadLastCraftingRecord(CraftingHistory& lastRecord) {
+inline void Crafter::LoadLastCraftingRecord(const CraftingHistory& lastRecord) {
 	player->LoadPlayerStats(lastRecord.player);
 	player->craftableItem->LoadItemState(lastRecord.item);
 	craftingRecord = lastRecord;

@@ -139,7 +139,7 @@ void Player::ResetPlayerStats() {
 	playerState.manipulation = 0;
 }
 
-void Player::LoadPlayerStats(PlayerState& state) {
+void Player::LoadPlayerStats(const PlayerState& state) {
 	playerState = state;
 }
 

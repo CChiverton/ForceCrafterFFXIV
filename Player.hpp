@@ -72,7 +72,7 @@ public:
 		Skills::SkillName lastSkillUsed{ Skills::SkillName::NONE };
 	}playerState;
 
-	void LoadPlayerStats(PlayerState&);
+	void LoadPlayerStats(const PlayerState&);
 
 	const PlayerState& GetPlayerState() const {
 		return playerState;

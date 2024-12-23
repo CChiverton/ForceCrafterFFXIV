@@ -89,7 +89,7 @@ public:
 		int durability{};
 	};
 
-	void LoadItemState(ItemState& itemState) {
+	void LoadItemState(const ItemState& itemState) {
 		currentItemState = itemState;
 	}
 

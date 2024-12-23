@@ -25,7 +25,7 @@ private:
 
 public:
 
-	void CraftAndRecord(SkillTest move, CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void CraftAndRecord(const SkillTest& move, const CraftingHistory& previousStep, int& finalAppraisalTimer);
 
 	void ForceCraft();
 
@@ -47,11 +47,11 @@ private:
 	bool invalid{ false };
 	int baseTurn{};
 
-	void SynthesisCraft(CraftingHistory& previousStep, int& finalAppraisalTimer);
-	void QualityCraft(CraftingHistory& previousStep, int& finalAppraisalTimer);
-	void BuffCraft(CraftingHistory& previousStep, int& finalAppraisalTimer);
-	void RepairCraft(CraftingHistory& previousStep, int& finalAppraisalTimer);
-	void OtherCraft(CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void SynthesisCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void QualityCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void BuffCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void RepairCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer);
+	void OtherCraft(const CraftingHistory& previousStep, int& finalAppraisalTimer);
 
 	void UpdateValidBuffCheck(int& appropriateActionTurn, bool& actionUsedThisTurn);
 
@@ -67,7 +67,7 @@ private:
 
 	bool Craft(Skills::SkillTest skillName);
 	void AddSuccessfulCraft();
-	inline void LoadLastCraftingRecord(CraftingHistory& lastRecord);
+	inline void LoadLastCraftingRecord(const CraftingHistory& lastRecord);
 	void ContinueCraft();
 
 	bool QualityCheck(SkillName skillName);
