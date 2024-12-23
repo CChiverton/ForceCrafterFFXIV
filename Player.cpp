@@ -110,7 +110,7 @@ bool Player::CastSkill(const Skills::SkillTest& skill) {
 		playerState.currentCP -= skillCPCost;
 		++playerState.currentTurn;
 		playerState.currentTime += skill.castTime;
-		if (playerState.finalAppraisal == 0) {
+		if (skill.skillName != SkillName::FINALAPPRAISAL) {
 			DecrementBuffs();
 		}
 	}
@@ -313,7 +313,7 @@ void Player::BuffSkills(const SkillName skillName) {
 		playerState.veneration = 5;
 		break;
 	case SkillName::FINALAPPRAISAL:
-		playerState.finalAppraisal = 6;
+		playerState.finalAppraisal = 5;		// not incremented by 1 like the others as buff decrements are paused for the cast
 		break;
 	default:
 		break;
