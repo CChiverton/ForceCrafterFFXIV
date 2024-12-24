@@ -1,6 +1,7 @@
 #pragma once
 
 //#include "Skills.hpp"
+#include <bitset>
 
 class ActionTracker {
 public:
@@ -101,6 +102,25 @@ public:
 
 	static constexpr int BuffHistory(int history, int bitmask) {
 		return history & bitmask;
+	}
+
+	bool ActionsUsedDuringBuff(int maxBuffDuration, int buffDurationRemaining, int checkUnderRemaining, int actionHistory, int numberOfActionsNeeded) {
+		int bitmaskTurnsCount = 0;
+		
+		for (int i{ 0 }; i < maxBuffDuration - buffDurationRemaining; ++i) {
+			bitmaskTurnsCount += actionHistory & 0b1;
+			actionHistory >>= 1;
+		}
+		//std::cout << bitmaskTurnsCount << " and remaining: " << maxBuffDuration - buffDurationRemaining <<'\n';
+		//std::cout << actionHistory << '\n';
+		/*if ( buffDurationRemaining < checkUnderRemaining) {
+			std::cout << "I'M CHECKING\N";
+			std::cout << "Buff duration remaining: " << buffDurationRemaining << " number of actions taken : " << (actionHistory & bitmaskTurnsCount) << '\n';
+			std::cout << "output: " << (bitmaskTurnsCount < numberOfActionsNeeded) << '\n';
+		}*/
+		//if (buffDurationRemaining && bitmaskTurnsCount)
+		
+		return buffDurationRemaining < checkUnderRemaining && buffDurationRemaining > 0 && (bitmaskTurnsCount < numberOfActionsNeeded);
 	}
 
 	void ProgressBuffs(bool venerationBuff, bool wasteNotBuff, bool strideBuff, bool innoBuff) {

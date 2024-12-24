@@ -100,7 +100,7 @@ void Crafter::ForceCraft() {
 	bool isMaxQuality = player->craftableItem->IsItemMaxQuality();
 	int itemDurability = player->craftableItem->GetMaxDurability() - player->craftableItem->GetDurability();
 
-	bool requireTouch = ActionUsedDuringBuff(previousStep.player.buffInfo.innovation, touchActionsUsedSuccessfully, 0b111) 
+	bool requireTouch = actionTracker->ActionsUsedDuringBuff(4, previousStep.player.buffInfo.innovation, 3, touchActionsUsedSuccessfully, 2)	// If there is only one buff use it may as well be great strides
 						||	ActionUsedDuringBuff(previousStep.player.buffInfo.greatStrides, touchActionsUsedSuccessfully, 0b11)
 						|| (secondToLastMove && forceMaxQuality && !isMaxQuality);
 	bool requireSynth = ActionUsedDuringBuff(previousStep.player.buffInfo.veneration, synthActionsUsedSuccessfully, 0b111);
@@ -199,6 +199,8 @@ void Crafter::UpdateValidBuffCheck(int appropriateActionTurn, bool actionUsedThi
 }
 
 bool Crafter::ActionUsedDuringBuff(int timeLeft, int actionHistory, int turns) {
+	//if (actionHistory & turns)	std::cout << "I have some history\n";
+	//if ((timeLeft == 1 && !(actionHistory & turns))) std::cout << "More history than others\n";
 	return (timeLeft == 1 && !(actionHistory & turns));
 }
 
