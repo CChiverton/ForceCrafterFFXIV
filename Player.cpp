@@ -128,7 +128,7 @@ const int& Player::GetSkillTime(SkillName skillName) const {
 void Player::ResetPlayerStats() {
 	playerState.currentCP = maxCP;
 	playerState.innerQuiet = 0;
-	playerState.currentTurn = 0;
+	playerState.currentTurn = 1;
 	playerState.currentTime = 0;
 	playerState.lastSkillUsed = SkillName::NONE;
 	successfulCast = true; // Only turned false on failure. True by default
@@ -224,7 +224,7 @@ void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabili
 		
 		break;
 	case Skills::SkillName::MUSCLEMEMORY:
-		if (playerState.currentTurn == 0) {
+		if (playerState.currentTurn == 1) {
 			craftableItem->AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
 			playerState.buffInfo.muscleMemory = 6;
 			playerState.buffInfo.muscleMemoryActive = true;
@@ -285,7 +285,7 @@ void Player::TouchSkills(const SkillName skillName, const int& skillDurabilityCo
 		AddInnerQuiet(2);
 		break;
 	case Skills::SkillName::REFLECT:
-		if (playerState.currentTurn == 0) {
+		if (playerState.currentTurn == 1) {
 			craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
 			AddInnerQuiet(2);
 		}

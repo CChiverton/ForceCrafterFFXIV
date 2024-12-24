@@ -87,13 +87,15 @@ void Crafter::CraftAndRecord(const SkillTest& move, const CraftingHistory& previ
 void Crafter::ForceCraft() {
 	if (invalid) return;
 	CraftingHistory& previousStep = craftingRecord;		// stack allocation for faster loading
-	bool lastMove = ((previousStep.currentTime + 3) >= bestTime || previousStep.player.currentTurn == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
-	bool secondToLastMove = ((previousStep.currentTime + 6) >= bestTime || previousStep.player.currentTurn == maxTurnLimit - 2) ? true : false;
+	int remainingTime = bestTime - previousStep.currentTime;
+	bool lastMove = ((remainingTime < 5) || previousStep.player.currentTurn == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
+	bool secondToLastMove = (remainingTime < 7 || previousStep.player.currentTurn == maxTurnLimit - 2) ? true : false;
 	//int innovationTimer = previousStep.player.buffInfo.innovation;
 
 	//int venerationTimer = previousStep.player.buffInfo.veneration;
 	//int strideTimer = previousStep.player.buffInfo.greatStrides;
-	actionTracker->ProgressBuffs(previousStep.player.buffInfo.innovationActive, previousStep.player.buffInfo.wasteNotActive, previousStep.player.buffInfo.greatStridesActive);
+	actionTracker->ProgressBuffs(previousStep.player.buffInfo.innovationActive, previousStep.player.buffInfo.wasteNotActive,
+								previousStep.player.buffInfo.greatStridesActive, previousStep.player.buffInfo.innovationActive);
 	//int finalAppraisalTimer = previousStep.player.buffInfo.finalAppraisal;
 	bool isMaxQuality = player->craftableItem->IsItemMaxQuality();
 	int itemDurability = player->craftableItem->GetMaxDurability() - player->craftableItem->GetDurability();
@@ -116,7 +118,9 @@ void Crafter::ForceCraft() {
 		SynthesisCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
 	}
 	touchActionUsed = false;
-	OtherCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
+	if (!isMaxQuality && forceMaxQuality) {		// Better to use a different synthesis skill if quality isn't required
+		OtherCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
+	}
 	synthActionUsed = false;
 	touchActionUsed = false;
 	if (!(synthActionRequired || requireTouch)) {
@@ -321,10 +325,11 @@ bool Crafter::QualityCheck(SkillName skillName) {
 }
 
 bool Crafter::BuffCheck(SkillName skillName) {
-	bool buffSkip{ false };
 	if (player->GetBuffDuration(skillName) > 0) {			// potentially bad logic
-		buffSkip = true;
+		return true;
 	}
+	bool buffSkip{ false };
+	
 	switch (skillName) {
 	case SkillName::WASTENOTI:
 	case SkillName::WASTENOTII:
@@ -340,6 +345,7 @@ bool Crafter::BuffCheck(SkillName skillName) {
 		}
 		break;
 	case SkillName::MANIPULATION:
+		//if (player->GetCurrentTurn() + 3 >= maxTurnLimit) buffSkip = true;			// logical limiter, this would be able to get 1 move extra in
 		break;
 	default:
 		std::cout << "A serious error has occured for " << Skills::GetSkillName(skillName) << '\n';

@@ -26,7 +26,7 @@ public:
 		return playerState.currentTime;
 	}
 	inline const int& GetCurrentTurn() const {
-		return (playerState.currentTurn + 1);
+		return playerState.currentTurn;
 	}
 
 	std::unique_ptr<Item> craftableItem = nullptr;
@@ -76,7 +76,7 @@ public:
 
 	struct PlayerState {
 		int currentCP{ 0 };
-		int currentTurn{ 0 };
+		int currentTurn{ 1 };
 		int currentTime{ 0 };
 		int innerQuiet{ 0 };;
 		BuffInfo buffInfo{};

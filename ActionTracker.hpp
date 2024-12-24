@@ -7,7 +7,7 @@ public:
 	ActionTracker() { std::cout << "Hello\n"; };
 	~ActionTracker() {};
 
-	int venerationHistory{ 0b0 }, wasteNotHistory{ 0b0 }, strideHistory{ 0b0 };
+	int venerationHistory{ 0b0 }, wasteNotHistory{ 0b0 }, strideHistory{ 0b0 }, innovationHistory{ 0b0 };
 	int basicSynthesis{ 0b0 }, carefulSynthesis{ 0b0 }, prudentSynthesis{ 0b0 }, groundwork{ 0b0 };
 	int basicTouch{ 0b0 }, standardTouch{ 0b0 }, advancedTouch{ 0b0 }, byregots{ 0b0 }, prudentTouch{ 0b0 }, prepTouch{ 0b0 }, refinedTouch{ 0b0 };
 
@@ -103,19 +103,22 @@ public:
 		return history & bitmask;
 	}
 
-	void ProgressBuffs(bool venerationBuff, bool wasteNotBuff, bool strideBuff) {
+	void ProgressBuffs(bool venerationBuff, bool wasteNotBuff, bool strideBuff, bool innoBuff) {
 		venerationHistory <<= 1;
 		venerationHistory |= venerationBuff;
 		wasteNotHistory <<= 1;
 		wasteNotHistory |= wasteNotBuff;
 		strideHistory <<= 1;
 		strideHistory |= strideBuff;
+		innovationHistory <<= 1;
+		innovationHistory |= innoBuff;
 	}
 
 	inline void BacktrackBuffs() {
 		venerationHistory >>= 1;
 		wasteNotHistory >>= 1;
 		strideHistory >>= 1;
+		innovationHistory >>= 1;
 	}
 
 	void Backtrack() {
