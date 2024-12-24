@@ -10,7 +10,7 @@
 #include <array>
 
 
-class Crafter {
+class Crafter : public Player {
 public:
 	Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit);
 
@@ -31,16 +31,11 @@ public:
 
 private:
 
-	std::unique_ptr<Player> player;
-	const int maxProgress{}, maxQuality{}, maxDurability{};
 	std::vector<CraftingHistory> craftingHistory{};
-	//std::vector<Skills::SkillName> currentCraft{};
 	int bestTime{ 99 };
 	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{};
-	const bool forceMaxQuality;
-	const bool forceGreaterByregot;
+	const bool forceMaxQuality, forceGreaterByregot;
 	const int maxTurnLimit;
-	std::unique_ptr<Item> playerItem;
 	std::unique_ptr<ActionTracker> actionTracker;
 	bool invalid{ false };
 	int baseTurn{};

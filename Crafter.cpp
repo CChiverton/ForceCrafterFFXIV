@@ -3,12 +3,10 @@
 #define ProgressUpdate 1
 
 Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit)
-	: maxProgress(maxProgress), maxQuality(maxQuality), maxDurability(maxDurability), forceMaxQuality(forceQuality), forceGreaterByregot(greaterByregot), maxTurnLimit(maximumTurnLimit),
-	player(new Player(maxCP, progressPerHundred, qualityPerHundred)), actionTracker(new ActionTracker()) {
-	//player = new Player(maxCP, progressPerHundred, qualityPerHundred);
-	player->AddItem(maxProgress, maxQuality, maxDurability);
-	//playerItem = player->craftableItem;
-	//actionTracker = new ActionTracker();
+	: forceMaxQuality(forceQuality), forceGreaterByregot(greaterByregot), maxTurnLimit(maximumTurnLimit),
+	actionTracker(new ActionTracker()),
+	Player(maxCP, progressPerHundred, qualityPerHundred) {
+	AddItem(maxProgress, maxQuality, maxDurability);
 
 	craftingHistory.reserve(maximumTurnLimit);
 
@@ -26,7 +24,7 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 		}
 		std::cout << '\n';
 	}
-	baseTurn = player->GetCurrentTurn();
+	baseTurn = playerState.currentTurn;
 	//std::cout << "-----------------------------------------\n";
 }
 
@@ -52,8 +50,8 @@ void Crafter::CraftAndRecord(const SkillTest& move, const CraftingHistory& previ
 
 		//std::cout << "Turn " << player->GetCurrentTurn() << ": " << Skills::GetSkillName(move) << '\n';
 
-		if (player->craftableItem->IsItemCrafted()) {
-			if (forceMaxQuality && !player->craftableItem->IsItemMaxQuality()) {
+		if (craftableItem->IsItemCrafted()) {
+			if (forceMaxQuality && !craftableItem->IsItemMaxQuality()) {
 				//std::cout << "Not maximum quality when needed\n";
 				LoadLastCraftingRecord(previousStep);
 				return;
@@ -62,21 +60,21 @@ void Crafter::CraftAndRecord(const SkillTest& move, const CraftingHistory& previ
 			AddSuccessfulCraft();
 			ContinueCraft();
 		}
-		else if (player->GetCurrentTurn() >= maxTurnLimit || (player->GetCurrentTime() + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
+		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
 			//std::cout << "Run out of moves\n";
 			LoadLastCraftingRecord(previousStep);
 			return;
 		}
-		else if (finalAppraisalTimer == 1 && (player->craftableItem->GetMaxProgress() - player->craftableItem->GetCurrentProgress()) != 1) {		// not appraised
+		else if (finalAppraisalTimer == 1 && (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1) {		// not appraised
 			LoadLastCraftingRecord(previousStep);
 			return;
 		}
-		else if (!player->craftableItem->IsItemBroken()) {
+		else if (!craftableItem->IsItemBroken()) {
 			SaveCraftingHistory(move.skillName);
 			ForceCraft();
 		}
 #if ProgressUpdate
-		if (player->GetCurrentTurn() == baseTurn) {
+		if (playerState.currentTurn == baseTurn) {
 			std::cout << Skills::GetSkillName(move.skillName) << " completed\n";
 		}
 #endif
@@ -97,8 +95,8 @@ void Crafter::ForceCraft() {
 	actionTracker->ProgressBuffs(previousStep.player.buffInfo.innovationActive, previousStep.player.buffInfo.wasteNotActive,
 								previousStep.player.buffInfo.greatStridesActive, previousStep.player.buffInfo.innovationActive);
 	//int finalAppraisalTimer = previousStep.player.buffInfo.finalAppraisal;
-	bool isMaxQuality = player->craftableItem->IsItemMaxQuality();
-	int itemDurability = player->craftableItem->GetMaxDurability() - player->craftableItem->GetDurability();
+	bool isMaxQuality = craftableItem->IsItemMaxQuality();
+	int itemDurability = craftableItem->GetMaxDurability() - craftableItem->GetDurability();
 
 	bool requireTouch = actionTracker->ActionsUsedDuringBuff(4, previousStep.player.buffInfo.innovation, 3, actionTracker->touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
 						|| actionTracker->ActionsUsedDuringBuff(3, previousStep.player.buffInfo.greatStrides, 2, actionTracker->touchActionUsed, 1) //ActionUsedDuringBuff(previousStep.player.buffInfo.greatStrides, actionTracker->touchActionUsed, 0b11)
@@ -170,7 +168,7 @@ void Crafter::BuffCraft(const CraftingHistory& previousStep, int finalAppraisalT
 
 void Crafter::RepairCraft(const CraftingHistory& previousStep, int finalAppraisalTimer, int remainingDurability) {
 	for (const SkillTest& move : repairSkills) {
-		if (player->playerState.lastSkillUsed == SkillName::MASTERSMEND)	continue;		//If previously used this skill, it would have been more effective to use Immaculate Mend
+		if (playerState.lastSkillUsed == SkillName::MASTERSMEND)	continue;		//If previously used this skill, it would have been more effective to use Immaculate Mend
 		if (move.skillName == SkillName::IMMACULATEMEND && remainingDurability <= 30)	continue;	// better to use masters mend here
 		if (remainingDurability > 15)	continue;		// Arbritrary number, more of a logical "Why repair at this stage"
 		CraftAndRecord(move, previousStep, finalAppraisalTimer);
@@ -223,9 +221,9 @@ bool Crafter::SimilarTrees(SkillName skillName) {
 }
 
 inline void Crafter::SaveCraftingHistory(SkillName skillName) {
-	craftingRecord.player = player->GetPlayerState();
-	craftingRecord.item = player->craftableItem->GetItemState();
-	craftingRecord.currentTime = player->GetCurrentTime();
+	craftingRecord.player = playerState;
+	craftingRecord.item = craftableItem->GetItemState();
+	craftingRecord.currentTime = playerState.currentTime;
 	craftingRecord.skillName = skillName;
 	craftingHistory.emplace_back(craftingRecord);
 	actionTracker->ProgressSynthSkills(skillName);
@@ -238,7 +236,7 @@ inline void Crafter::DeleteCraftingHistory() {
 
 
 bool Crafter::Craft(Skills::SkillTest skillName) {
-	if (!player->CastSkill(skillName)) {
+	if (!CastSkill(skillName)) {
 		//std::cout << "Invalid move " << Skills::GetSkillName(skillName) << '\n';
 		return false;
 	}
@@ -260,8 +258,8 @@ void Crafter::AddSuccessfulCraft() {
 }
 
 inline void Crafter::LoadLastCraftingRecord(const CraftingHistory& lastRecord) {
-	player->LoadPlayerStats(lastRecord.player);
-	player->craftableItem->LoadItemState(lastRecord.item);
+	LoadPlayerStats(lastRecord.player);
+	craftableItem->LoadItemState(lastRecord.item);
 	craftingRecord = lastRecord;
 	/*std::cout << "After loading item stats are\n";
 	player->craftableItem->OutputStats();*/
@@ -278,27 +276,27 @@ bool Crafter::QualityCheck(SkillName skillName) {
 	bool skipTouchSkill{ false };
 	switch (skillName) {
 	case SkillName::GREATSTRIDES:
-		skipTouchSkill = player->GetBuffDuration(skillName) != 0;
+		skipTouchSkill = playerState.buffInfo.greatStridesActive;
 		break;
 	case SkillName::INNOVATION:
-		skipTouchSkill = player->GetBuffDuration(skillName) > 1;		// fringe cases you want to recast innovation with 1 turn left
+		skipTouchSkill = playerState.buffInfo.innovation > 1;		// fringe cases you want to recast innovation with 1 turn left
 		break;
 	case SkillName::BYREGOTSBLESSING:
-		if ((player->GetPlayerState().lastSkillUsed == SkillName::BASICTOUCH && player->GetPlayerState().innerQuiet < 2) ||			// possible logic flaw with combo implementation
-			(player->GetPlayerState().lastSkillUsed == SkillName::STANDARDTOUCH && player->GetPlayerState().innerQuiet < 3)) {
+		if ((playerState.lastSkillUsed == SkillName::BASICTOUCH && playerState.innerQuiet < 2) ||			// possible logic flaw with combo implementation
+			(playerState.lastSkillUsed == SkillName::STANDARDTOUCH && playerState.innerQuiet < 3)) {
 			skipTouchSkill = false;
 		} else if (forceGreaterByregot) {
-			skipTouchSkill = player->GetBuffDuration(SkillName::GREATSTRIDES) == 0;
+			skipTouchSkill = !playerState.buffInfo.greatStridesActive;
 		}
 		break;
 	case SkillName::BASICTOUCH:
-		if (player->GetPlayerState().lastSkillUsed == SkillName::BASICTOUCH || player->GetPlayerState().lastSkillUsed == SkillName::STANDARDTOUCH)	return true;
+		if (playerState.lastSkillUsed == SkillName::BASICTOUCH || playerState.lastSkillUsed == SkillName::STANDARDTOUCH)	return true;
 		break;
 	case SkillName::STANDARDTOUCH:
-		if (player->GetPlayerState().lastSkillUsed == SkillName::STANDARDTOUCH)	return true;
+		if (playerState.lastSkillUsed == SkillName::STANDARDTOUCH)	return true;
 		break;
 	case SkillName::REFINEDTOUCH:
-		skipTouchSkill = player->GetPlayerState().lastSkillUsed != SkillName::BASICTOUCH;
+		skipTouchSkill = playerState.lastSkillUsed != SkillName::BASICTOUCH;
 		break;
 	default:			// Should be touch action skills
 		break;
@@ -308,7 +306,7 @@ bool Crafter::QualityCheck(SkillName skillName) {
 }
 
 bool Crafter::BuffCheck(SkillName skillName) {
-	if (player->GetBuffDuration(skillName) > 0) {			// potentially bad logic
+	if (GetBuffDuration(skillName) > 0) {			// potentially bad logic
 		return true;
 	}
 	bool buffSkip{ false };
@@ -320,10 +318,10 @@ bool Crafter::BuffCheck(SkillName skillName) {
 	case SkillName::VENERATION:
 		break;
 	case SkillName::FINALAPPRAISAL:
-		if (player->GetCurrentTurn() + 6 >= maxTurnLimit) {
+		if (playerState.currentTurn + 6 >= maxTurnLimit) {
 			buffSkip = true;
 		}
-		else if (!forceMaxQuality || player->craftableItem->IsItemMaxQuality()) {
+		else if (!forceMaxQuality || craftableItem->IsItemMaxQuality()) {
 			buffSkip = true;
 		}
 		break;
