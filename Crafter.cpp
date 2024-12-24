@@ -233,6 +233,7 @@ inline void Crafter::SaveCraftingHistory(SkillName skillName) {
 	craftingRecord.skillName = skillName;
 	craftingHistory.emplace_back(craftingRecord);
 	actionTracker->ProgressSynthSkills(skillName);
+	actionTracker->ProgressTouchActions(skillName);
 }
 
 inline void Crafter::DeleteCraftingHistory() {
@@ -278,8 +279,7 @@ void Crafter::ContinueCraft() {
 	LoadLastCraftingRecord(last);
 	touchActionsUsedSuccessfully >>= 1;
 	synthActionsUsedSuccessfully >>= 1;
-	actionTracker->BacktrackBuffs();
-	actionTracker->BacktrackSynthSkills();
+	actionTracker->Backtrack();
 }
 
 bool Crafter::QualityCheck(SkillName skillName) {
