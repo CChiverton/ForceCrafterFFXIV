@@ -100,29 +100,24 @@ void Crafter::ForceCraft() {
 	bool isMaxQuality = player->craftableItem->IsItemMaxQuality();
 	int itemDurability = player->craftableItem->GetMaxDurability() - player->craftableItem->GetDurability();
 
-	bool requireTouch = actionTracker->ActionsUsedDuringBuff(4, previousStep.player.buffInfo.innovation, 3, touchActionsUsedSuccessfully, 2)	// If there is only one buff use it may as well be great strides
-						||	ActionUsedDuringBuff(previousStep.player.buffInfo.greatStrides, touchActionsUsedSuccessfully, 0b11)
+	bool requireTouch = actionTracker->ActionsUsedDuringBuff(4, previousStep.player.buffInfo.innovation, 3, actionTracker->touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
+						|| actionTracker->ActionsUsedDuringBuff(3, previousStep.player.buffInfo.greatStrides, 2, actionTracker->touchActionUsed, 1) //ActionUsedDuringBuff(previousStep.player.buffInfo.greatStrides, actionTracker->touchActionUsed, 0b11)
 						|| (secondToLastMove && forceMaxQuality && !isMaxQuality);
-	bool requireSynth = ActionUsedDuringBuff(previousStep.player.buffInfo.veneration, synthActionsUsedSuccessfully, 0b111);
-	bool requireAppraisal = ActionUsedDuringBuff(previousStep.player.buffInfo.finalAppraisal, synthActionsUsedSuccessfully, 0b1111);
+	bool requireSynth = ActionUsedDuringBuff(previousStep.player.buffInfo.veneration, actionTracker->synthActionUsed, 0b111);
+	bool requireAppraisal = ActionUsedDuringBuff(previousStep.player.buffInfo.finalAppraisal, actionTracker->synthActionUsed, 0b1111);
 
 	bool synthActionRequired = lastMove || requireSynth || requireAppraisal;
 	//bool skipForTouch = secondToLastMove && forceMaxQuality && !isMaxQuality;
 
-	synthActionUsed = false;
 	if (!(!forceMaxQuality || isMaxQuality || synthActionRequired)) {
 		QualityCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
 	}
-	touchActionUsed = false;
 	if (!requireTouch) {
 		SynthesisCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
 	}
-	touchActionUsed = false;
 	if (!isMaxQuality && forceMaxQuality) {		// Better to use a different synthesis skill if quality isn't required
 		OtherCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
 	}
-	synthActionUsed = false;
-	touchActionUsed = false;
 	if (!(synthActionRequired || requireTouch)) {
 		BuffCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
 		if (!(secondToLastMove && itemDurability >= 20)) {
@@ -148,14 +143,12 @@ void Crafter::SynthesisCraft(const CraftingHistory& previousStep, int finalAppra
 		if (checkForCarefulGroundWork && (move.skillName == SkillName::CAREFULSYNTHESIS 
 										|| move.skillName == SkillName::GROUNDWORK))	continue;	// will be faster and same with veneration buff
 
-		synthActionUsed = true;
 		CraftAndRecord(move, previousStep, finalAppraisalTimer);
 	}
 }
 
 void Crafter::QualityCraft(const CraftingHistory& previousStep, int finalAppraisalTimer) {
 	for (const SkillTest& move : qualitySkills) {
-		touchActionUsed = false;
 		
 		if (QualityCheck(move.skillName)) {
 			continue;
@@ -186,9 +179,6 @@ void Crafter::RepairCraft(const CraftingHistory& previousStep, int finalAppraisa
 
 void Crafter::OtherCraft(const CraftingHistory& previousStep, int finalAppraisalTimer) {
 	for (const SkillTest& move : otherSkills) {
-		synthActionUsed = true;
-		touchActionUsed = true;
-
 		CraftAndRecord(move, previousStep, finalAppraisalTimer);
 	}
 }
@@ -252,8 +242,6 @@ bool Crafter::Craft(Skills::SkillTest skillName) {
 		//std::cout << "Invalid move " << Skills::GetSkillName(skillName) << '\n';
 		return false;
 	}
-	UpdateValidBuffCheck(touchActionsUsedSuccessfully, touchActionUsed);
-	UpdateValidBuffCheck(synthActionsUsedSuccessfully, synthActionUsed);
 	//std::cout << Skills::GetSkillName(skillName) << '\n';
 
 	return true;
@@ -283,8 +271,6 @@ void Crafter::ContinueCraft() {
 	DeleteCraftingHistory();
 	CraftingHistory& last = craftingHistory.back();
 	LoadLastCraftingRecord(last);
-	touchActionsUsedSuccessfully >>= 1;
-	synthActionsUsedSuccessfully >>= 1;
 	actionTracker->Backtrack();
 }
 
@@ -304,22 +290,17 @@ bool Crafter::QualityCheck(SkillName skillName) {
 		} else if (forceGreaterByregot) {
 			skipTouchSkill = player->GetBuffDuration(SkillName::GREATSTRIDES) == 0;
 		}
-		touchActionUsed = !skipTouchSkill;
 		break;
 	case SkillName::BASICTOUCH:
 		if (player->GetPlayerState().lastSkillUsed == SkillName::BASICTOUCH || player->GetPlayerState().lastSkillUsed == SkillName::STANDARDTOUCH)	return true;
-		touchActionUsed = true;
 		break;
 	case SkillName::STANDARDTOUCH:
 		if (player->GetPlayerState().lastSkillUsed == SkillName::STANDARDTOUCH)	return true;
-		touchActionUsed = true;
 		break;
 	case SkillName::REFINEDTOUCH:
 		skipTouchSkill = player->GetPlayerState().lastSkillUsed != SkillName::BASICTOUCH;
-		touchActionUsed = !skipTouchSkill;
 		break;
 	default:			// Should be touch action skills
-		touchActionUsed = true;
 		break;
 	}
 	//std::cout << "Too high quality\n";

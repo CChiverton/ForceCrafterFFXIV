@@ -41,8 +41,6 @@ private:
 	const bool forceGreaterByregot;
 	const int maxTurnLimit;
 	std::unique_ptr<Item> playerItem;
-	bool touchActionUsed{ false }, synthActionUsed{ false };
-	int touchActionsUsedSuccessfully = 0b0, synthActionsUsedSuccessfully = 0b0;
 	std::unique_ptr<ActionTracker> actionTracker;
 	bool invalid{ false };
 	int baseTurn{};

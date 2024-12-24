@@ -11,6 +11,7 @@ public:
 	int venerationHistory{ 0b0 }, wasteNotHistory{ 0b0 }, strideHistory{ 0b0 }, innovationHistory{ 0b0 };
 	int basicSynthesis{ 0b0 }, carefulSynthesis{ 0b0 }, prudentSynthesis{ 0b0 }, groundwork{ 0b0 };
 	int basicTouch{ 0b0 }, standardTouch{ 0b0 }, advancedTouch{ 0b0 }, byregots{ 0b0 }, prudentTouch{ 0b0 }, prepTouch{ 0b0 }, refinedTouch{ 0b0 };
+	int synthActionUsed{ 0b0 },touchActionUsed{ 0b0 };
 
 	void PrintHistory() {
 		std::cout << "Basic: " << (basicSynthesis & 0b1000) << (basicSynthesis & 0b100) << (basicSynthesis & 0b10) << (basicSynthesis & 0b1) << '\n';
@@ -26,22 +27,27 @@ public:
 		carefulSynthesis <<= 1;
 		prudentSynthesis <<= 1;
 		groundwork <<= 1;
+		synthActionUsed <<= 1;
 		switch (skillName) {
 		case SkillName::BASICSYNTHESIS:
 			//std::cout << "Basic synth used\n";
 			basicSynthesis |= 0b1;
+			synthActionUsed |= basicSynthesis & 0b1;
 			break;
 		case SkillName::CAREFULSYNTHESIS:
 			//std::cout << "Careful synth used\n";
 			carefulSynthesis |= 0b1;
+			synthActionUsed |= carefulSynthesis & 0b1;
 			break;
 		case SkillName::PRUDENTSYNTHESIS:
 			//std::cout << "Prudent synth used\n";
 			prudentSynthesis |= 0b1;
+			synthActionUsed |= prudentSynthesis & 0b1;
 			break;
 		case SkillName::GROUNDWORK:
 			//std::cout << "Groundword used\n";
 			groundwork |= 0b1;
+			synthActionUsed |= groundwork & 0b1;
 			break;
 		default:
 			break;
@@ -56,27 +62,35 @@ public:
 		prudentTouch  <<= 1;
 		prepTouch	  <<= 1;
 		refinedTouch  <<= 1;
+		touchActionUsed <<= 1;
 		switch (skillName) {
 		case SkillName::BASICTOUCH:
 			basicTouch |= 0b1;
+			touchActionUsed |= basicTouch & 0b1;
 			break;
 		case SkillName::STANDARDTOUCH:
 			standardTouch |= 0b1;
+			touchActionUsed |= standardTouch & 0b1;
 			break;
 		case SkillName::ADVANCEDTOUCH:
 			advancedTouch |= 0b1;
+			touchActionUsed |= advancedTouch & 0b1;
 			break;
 		case SkillName::BYREGOTSBLESSING:
 			byregots |= 0b1;
+			touchActionUsed |= byregots & 0b1;
 			break;
 		case SkillName::PRUDENTTOUCH:
 			prudentTouch |= 0b1;
+			touchActionUsed |= prudentTouch & 0b1;
 			break;
 		case SkillName::PREPARATORYTOUCH:
 			prepTouch |= 0b1;
+			touchActionUsed |= prepTouch & 0b1;
 			break;
 		case SkillName::REFINEDTOUCH:
 			refinedTouch |= 0b1;
+			touchActionUsed |= refinedTouch & 0b1;
 			break;
 		default:
 			break;
@@ -88,6 +102,7 @@ public:
 		carefulSynthesis >>= 1;
 		prudentSynthesis >>= 1;
 		groundwork >>= 1;
+		synthActionUsed >>= 1;
 	}
 
 	inline void BacktrackTouchActions() {
@@ -98,6 +113,7 @@ public:
 		prudentTouch >>= 1;
 		prepTouch >>= 1;
 		refinedTouch >>= 1;
+		touchActionUsed >>= 1;
 	}
 
 	static constexpr int BuffHistory(int history, int bitmask) {
