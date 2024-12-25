@@ -27,7 +27,7 @@ public:
 
 	void FindMinQualityForMax();
 	void QualityOnlyCrafts(const SkillTest& move, const CraftingHistory& previousStep);
-	void CraftAndRecord(const SkillTest& move, const CraftingHistory& previousStep, int finalAppraisalTimer);
+	void CraftAndRecord(const SkillTest& move, int finalAppraisalTimer);
 
 	void ForceCraft();
 
