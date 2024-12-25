@@ -12,6 +12,7 @@ public:
 	int basicSynthesis{ 0b0 }, carefulSynthesis{ 0b0 }, prudentSynthesis{ 0b0 }, groundwork{ 0b0 };
 	int basicTouch{ 0b0 }, standardTouch{ 0b0 }, advancedTouch{ 0b0 }, byregots{ 0b0 }, prudentTouch{ 0b0 }, prepTouch{ 0b0 }, refinedTouch{ 0b0 };
 	int synthActionUsed{ 0b0 },touchActionUsed{ 0b0 };
+	int numTouchSkillsUsed{ 0b0 };
 
 	void PrintHistory() {
 		std::cout << "Basic: " << (basicSynthesis & 0b1000) << (basicSynthesis & 0b100) << (basicSynthesis & 0b10) << (basicSynthesis & 0b1) << '\n';
@@ -95,6 +96,7 @@ public:
 		default:
 			break;
 		}
+		if (touchActionUsed & 0b1)	++numTouchSkillsUsed;
 	}
 
 	inline void BacktrackSynthSkills() {
@@ -113,6 +115,7 @@ public:
 		prudentTouch >>= 1;
 		prepTouch >>= 1;
 		refinedTouch >>= 1;
+		if (touchActionUsed & 0b1)	--numTouchSkillsUsed;
 		touchActionUsed >>= 1;
 	}
 

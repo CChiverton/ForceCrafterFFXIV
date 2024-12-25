@@ -25,6 +25,8 @@ private:
 
 public:
 
+	void FindMinQualityForMax();
+	void QualityOnlyCrafts(const SkillTest& move, const CraftingHistory& previousStep);
 	void CraftAndRecord(const SkillTest& move, const CraftingHistory& previousStep, int finalAppraisalTimer);
 
 	void ForceCraft();
@@ -32,13 +34,14 @@ public:
 private:
 
 	std::vector<CraftingHistory> craftingHistory{};
-	int bestTime{ 99 };
-	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{};
+	int bestTime{ 99 }, bestQualityTime{ 99 };
+	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{}, successfulQualityCrafts{};
 	const bool forceMaxQuality, forceGreaterByregot;
 	const int maxTurnLimit;
 	std::unique_ptr<ActionTracker> actionTracker;
 	bool invalid{ false };
 	int baseTurn{};
+	int minTouchSkills{ 0 };
 
 	void SynthesisCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
 	void QualityCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
@@ -59,6 +62,7 @@ private:
 	inline void DeleteCraftingHistory();
 
 	bool Craft(Skills::SkillTest skillName);
+	void AddSuccessfulQualityCraft();
 	void AddSuccessfulCraft();
 	inline void LoadLastCraftingRecord(const CraftingHistory& lastRecord);
 	void ContinueCraft();

@@ -89,6 +89,8 @@ public:
 		return playerState;
 	}
 
+	void ResetPlayerStats();
+
 private:
 	const int maxCP{};
 	const float progressPerOne{}, qualityPerOne{};
@@ -99,7 +101,7 @@ private:
 
 	
 
-	void ResetPlayerStats();
+	
 	
 	bool CheckItem();
 
