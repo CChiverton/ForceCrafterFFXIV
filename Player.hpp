@@ -106,14 +106,14 @@ private:
 	bool CheckItem();
 
 	const int CalculateProgress(const int16_t efficiency);
-	const int& CalculateQuality(const int16_t efficiency);
+	const int CalculateQuality(const int16_t efficiency);
 
 	void AddInnerQuiet(unsigned char stacks);
 	inline const float InnerQuietEfficiencyMultiplier() const;
 
 
 	void SynthesisSkills(const SkillName skillName, const int& skillDurabilityCost, int& skillEfficiency);
-	void TouchSkills(const SkillName skillName, const int& skillDurabilityCost, const int& skillEfficiency, int& skillCPCost);
+	void TouchSkills(const SkillName skillName, const int skillDurabilityCost, const int skillEfficiency, int& skillCPCost);
 	void BuffSkills(const SkillName skillName);
 	void RepairSkills(const SkillName skillName);
 	void OtherSkills(const SkillName skillName, const int& skillDurabilityCost);

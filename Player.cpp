@@ -171,12 +171,11 @@ const int Player::CalculateProgress(const int16_t efficiency) {
 	return result;
 }
 
-const int& Player::CalculateQuality(const int16_t efficiency) {
+const int Player::CalculateQuality(const int16_t efficiency) {
 	if (playerState.buffInfo.innovationActive) {
 		if (playerState.buffInfo.greatStridesActive) {
 			playerState.buffInfo.greatStrides = 0;
 			playerState.buffInfo.greatStridesActive = false;
-			//std::cout << preComputeQualityTouchStrideEfficiency[playerState.innerQuiet][efficiency] << "\n\n";
 			return preComputeQualityTouchStrideEfficiency[playerState.innerQuiet][efficiency];
 		}
 		return preComputeQualityTouchEfficiency[playerState.innerQuiet][efficiency];
@@ -237,10 +236,7 @@ void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabili
 }
 
 //@TODO Change the way cp cost is checked so combo works
-void Player::TouchSkills(const SkillName skillName, const int& skillDurabilityCost, const int& skillEfficiency, int& skillCPCost) {
-	//std::cout << "Touch skill efficiency is " << skillEfficiency << '\n';
-	
-	//std::cout << "After inner quiet is " << skillEfficiency << '\n';
+void Player::TouchSkills(const SkillName skillName, const int skillDurabilityCost, const int skillEfficiency, int& skillCPCost) {
 	switch (skillName) {
 	case Skills::SkillName::BASICTOUCH:
 		craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
@@ -386,25 +382,11 @@ void Player::TouchBuffs(int& skillEfficiency) {
 }
 
 void Player::DecrementBuffs() {	
-	if (playerState.buffInfo.muscleMemoryActive) {
-		playerState.buffInfo.muscleMemoryActive = --playerState.buffInfo.muscleMemory;
-	}
-	if (playerState.buffInfo.wasteNotActive) {
-		playerState.buffInfo.wasteNotActive = --playerState.buffInfo.wasteNot;
-	}
-	if (playerState.buffInfo.greatStridesActive) {
-		playerState.buffInfo.greatStridesActive = --playerState.buffInfo.greatStrides;
-	}
-	if (playerState.buffInfo.innovationActive) {
-		playerState.buffInfo.innovationActive = --playerState.buffInfo.innovation;
-	}
-	if (playerState.buffInfo.venerationActive) {
-		playerState.buffInfo.venerationActive = --playerState.buffInfo.veneration;
-	}
-	if (playerState.buffInfo.finalAppraisalActive) {
-		playerState.buffInfo.finalAppraisalActive = --playerState.buffInfo.finalAppraisal;
-	}
-	if (playerState.buffInfo.manipulationActive) {
-		playerState.buffInfo.manipulationActive = --playerState.buffInfo.manipulation;
-	}
+	playerState.buffInfo.muscleMemoryActive = (playerState.buffInfo.muscleMemory -= playerState.buffInfo.muscleMemoryActive);
+	playerState.buffInfo.wasteNotActive = (playerState.buffInfo.wasteNot -= playerState.buffInfo.wasteNotActive);
+	playerState.buffInfo.greatStridesActive = (playerState.buffInfo.greatStrides -= playerState.buffInfo.greatStridesActive);
+	playerState.buffInfo.innovationActive = (playerState.buffInfo.innovation -= playerState.buffInfo.innovationActive);
+	playerState.buffInfo.venerationActive = (playerState.buffInfo.veneration -= playerState.buffInfo.venerationActive);
+	playerState.buffInfo.finalAppraisalActive = (playerState.buffInfo.finalAppraisal -= playerState.buffInfo.finalAppraisalActive);
+	playerState.buffInfo.manipulationActive = (playerState.buffInfo.manipulation -= playerState.buffInfo.manipulationActive);
 }
