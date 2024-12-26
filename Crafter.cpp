@@ -363,17 +363,11 @@ void Crafter::ContinueCraft() {
 bool Crafter::QualityCheck(SkillName skillName) {
 	bool skipTouchSkill{ false };
 	switch (skillName) {
-	case SkillName::GREATSTRIDES:
-		skipTouchSkill = playerState.buffInfo.greatStridesActive;
-		break;
-	case SkillName::INNOVATION:
-		skipTouchSkill = playerState.buffInfo.innovation > 1;		// fringe cases you want to recast innovation with 1 turn left
-		break;
 	case SkillName::BYREGOTSBLESSING:
-		if ((playerState.lastSkillUsed == SkillName::BASICTOUCH && playerState.innerQuiet < 2) ||			// possible logic flaw with combo implementation
-			(playerState.lastSkillUsed == SkillName::STANDARDTOUCH && playerState.innerQuiet < 3)) {
-			skipTouchSkill = false;
-		} else if (forceGreaterByregot) {
+		if (playerState.innerQuiet < minTouchSkills/2) {
+			skipTouchSkill = true;
+		}
+		else if (forceGreaterByregot) {
 			skipTouchSkill = !playerState.buffInfo.greatStridesActive;
 		}
 		break;
@@ -385,6 +379,12 @@ bool Crafter::QualityCheck(SkillName skillName) {
 		break;
 	case SkillName::REFINEDTOUCH:
 		skipTouchSkill = playerState.lastSkillUsed != SkillName::BASICTOUCH;
+		break;
+	case SkillName::GREATSTRIDES:
+		skipTouchSkill = playerState.buffInfo.greatStridesActive;
+		break;
+	case SkillName::INNOVATION:
+		skipTouchSkill = playerState.buffInfo.innovation > 1;		// fringe cases you want to recast innovation with 1 turn left
 		break;
 	default:			// Should be touch action skills
 		break;

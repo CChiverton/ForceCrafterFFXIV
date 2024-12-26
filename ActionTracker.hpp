@@ -160,7 +160,7 @@ public:
 		innovationHistory >>= 1;
 	}
 
-	void Backtrack() {
+	inline void Backtrack() {
 		BacktrackBuffs();
 		BacktrackSynthSkills();
 		BacktrackTouchActions();
