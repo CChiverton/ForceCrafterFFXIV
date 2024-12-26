@@ -11,7 +11,7 @@
 
 int main()
 {
-    std::vector<SkillTest> skills = { skillTest[4], skillTest[(int)SkillName::MANIPULATION]};
+    std::vector<SkillTest> skills = { skillTest[4]};
 
 #if NDEBUG
     int maxCP = SelectCP();
