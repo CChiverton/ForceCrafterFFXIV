@@ -10,7 +10,7 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 
 	craftingRecord.player = playerState;
 	craftingRecord.item = craftableItem->GetItemState();
-	craftingHistory.reserve(maximumTurnLimit);
+	craftingHistory.reserve(maximumTurnLimit + 1);
 	
 	if (forceMaxQuality) {
 		playerState.currentTurn = 2;
@@ -29,6 +29,8 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 		RemoveItem();
 		AddItem(maxProgress, maxQuality, maxDurability);
 	}
+
+	SaveCraftingHistory(SkillName::NONE);
 	
 	if (!startingMoves.empty()) {
 		std::cout << "For the starting moves:";
@@ -55,13 +57,15 @@ Crafter::~Crafter() {
 
 	std::cout << "The fastest time was " << bestTime << " seconds.\n";
 	std::cout << "Ways to achieve this are:\n";
-
+	int i{ 1 };
 	for (const auto& entry : successfulCrafts[bestTime]) {
-		std::cout << "Solution: ";
+		std::cout << "Solution " << i << ": ";
 		for (const auto& move : entry) {
+			if (move == SkillName::NONE)	continue;
 			std::cout << Skills::GetSkillName(move) << ", ";
 		}
 		std::cout << '\n';
+		++i;
 	}
 }
 
@@ -131,7 +135,7 @@ void Crafter::CraftAndRecord(const SkillTest& move, int finalAppraisalTimer) {
 			return;
 		}
 #if ProgressUpdate
-		if (playerState.currentTurn == baseTurn) {
+		if (playerState.currentTurn == 2) {
 			std::cout << Skills::GetSkillName(move.skillName) << " completed\n";
 		}
 #endif
@@ -158,26 +162,26 @@ void Crafter::ForceCraft() {
 
 	bool synthActionRequired = lastMove || requireSynth || requireAppraisal;
 	//bool skipForTouch = secondToLastMove && forceMaxQuality && !isMaxQuality;
-	if (playerState.currentTurn < maxTurnLimit) {
-		if ((minTouchSkills - actionTracker->numTouchSkillsUsed) == ((maxTurnLimit - 1) - (playerState.currentTurn))) {
-			//ContinueCraft();
-			requireTouch = true;
-		}
-	}
 
-	if (!(!forceMaxQuality || isMaxQuality || synthActionRequired)) {
-		QualityCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
+	if (playerState.currentTurn == 1) {
+		StarterCraft(craftingRecord.player.buffInfo.finalAppraisal);
 	}
-	if (!requireTouch) {
-		SynthesisCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
-	}
-	if (!isMaxQuality && forceMaxQuality) {		// Better to use a different synthesis skill if quality isn't required
-		OtherCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
-	}
-	if (!(synthActionRequired || requireTouch)) {
-		BuffCraft(previousStep, previousStep.player.buffInfo.finalAppraisal);
-		if (!(secondToLastMove && itemDurability >= 20)) {
-			RepairCraft(previousStep, previousStep.player.buffInfo.finalAppraisal, itemDurability);
+	else {
+		if (!(!forceMaxQuality || isMaxQuality || synthActionRequired)) {
+			QualityCraft(craftingRecord.player.buffInfo.finalAppraisal);
+		}
+		if (!isMaxQuality && forceMaxQuality) {		// Better to use a different synthesis skill if quality isn't required
+			OtherCraft(craftingRecord.player.buffInfo.finalAppraisal);
+		}
+		if (!requireTouch) {
+			SynthesisCraft(craftingRecord.player.buffInfo.finalAppraisal);
+		}
+
+		if (!(synthActionRequired || requireTouch)) {
+			BuffCraft(craftingRecord.player.buffInfo.finalAppraisal);
+			if (!(secondToLastMove && itemDurability >= 20)) {
+				RepairCraft(craftingRecord.player.buffInfo.finalAppraisal, itemDurability);
+			}
 		}
 	}
 	/*if (!(synthActionRequired || (secondToLastMove && itemDurability >= 20) || requireTouch)) {
@@ -191,7 +195,14 @@ void Crafter::ForceCraft() {
 
 /*----------------------PRIVATE-------------------------------------*/
 
-void Crafter::SynthesisCraft(const CraftingHistory& previousStep, int finalAppraisalTimer) {
+void Crafter::StarterCraft(int finalAppraisalTimer) {
+	for (const SkillTest& move : startingMoveList) {
+		std::cout << "Scanned moves\n";
+		CraftAndRecord(move, finalAppraisalTimer);
+	}
+}
+
+void Crafter::SynthesisCraft(int finalAppraisalTimer) {
 	bool checkForCarefulGroundWork = (((actionTracker->prudentSynthesis & 0b11) | (actionTracker->groundwork & 0b11)) == 0b11);	// either have been used for the past two turns	
 	for (const SkillTest& move : synthesisSkills) {
 		if (SimilarTrees(move.skillName))	continue;

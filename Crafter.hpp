@@ -43,11 +43,12 @@ private:
 	int baseTurn{};
 	int minTouchSkills{ 0 };
 
-	void SynthesisCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
-	void QualityCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
-	void BuffCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
-	void RepairCraft(const CraftingHistory& previousStep, int finalAppraisalTimer, int remainingDurability);
-	void OtherCraft(const CraftingHistory& previousStep, int finalAppraisalTimer);
+	void StarterCraft(int finalAppraisalTimer);
+	void SynthesisCraft(int finalAppraisalTimer);
+	void QualityCraft(int finalAppraisalTimer);
+	void BuffCraft(int finalAppraisalTimer);
+	void RepairCraft(int finalAppraisalTimer, int remainingDurability);
+	void OtherCraft(int finalAppraisalTimer);
 
 	void UpdateValidBuffCheck(int appropriateActionTurn, bool actionUsedThisTurn);
 
@@ -72,11 +73,9 @@ private:
 
 	void PrintCrafts();
 
-	const std::array<SkillTest, 4> finalMoveList = {
-		skillTest[(int)SkillName::BASICSYNTHESIS],
-		skillTest[(int)SkillName::CAREFULSYNTHESIS],
-		skillTest[(int)SkillName::PRUDENTSYNTHESIS],
-		skillTest[(int)SkillName::GROUNDWORK],
+	const std::array<SkillTest, 2> startingMoveList = {
+		skillTest[(int)SkillName::MUSCLEMEMORY],
+		skillTest[(int)SkillName::REFLECT]
 	};
 
 	const std::array<SkillTest, 5> synthesisSkills = {
