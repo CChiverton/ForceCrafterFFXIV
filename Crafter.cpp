@@ -160,7 +160,7 @@ void Crafter::ForceCraft() {
 	actionTracker->ProgressBuffs(craftingRecord.player.buffInfo.innovationActive, craftingRecord.player.buffInfo.wasteNotActive,
 								craftingRecord.player.buffInfo.greatStridesActive, craftingRecord.player.buffInfo.innovationActive);
 	bool isMaxQuality = craftableItem->IsItemMaxQuality();
-	int itemDurability = craftableItem->GetMaxDurability() - craftableItem->GetDurability();
+	int repairableDurability = craftableItem->GetMaxDurability() - craftableItem->GetDurability();
 
 	bool requireTouch = actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.innovation, 3, actionTracker->touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
 						|| actionTracker->ActionsUsedDuringBuff(3, craftingRecord.player.buffInfo.greatStrides, 2, actionTracker->touchActionUsed, 1) //ActionUsedDuringBuff(craftingRecord.player.buffInfo.greatStrides, actionTracker->touchActionUsed, 0b11)
@@ -188,8 +188,8 @@ void Crafter::ForceCraft() {
 
 		if (!(synthActionRequired || requireTouch)) {
 			BuffCraft();
-			if (!(secondToLastMove && itemDurability >= 20)) {
-				RepairCraft(itemDurability);
+			if (!secondToLastMove && (repairableDurability >= 20)) {
+				RepairCraft(repairableDurability);
 			}
 		}
 	}
@@ -246,11 +246,10 @@ void Crafter::BuffCraft() {
 	}
 }
 
-void Crafter::RepairCraft(int remainingDurability) {
+void Crafter::RepairCraft(int repairableDurability) {
 	for (const SkillTest& move : repairSkills) {
 		if (playerState.lastSkillUsed == SkillName::MASTERSMEND)	continue;		//If previously used this skill, it would have been more effective to use Immaculate Mend
-		if (move.skillName == SkillName::IMMACULATEMEND && remainingDurability <= 30)	continue;	// better to use masters mend here
-		if (remainingDurability > 15)	continue;		// Arbritrary number, more of a logical "Why repair at this stage"
+		if (move.skillName == SkillName::IMMACULATEMEND && repairableDurability <= 30)	continue;	// better to use masters mend here
 		CraftAndRecord(move);
 	}
 }
