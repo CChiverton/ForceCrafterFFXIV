@@ -154,44 +154,49 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 
 void Crafter::ForceCraft() {
 	if (invalid) return;
-	int remainingTime = bestTime - craftingRecord.currentTime;
-	bool lastMove = ((remainingTime < 5) || craftingRecord.player.currentTurn == maxTurnLimit - 1) ? true : false; // Only one move left to match the best time and turn limit
-	bool secondToLastMove = (remainingTime < 7 || craftingRecord.player.currentTurn == maxTurnLimit - 2) ? true : false;
 	actionTracker->ProgressBuffs(craftingRecord.player.buffInfo.innovationActive, craftingRecord.player.buffInfo.wasteNotActive,
-								craftingRecord.player.buffInfo.greatStridesActive, craftingRecord.player.buffInfo.innovationActive);
-	bool isMaxQuality = craftableItem->IsItemMaxQuality();
-	int repairableDurability = craftableItem->GetMaxDurability() - craftableItem->GetDurability();
-
-	bool requireTouch = actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.innovation, 3, actionTracker->touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
-						|| actionTracker->ActionsUsedDuringBuff(3, craftingRecord.player.buffInfo.greatStrides, 2, actionTracker->touchActionUsed, 1) //ActionUsedDuringBuff(craftingRecord.player.buffInfo.greatStrides, actionTracker->touchActionUsed, 0b11)
-						|| (secondToLastMove && forceMaxQuality && !isMaxQuality) || 
-							((minTouchSkills - actionTracker->numTouchSkillsUsed) == ((maxTurnLimit - 1) - (playerState.currentTurn)));
-	bool requireSynth = ActionUsedDuringBuff(craftingRecord.player.buffInfo.veneration, actionTracker->synthActionUsed, 0b111);
-	bool requireAppraisal = ActionUsedDuringBuff(craftingRecord.player.buffInfo.finalAppraisal, actionTracker->synthActionUsed, 0b1111);
-
-	bool synthActionRequired = lastMove || requireSynth || requireAppraisal;
+		craftingRecord.player.buffInfo.greatStridesActive, craftingRecord.player.buffInfo.innovationActive);
 	//bool skipForTouch = secondToLastMove && forceMaxQuality && !isMaxQuality;
 
 	if (playerState.currentTurn == 1) {
 		StarterCraft();
 	}
 	else {
-		if (!(!forceMaxQuality || isMaxQuality || synthActionRequired)) {
-			QualityCraft();
-		}
-		if (!isMaxQuality && forceMaxQuality) {		// Better to use a different synthesis skill if quality isn't required
+		int remainingTime = bestTime - craftingRecord.currentTime;
+		
+		bool isMaxQuality = craftableItem->IsItemMaxQuality();
+
+		bool lastMove = ((remainingTime < 5) || craftingRecord.player.currentTurn == maxTurnLimit - 1); // Only one move left to match the best time and turn limit
+		bool requireSynth = ActionUsedDuringBuff(craftingRecord.player.buffInfo.veneration, actionTracker->synthActionUsed, 0b111);
+		bool requireAppraisal = ActionUsedDuringBuff(craftingRecord.player.buffInfo.finalAppraisal, actionTracker->synthActionUsed, 0b1111);
+		bool synthActionRequired = lastMove || requireSynth || requireAppraisal;
+		bool requireQuality = forceMaxQuality && !isMaxQuality;
+
+		if (requireQuality) {
+			if (!synthActionRequired) {
+				QualityCraft();
+			}
 			OtherCraft();
 		}
-		if (!requireTouch) {
-			SynthesisCraft();
-		}
 
-		if (!(synthActionRequired || requireTouch)) {
-			BuffCraft();
-			if (!secondToLastMove && (repairableDurability >= 20)) {
-				RepairCraft(repairableDurability);
+		//bool secondToLastMove = (remainingTime < 7 || craftingRecord.player.currentTurn == maxTurnLimit - 2);
+		if (!(actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.innovation, 3, actionTracker->touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
+			|| actionTracker->ActionsUsedDuringBuff(3, craftingRecord.player.buffInfo.greatStrides, 2, actionTracker->touchActionUsed, 1) //ActionUsedDuringBuff(craftingRecord.player.buffInfo.greatStrides, actionTracker->touchActionUsed, 0b11)
+			|| ((remainingTime < 7 || craftingRecord.player.currentTurn == maxTurnLimit - 2) && requireQuality) ||
+			((minTouchSkills - actionTracker->numTouchSkillsUsed) == ((maxTurnLimit - 1) - (playerState.currentTurn)))
+			)) {
+			SynthesisCraft();
+
+			if (!synthActionRequired) {
+				BuffCraft();
+				int repairableDurability = craftableItem->GetMaxDurability() - craftableItem->GetDurability();
+				if ((repairableDurability >= 25)) {
+					RepairCraft(repairableDurability);
+				}
 			}
 		}
+
+		
 	}
 	/*if (!(synthActionRequired || (secondToLastMove && itemDurability >= 20) || requireTouch)) {
 		RepairCraft(previousStep, finalAppraisalTimer);
