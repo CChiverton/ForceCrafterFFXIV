@@ -82,15 +82,15 @@ void Crafter::FindMinQualityForMax() {
 		if (QualityCheck(move.skillName)) {
 			continue;
 		}
-		QualityOnlyCrafts(move, craftingRecord);
+		QualityOnlyCrafts(move);
 	}
 	for (const SkillTest& move : otherSkills) {
-		QualityOnlyCrafts(move, craftingRecord);
+		QualityOnlyCrafts(move);
 	}
 	ContinueCraft();
 }
 
-void Crafter::QualityOnlyCrafts(const SkillTest& move, const CraftingHistory& previousStep) {
+void Crafter::QualityOnlyCrafts(const SkillTest& move) {
 	if (CastSkill(move)) {
 		if (craftableItem->IsItemMaxQuality()) {
 			SaveCraftingHistory(move.skillName);
@@ -98,19 +98,19 @@ void Crafter::QualityOnlyCrafts(const SkillTest& move, const CraftingHistory& pr
 			ContinueCraft();
 		}
 		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestQualityTime) {
-			LoadLastCraftingRecord(previousStep);
+			LoadLastCraftingRecord(craftingRecord);
 		}
 		else if (!craftableItem->IsItemBroken()) {
 			SaveCraftingHistory(move.skillName);
 			FindMinQualityForMax();
 		}
 		else if (craftableItem->IsItemBroken()) {
-			LoadLastCraftingRecord(previousStep);
+			LoadLastCraftingRecord(craftingRecord);
 		}
 	}
 }
 
-void Crafter::CraftAndRecord(const SkillTest& move, int finalAppraisalTimer) {
+void Crafter::CraftAndRecord(const SkillTest& move) {
 	if (Craft(move)) {
 
 		if (craftableItem->IsItemCrafted()) {
@@ -128,7 +128,7 @@ void Crafter::CraftAndRecord(const SkillTest& move, int finalAppraisalTimer) {
 			LoadLastCraftingRecord(craftingRecord);
 			return;
 		}
-		else if (finalAppraisalTimer == 1 && (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1) {		// not appraised
+		else if (craftingRecord.player.buffInfo.finalAppraisal == 1 && (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1) {		// not appraised
 			LoadLastCraftingRecord(craftingRecord);
 			return;
 		}
@@ -170,23 +170,23 @@ void Crafter::ForceCraft() {
 	//bool skipForTouch = secondToLastMove && forceMaxQuality && !isMaxQuality;
 
 	if (playerState.currentTurn == 1) {
-		StarterCraft(craftingRecord.player.buffInfo.finalAppraisal);
+		StarterCraft();
 	}
 	else {
 		if (!(!forceMaxQuality || isMaxQuality || synthActionRequired)) {
-			QualityCraft(craftingRecord.player.buffInfo.finalAppraisal);
+			QualityCraft();
 		}
 		if (!isMaxQuality && forceMaxQuality) {		// Better to use a different synthesis skill if quality isn't required
-			OtherCraft(craftingRecord.player.buffInfo.finalAppraisal);
+			OtherCraft();
 		}
 		if (!requireTouch) {
-			SynthesisCraft(craftingRecord.player.buffInfo.finalAppraisal);
+			SynthesisCraft();
 		}
 
 		if (!(synthActionRequired || requireTouch)) {
-			BuffCraft(craftingRecord.player.buffInfo.finalAppraisal);
+			BuffCraft();
 			if (!(secondToLastMove && itemDurability >= 20)) {
-				RepairCraft(craftingRecord.player.buffInfo.finalAppraisal, itemDurability);
+				RepairCraft(itemDurability);
 			}
 		}
 	}
@@ -201,14 +201,14 @@ void Crafter::ForceCraft() {
 
 /*----------------------PRIVATE-------------------------------------*/
 
-void Crafter::StarterCraft(int finalAppraisalTimer) {
+void Crafter::StarterCraft() {
 	for (const SkillTest& move : startingMoveList) {
 		std::cout << "Scanned moves\n";
-		CraftAndRecord(move, finalAppraisalTimer);
+		CraftAndRecord(move);
 	}
 }
 
-void Crafter::SynthesisCraft(int finalAppraisalTimer) {
+void Crafter::SynthesisCraft() {
 	bool checkForCarefulGroundWork = (((actionTracker->prudentSynthesis & 0b11) | (actionTracker->groundwork & 0b11)) == 0b11);	// either have been used for the past two turns	
 	for (const SkillTest& move : synthesisSkills) {
 		if (SimilarTrees(move.skillName))	continue;
@@ -216,43 +216,43 @@ void Crafter::SynthesisCraft(int finalAppraisalTimer) {
 		if (checkForCarefulGroundWork && (move.skillName == SkillName::CAREFULSYNTHESIS 
 										|| move.skillName == SkillName::GROUNDWORK))	continue;	// will be faster and same with veneration buff
 
-		CraftAndRecord(move, finalAppraisalTimer);
+		CraftAndRecord(move);
 	}
 }
 
-void Crafter::QualityCraft(int finalAppraisalTimer) {
+void Crafter::QualityCraft() {
 	for (const SkillTest& move : qualitySkills) {
 		
 		if (QualityCheck(move.skillName)) {
 			continue;
 		}
 
-		CraftAndRecord(move, finalAppraisalTimer);
+		CraftAndRecord(move);
 	}
 }
 
-void Crafter::BuffCraft(int finalAppraisalTimer) {
+void Crafter::BuffCraft() {
 	for (const SkillTest& move : buffSkills) {
 		if (BuffCheck(move.skillName)) {
 			continue;
 		}
 
-		CraftAndRecord(move, finalAppraisalTimer);
+		CraftAndRecord(move);
 	}
 }
 
-void Crafter::RepairCraft(int finalAppraisalTimer, int remainingDurability) {
+void Crafter::RepairCraft(int remainingDurability) {
 	for (const SkillTest& move : repairSkills) {
 		if (playerState.lastSkillUsed == SkillName::MASTERSMEND)	continue;		//If previously used this skill, it would have been more effective to use Immaculate Mend
 		if (move.skillName == SkillName::IMMACULATEMEND && remainingDurability <= 30)	continue;	// better to use masters mend here
 		if (remainingDurability > 15)	continue;		// Arbritrary number, more of a logical "Why repair at this stage"
-		CraftAndRecord(move, finalAppraisalTimer);
+		CraftAndRecord(move);
 	}
 }
 
-void Crafter::OtherCraft(int finalAppraisalTimer) {
+void Crafter::OtherCraft() {
 	for (const SkillTest& move : otherSkills) {
-		CraftAndRecord(move, finalAppraisalTimer);
+		CraftAndRecord(move);
 	}
 }
 

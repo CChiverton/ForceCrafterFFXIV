@@ -26,15 +26,15 @@ private:
 public:
 
 	void FindMinQualityForMax();
-	void QualityOnlyCrafts(const SkillTest& move, const CraftingHistory& previousStep);
-	void CraftAndRecord(const SkillTest& move, int finalAppraisalTimer);
+	void QualityOnlyCrafts(const SkillTest& move);
+	void CraftAndRecord(const SkillTest& move);
 
 	void ForceCraft();
 
 private:
 
 	std::vector<CraftingHistory> craftingHistory{};
-	unsigned char bestTime{ 99 }, bestQualityTime{ 99 };
+	uint16_t bestTime{ 99 }, bestQualityTime{ 99 };
 	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{}, successfulQualityCrafts{};
 	const bool forceMaxQuality, forceGreaterByregot;
 	const unsigned char maxTurnLimit;
@@ -43,12 +43,12 @@ private:
 	int16_t baseTurn{};
 	int16_t minTouchSkills{ 0 };
 
-	void StarterCraft(int finalAppraisalTimer);
-	void SynthesisCraft(int finalAppraisalTimer);
-	void QualityCraft(int finalAppraisalTimer);
-	void BuffCraft(int finalAppraisalTimer);
-	void RepairCraft(int finalAppraisalTimer, int remainingDurability);
-	void OtherCraft(int finalAppraisalTimer);
+	void StarterCraft();
+	void SynthesisCraft();
+	void QualityCraft();
+	void BuffCraft();
+	void RepairCraft(int remainingDurability);
+	void OtherCraft();
 
 	void UpdateValidBuffCheck(int appropriateActionTurn, bool actionUsedThisTurn);
 
