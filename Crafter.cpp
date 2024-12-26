@@ -31,9 +31,12 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 		else {
 			std::cout << "There was no way to find max quality with your QP100 and the maximum number of steps.\n";
 		}
-		ResetPlayerStats();
+		
 		RemoveItem();
 		AddItem(maxProgress, maxQuality, maxDurability);
+		ResetPlayerStats();
+		craftingRecord.player = playerState;
+		craftingRecord.item = craftableItem->GetItemState();
 	}
 
 	SaveCraftingHistory(SkillName::NONE);
@@ -98,14 +101,14 @@ void Crafter::QualityOnlyCrafts(const SkillTest& move) {
 			ContinueCraft();
 		}
 		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestQualityTime) {
-			LoadLastCraftingRecord(craftingRecord);
+			LoadLastCraftingRecord();
 		}
 		else if (!craftableItem->IsItemBroken()) {
 			SaveCraftingHistory(move.skillName);
 			FindMinQualityForMax();
 		}
 		else if (craftableItem->IsItemBroken()) {
-			LoadLastCraftingRecord(craftingRecord);
+			LoadLastCraftingRecord();
 		}
 	}
 }
@@ -116,7 +119,7 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 		if (craftableItem->IsItemCrafted()) {
 			if (forceMaxQuality && !craftableItem->IsItemMaxQuality()) {
 				//std::cout << "Not maximum quality when needed\n";
-				LoadLastCraftingRecord(craftingRecord);
+				LoadLastCraftingRecord();
 				return;
 			}
 			SaveCraftingHistory(move.skillName);
@@ -125,11 +128,11 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 		}
 		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
 			//std::cout << "Run out of moves\n";
-			LoadLastCraftingRecord(craftingRecord);
+			LoadLastCraftingRecord();
 			return;
 		}
 		else if (craftingRecord.player.buffInfo.finalAppraisal == 1 && (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1) {		// not appraised
-			LoadLastCraftingRecord(craftingRecord);
+			LoadLastCraftingRecord();
 			return;
 		}
 		else if (!craftableItem->IsItemBroken()) {
@@ -137,7 +140,7 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 			ForceCraft();
 		}
 		else if (craftableItem->IsItemBroken()) {
-			LoadLastCraftingRecord(craftingRecord);
+			LoadLastCraftingRecord();
 			return;
 		}
 #if ProgressUpdate
@@ -223,10 +226,12 @@ void Crafter::SynthesisCraft() {
 void Crafter::QualityCraft() {
 	for (const SkillTest& move : qualitySkills) {
 		
+
 		if (QualityCheck(move.skillName)) {
 			continue;
 		}
 
+		
 		CraftAndRecord(move);
 	}
 }
@@ -341,18 +346,17 @@ void Crafter::AddSuccessfulCraft() {
 	successfulCrafts[craftingRecord.currentTime].emplace_back(success);
 }
 
-inline void Crafter::LoadLastCraftingRecord(const CraftingHistory& lastRecord) {
-	LoadPlayerStats(lastRecord.player);
-	craftableItem->LoadItemState(lastRecord.item);
-	craftingRecord = lastRecord;
+inline void Crafter::LoadLastCraftingRecord() {
+	LoadPlayerStats(craftingHistory.back().player);
+	craftableItem->LoadItemState(craftingHistory.back().item);
+	craftingRecord = craftingHistory.back();
 	/*std::cout << "After loading item stats are\n";
 	player->craftableItem->OutputStats();*/
 }
 
 void Crafter::ContinueCraft() {
 	DeleteCraftingHistory();
-	CraftingHistory& last = craftingHistory.back();
-	LoadLastCraftingRecord(last);
+	LoadLastCraftingRecord();
 	actionTracker->Backtrack();
 }
 
