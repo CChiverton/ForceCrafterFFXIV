@@ -22,10 +22,10 @@ public:
 	bool CastSkill(const Skills::SkillTest& skillName);
 
 	inline const int& GetSkillTime(Skills::SkillName skillName) const;
-	inline const int& GetCurrentTime() const {
+	inline const unsigned char& GetCurrentTime() const {
 		return playerState.currentTime;
 	}
-	inline const int& GetCurrentTurn() const {
+	inline const unsigned char& GetCurrentTurn() const {
 		return playerState.currentTurn;
 	}
 
@@ -105,10 +105,10 @@ private:
 	
 	bool CheckItem();
 
-	const int CalculateProgress(const int efficiency);
-	const int& CalculateQuality(const int efficiency);
+	const int CalculateProgress(const int16_t efficiency);
+	const int& CalculateQuality(const int16_t efficiency);
 
-	void AddInnerQuiet(int stacks);
+	void AddInnerQuiet(unsigned char stacks);
 	inline const float InnerQuietEfficiencyMultiplier() const;
 
 

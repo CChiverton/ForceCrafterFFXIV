@@ -70,11 +70,8 @@ bool Player::CastSkill(const Skills::SkillTest& skill) {
 	successfulCast = true;
 
 	int skillCPCost = skill.costCP;
-	int skillDurabilityCost = skill.costDurability;
+	int skillDurabilityCost = (playerState.buffInfo.wasteNotActive) ? skill.costDurability/2 : skill.costDurability;
 	int skillEfficiency = skill.efficiency;
-	if (playerState.buffInfo.wasteNotActive) {
-		skillDurabilityCost /= 2;
-	}
 	switch (skill.type) {
 	case SkillType::SYNTHESIS:
 		//SynthesisBuffs(skillEfficiency);
@@ -165,7 +162,7 @@ bool Player::CheckItem() {
 	return true;
 }
 
-const int Player::CalculateProgress(const int efficiency) {
+const int Player::CalculateProgress(const int16_t efficiency) {
 	int result = progressPerOne * efficiency;
 	/*std::cout << "Progress per one is " << progressPerOne << '\n';
 	std::cout << "Efficiency is " << efficiency << '\n';
@@ -174,7 +171,7 @@ const int Player::CalculateProgress(const int efficiency) {
 	return result;
 }
 
-const int& Player::CalculateQuality(const int efficiency) {
+const int& Player::CalculateQuality(const int16_t efficiency) {
 	if (playerState.buffInfo.innovationActive) {
 		if (playerState.buffInfo.greatStridesActive) {
 			playerState.buffInfo.greatStrides = 0;
@@ -192,7 +189,7 @@ const int& Player::CalculateQuality(const int efficiency) {
 	return preComputeQualityEfficiency[playerState.innerQuiet][efficiency];
 }
 
-void Player::AddInnerQuiet(int stacks) {
+void Player::AddInnerQuiet(unsigned char stacks) {
 	playerState.innerQuiet += stacks;
 	if (playerState.innerQuiet > 10) {
 		playerState.innerQuiet = 10;
