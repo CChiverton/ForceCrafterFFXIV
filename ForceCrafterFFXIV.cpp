@@ -4,17 +4,28 @@
 #include <iostream>
 #include "Crafter.hpp"
 #include "Player.hpp"
+#include "Setup.hpp"
 #include "Skills.hpp"
+
+#define NDEBUG 0
 
 int main()
 {
-    std::vector<SkillTest> skills = { skillTest[4], skillTest[20]};
-#if 0
+    std::vector<SkillTest> skills = { skillTest[4], skillTest[(int)SkillName::MANIPULATION], skillTest[(int)SkillName::WASTENOTII]};
+
+#if NDEBUG
+    int maxCP = SelectCP();
+    int progressPerHundred = SelectProgress();
+    int qualityPerHundred = SelectQuality();
+    int itemMaxProgress = SelectMaxProgress();
+    int itemMaxQuality = SelectMaxQuality();
+    int itemMaxDurability = SelectMaxDurability();
+
     bool startCrafting = false;
     while (!startCrafting) {
         std::cout << "Current skills are: ";
-        for (const auto entry : skills) {
-            std::cout << Skills::GetSkillName(entry) << ",";
+        for (const auto& entry : skills) {
+            std::cout << Skills::GetSkillName(entry.skillName) << ",";
         }
         int move;
         std::cout << "\nPlease select your starting moves:\n";
@@ -22,16 +33,16 @@ int main()
         std::cin >> move;
         switch (move) {
         case 1:
-            skills.push_back(SkillName::MUSCLEMEMORY);
+            skills.emplace_back(skillTest[(int)SkillName::MUSCLEMEMORY]);
             break;
         case 2:
-            skills.push_back(SkillName::REFLECT);
+            skills.emplace_back(skillTest[(int)SkillName::REFLECT]);
             break;
         case 3:
-            skills.push_back(SkillName::MANIPULATION);
+            skills.emplace_back(skillTest[(int)SkillName::MANIPULATION]);
             break;
         case 4:
-            skills.push_back(SkillName::WASTENOTII);
+            skills.emplace_back(skillTest[(int)SkillName::WASTENOTII]);
             break;
         case 5:
             startCrafting = true;
@@ -44,9 +55,14 @@ int main()
         }
         std::cout << '\n';
 
-    }
+}
 #endif
+
+#if NDEBUG
+    Crafter crafter(skills, maxCP, progressPerHundred, qualityPerHundred, itemMaxProgress, itemMaxQuality, itemMaxDurability, true, true, 15);
+#else
     Crafter crafter(skills, 630, 331, 397, 3000, 11000, 40, true, true, 15);
+#endif
 
     
     crafter.ForceCraft();

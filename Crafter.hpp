@@ -34,14 +34,14 @@ public:
 private:
 
 	std::vector<CraftingHistory> craftingHistory{};
-	int bestTime{ 99 }, bestQualityTime{ 99 };
+	unsigned char bestTime{ 99 }, bestQualityTime{ 99 };
 	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{}, successfulQualityCrafts{};
 	const bool forceMaxQuality, forceGreaterByregot;
-	const int maxTurnLimit;
+	const unsigned char maxTurnLimit;
 	std::unique_ptr<ActionTracker> actionTracker;
 	bool invalid{ false };
-	int baseTurn{};
-	int minTouchSkills{ 0 };
+	int16_t baseTurn{};
+	int16_t minTouchSkills{ 0 };
 
 	void StarterCraft(int finalAppraisalTimer);
 	void SynthesisCraft(int finalAppraisalTimer);

@@ -41,5 +41,8 @@
     <ClInclude Include="ActionTracker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Setup.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

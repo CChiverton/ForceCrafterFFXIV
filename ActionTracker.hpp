@@ -5,7 +5,7 @@
 
 class ActionTracker {
 public:
-	ActionTracker() { std::cout << "Hello\n"; };
+	ActionTracker() {};
 	~ActionTracker() {};
 
 	int venerationHistory{ 0b0 }, wasteNotHistory{ 0b0 }, strideHistory{ 0b0 }, innovationHistory{ 0b0 };

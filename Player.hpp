@@ -58,27 +58,27 @@ public:
 	}
 
 	struct BuffInfo {
-		int muscleMemory = 0;
+		unsigned char muscleMemory = 0;
 		bool muscleMemoryActive = false;
-		int wasteNot = 0;
+		unsigned char wasteNot = 0;
 		bool wasteNotActive = false;
-		int greatStrides = 0;
+		unsigned char greatStrides = 0;
 		bool greatStridesActive = false;
-		int innovation = 0;
+		unsigned char innovation = 0;
 		bool innovationActive = false;
-		int veneration = 0;
+		unsigned char veneration = 0;
 		bool venerationActive = false;
-		int finalAppraisal = 0;
+		unsigned char finalAppraisal = 0;
 		bool finalAppraisalActive = false;
-		int manipulation = 0;
+		unsigned char manipulation = 0;
 		bool manipulationActive = false;
 	};
 
 	struct PlayerState {
 		int currentCP{ 0 };
-		int currentTurn{ 1 };
-		int currentTime{ 0 };
-		int innerQuiet{ 0 };;
+		unsigned char currentTurn{ 1 };
+		unsigned char currentTime{ 0 };
+		unsigned char innerQuiet{ 0 };;
 		BuffInfo buffInfo{};
 		Skills::SkillName lastSkillUsed{ Skills::SkillName::NONE };
 	}playerState;
@@ -95,8 +95,8 @@ private:
 	const int maxCP{};
 	const float progressPerOne{}, qualityPerOne{};
 	bool successfulCast{ true };
-	static constexpr int maxInnerQuiet{ 10 };
-	std::array<std::array<int, 300+1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
+	static constexpr unsigned char maxInnerQuiet{ 10 };
+	std::array<std::array<int16_t, 300+1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
 		preComputeQualityStrideEfficiency, preComputeQualityTouchStrideEfficiency;
 
 	

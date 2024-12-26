@@ -11,20 +11,26 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 	craftingRecord.player = playerState;
 	craftingRecord.item = craftableItem->GetItemState();
 	craftingHistory.reserve(maximumTurnLimit + 1);
+
+	ResetPlayerStats();
 	
 	if (forceMaxQuality) {
 		playerState.currentTurn = 2;
 		FindMinQualityForMax();
-		for (const auto& entry : successfulQualityCrafts[bestQualityTime]) {
-			for (const auto& move : entry) {
-				++minTouchSkills;
+		if (!successfulQualityCrafts.empty()) {
+			for (const auto& entry : successfulQualityCrafts[bestQualityTime]) {
+				for (const auto& move : entry) {
+					++minTouchSkills;
+				}
+				break;
+				std::cout << '\n';
 			}
-			break;
-			std::cout << '\n';
+			craftingHistory.clear();
+			std::cout << "The minimum number of touch skills required to achieve max quality is " << minTouchSkills << '\n';
 		}
-		craftingHistory.clear();
-		std::cout << "The minimum number of touch skills required to achieve max quality is " << minTouchSkills << '\n';
-		
+		else {
+			std::cout << "There was no way to find max quality with your QP100 and the maximum number of steps.\n";
+		}
 		ResetPlayerStats();
 		RemoveItem();
 		AddItem(maxProgress, maxQuality, maxDurability);
@@ -70,16 +76,16 @@ Crafter::~Crafter() {
 }
 
 void Crafter::FindMinQualityForMax() {
-	CraftingHistory& previousStep = craftingRecord;
+	//std::cout << playerState.currentCP << '\n';
 	for (const SkillTest& move : qualitySkills) {
 		craftableItem->UpdateDurability(1000);
 		if (QualityCheck(move.skillName)) {
 			continue;
 		}
-		QualityOnlyCrafts(move, previousStep);
+		QualityOnlyCrafts(move, craftingRecord);
 	}
 	for (const SkillTest& move : otherSkills) {
-		QualityOnlyCrafts(move, previousStep);
+		QualityOnlyCrafts(move, craftingRecord);
 	}
 	ContinueCraft();
 }
@@ -135,7 +141,7 @@ void Crafter::CraftAndRecord(const SkillTest& move, int finalAppraisalTimer) {
 			return;
 		}
 #if ProgressUpdate
-		if (playerState.currentTurn == 2) {
+		if (playerState.currentTurn == baseTurn) {
 			std::cout << Skills::GetSkillName(move.skillName) << " completed\n";
 		}
 #endif
