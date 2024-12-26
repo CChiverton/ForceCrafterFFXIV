@@ -167,7 +167,7 @@ void Crafter::ForceCraft() {
 		bool isMaxQuality = craftableItem->IsItemMaxQuality();
 
 		bool lastMove = ((remainingTime < 5) || craftingRecord.player.currentTurn == maxTurnLimit - 1); // Only one move left to match the best time and turn limit
-		bool requireSynth = ActionUsedDuringBuff(craftingRecord.player.buffInfo.veneration, actionTracker->synthActionUsed, 0b111);
+		bool requireSynth = actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker->synthActionUsed, 2);
 		bool requireAppraisal = ActionUsedDuringBuff(craftingRecord.player.buffInfo.finalAppraisal, actionTracker->synthActionUsed, 0b1111);
 		bool synthActionRequired = lastMove || requireSynth || requireAppraisal;
 		bool requireQuality = forceMaxQuality && !isMaxQuality;
