@@ -219,7 +219,6 @@ void Crafter::QualityOnlyCrafts(const SkillTest& move) {
 
 void Crafter::StarterCraft() {
 	for (const SkillTest& move : startingMoveList) {
-		std::cout << "Scanned moves\n";
 		CraftAndRecord(move);
 	}
 }
