@@ -143,8 +143,12 @@ void Crafter::QualityOnlyCrafts(const SkillTest& move) {
 void Crafter::CraftAndRecord(const SkillTest& move) {
 	if (Craft(move)) {
 
+		bool requireQuality = forceMaxQuality && !craftableItem->IsItemMaxQuality();
+		int remainingCraftTurns = maxTurnLimit - 1 - playerState.currentTurn;
+		//std::cout << remainingCraftTurns << '\n';
+
 		if (craftableItem->IsItemCrafted()) {
-			if (forceMaxQuality && !craftableItem->IsItemMaxQuality()) {
+			if (requireQuality) {
 				//std::cout << "Not maximum quality when needed\n";
 				LoadLastCraftingRecord();
 				return;
@@ -152,8 +156,18 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 			SaveCraftingHistory(move.skillName);
 			AddSuccessfulCraft();
 			ContinueCraft();
+			return;
 		}
-		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
+		if (requireQuality && remainingCraftTurns < minTouchSkills) {
+			//std::cout << remainingCraftTurns << " is less than " << minTouchSkills << '\n';
+			if ((craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality()) > bestQuality[remainingCraftTurns]) {	// two quality turns and synth turn, strongest ending possible
+				//std::cout << "Turns remaining: " << remainingCraftTurns << '\n';
+				LoadLastCraftingRecord();																											// if worse than this then it is impossible
+				return;
+			}
+		}
+		
+		if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
 			//std::cout << "Run out of moves\n";
 			LoadLastCraftingRecord();
 			return;
@@ -189,17 +203,10 @@ void Crafter::ForceCraft() {
 		StarterCraft();
 	}
 	else {
-		bool isMaxQuality = craftableItem->IsItemMaxQuality();
-		bool requireQuality = forceMaxQuality && !isMaxQuality;
-		int remainingCraftTurns = maxTurnLimit - 1 - playerState.currentTurn;
-		if (requireQuality && remainingCraftTurns < minTouchSkills) {
-			//std::cout << remainingCraftTurns << " is less than " << minTouchSkills << '\n';
-			if ((craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality()) > bestQuality[remainingCraftTurns]) {	// two quality turns and synth turn, strongest ending possible
-				//std::cout << "Turns remaining: " << remainingCraftTurns << '\n';
-				ContinueCraft();																											// if worse than this then it is impossible
-				return;
-			}
-		}
+		//bool isMaxQuality = craftableItem->IsItemMaxQuality();
+		bool requireQuality = forceMaxQuality && !craftableItem->IsItemMaxQuality();
+		//int remainingCraftTurns = maxTurnLimit - 1 - playerState.currentTurn;
+		
 		int remainingTime = bestTime - craftingRecord.currentTime;
 		
 		
