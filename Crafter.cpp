@@ -213,7 +213,7 @@ void Crafter::ForceCraft() {
 
 		bool lastMove = ((remainingTime < 5) || craftingRecord.player.currentTurn == maxTurnLimit - 1); // Only one move left to match the best time and turn limit
 		bool requireSynth = actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker->synthActionUsed, 2);
-		bool requireAppraisal = ActionUsedDuringBuff(craftingRecord.player.buffInfo.finalAppraisal, actionTracker->synthActionUsed, 0b1111);
+		bool requireAppraisal = actionTracker->ActionsUsedDuringBuff(5, craftingRecord.player.buffInfo.finalAppraisal, 4, actionTracker->synthActionUsed, 1);
 		bool synthActionRequired = lastMove || requireSynth || requireAppraisal;
 		
 
@@ -312,12 +312,6 @@ void Crafter::OtherCraft() {
 void Crafter::UpdateValidBuffCheck(int appropriateActionTurn, bool actionUsedThisTurn) {
 	appropriateActionTurn <<= 1;
 	appropriateActionTurn |= actionUsedThisTurn;
-}
-
-bool Crafter::ActionUsedDuringBuff(int timeLeft, int actionHistory, int turns) {
-	//if (actionHistory & turns)	std::cout << "I have some history\n";
-	//if ((timeLeft == 1 && !(actionHistory & turns))) std::cout << "More history than others\n";
-	return (timeLeft == 1 && !(actionHistory & turns));
 }
 
 bool Crafter::SimilarTrees(SkillName skillName) {
