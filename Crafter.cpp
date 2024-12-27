@@ -153,9 +153,9 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 				LoadLastCraftingRecord();
 				return;
 			}
-			SaveCraftingHistory(move.skillName);
-			AddSuccessfulCraft();
-			ContinueCraft();
+			//SaveCraftingHistory(move.skillName);
+			AddSuccessfulCraft(move.skillName);
+			//ContinueCraft();
 			return;
 		}
 		if (requireQuality && remainingCraftTurns < minTouchSkills) {
@@ -382,16 +382,26 @@ void Crafter::AddSuccessfulQualityCraft() {
 	}
 	successfulQualityCrafts[craftingRecord.currentTime].emplace_back(success);
 }
-void Crafter::AddSuccessfulCraft() {
+void Crafter::AddSuccessfulCraft(SkillName skillName) {
 	//std::cout << "Craft successful\n";
+	craftingRecord.player = playerState;
+	craftingRecord.item = craftableItem->GetItemState();
+	craftingRecord.currentTime = playerState.currentTime;
+	craftingRecord.skillName = skillName;
+
 
 	bestTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
+	// First few steps of saving a record
+	
 	std::vector<SkillName> success{};
 	//success.reserve(craftingHistory.size());
 	for (const auto& entry : craftingHistory) {
 		success.emplace_back(entry.skillName);
 	}
+	success.emplace_back(craftingRecord.skillName);
 	successfulCrafts[craftingRecord.currentTime].emplace_back(success);
+	LoadLastCraftingRecord();
+	//actionTracker->Backtrack();
 }
 
 inline void Crafter::LoadLastCraftingRecord() {

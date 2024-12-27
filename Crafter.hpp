@@ -65,7 +65,7 @@ private:
 
 	bool Craft(Skills::SkillTest skillName);
 	void AddSuccessfulQualityCraft();
-	void AddSuccessfulCraft();
+	void AddSuccessfulCraft(SkillName skillName);
 	inline void LoadLastCraftingRecord();
 	void ContinueCraft();
 
