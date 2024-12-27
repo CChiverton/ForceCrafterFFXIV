@@ -102,10 +102,9 @@ void Crafter::ForceCraft() {
 		bool requireQuality = forceMaxQuality && !craftableItem->IsItemMaxQuality();
 		int remainingTime = bestTime - craftingRecord.currentTime;
 		
-		bool lastMove = ((remainingTime < 5) || craftingRecord.player.currentTurn == maxTurnLimit - 1); // Only one move left to match the best time and turn limit
-		bool requireSynth = actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker->synthActionUsed, 2);
-		bool requireAppraisal = actionTracker->ActionsUsedDuringBuff(5, craftingRecord.player.buffInfo.finalAppraisal, 4, actionTracker->synthActionUsed, 1);
-		bool synthActionRequired = lastMove || requireSynth || requireAppraisal;
+		bool synthActionRequired = remainingTime < 5 || craftingRecord.player.currentTurn == maxTurnLimit - 1		// Only one move left to match the best time and turn limit
+				|| actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker->synthActionUsed, 2)	// Requires a synth action
+				|| actionTracker->ActionsUsedDuringBuff(5, craftingRecord.player.buffInfo.finalAppraisal, 4, actionTracker->synthActionUsed, 1);	// Requires a synth action
 		
 
 		if (requireQuality) {
