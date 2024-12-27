@@ -18,13 +18,40 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 		playerState.currentTurn = 2;
 		FindMinQualityForMax();
 		if (!successfulQualityCrafts.empty()) {
-			for (const auto& entry : successfulQualityCrafts[bestQualityTime]) {
+			minTouchSkills = successfulQualityCrafts[bestQualityTime][0].size();
+			/*for (const auto& entry : successfulQualityCrafts[bestQualityTime]) {
 				for (const auto& move : entry) {
 					++minTouchSkills;
 				}
 				break;
 				std::cout << '\n';
+			}*/
+			RemoveItem();
+			AddItem(maxProgress, maxQuality, maxDurability);
+			ResetPlayerStats();
+			int innovationBuff{ 0 };
+			int greatStridesBuff{ 0 };
+			int durability = 0;
+			int maxQuality = craftableItem->GetMaxQuality();
+			for (int i{ 0 }; i < minTouchSkills; ++i) {
+				SkillName move = successfulQualityCrafts[bestQualityTime][0][i];
+				for (const auto& entry : skillTest) {		// find skill efficiency
+					if (entry.skillName == move) {
+						if (entry.efficiency == 0) {
+							BuffSkills(move);
+						}
+						else {
+							TouchSkills(move, 0, entry.efficiency, durability);
+						}
+						break;
+					}
+
+				}
+				bestQuality.emplace(bestQuality.begin(), maxQuality - craftableItem->GetCurrentQuality());
 			}
+			/*for (const auto& entry : bestQuality) {
+				std::cout << "Quality left to fill: " << entry << '\n';
+			}*/
 			craftingHistory.clear();
 			std::cout << "The minimum number of touch skills required to achieve max quality is " << minTouchSkills << '\n';
 		}
@@ -164,8 +191,11 @@ void Crafter::ForceCraft() {
 	else {
 		bool isMaxQuality = craftableItem->IsItemMaxQuality();
 		bool requireQuality = forceMaxQuality && !isMaxQuality;
-		if (requireQuality && playerState.currentTurn + 4 == maxTurnLimit) {
-			if ((craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality()) > preComputeQualityTouchStrideEfficiency[10][300]) {	// two quality turns and synth turn, strongest ending possible
+		int remainingCraftTurns = maxTurnLimit - 1 - playerState.currentTurn;
+		if (requireQuality && remainingCraftTurns < minTouchSkills) {
+			//std::cout << remainingCraftTurns << " is less than " << minTouchSkills << '\n';
+			if ((craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality()) > bestQuality[remainingCraftTurns]) {	// two quality turns and synth turn, strongest ending possible
+				//std::cout << "Turns remaining: " << remainingCraftTurns << '\n';
 				ContinueCraft();																											// if worse than this then it is impossible
 				return;
 			}

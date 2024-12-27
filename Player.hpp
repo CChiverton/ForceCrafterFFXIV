@@ -94,6 +94,8 @@ public:
 	static constexpr unsigned char maxInnerQuiet{ 10 };
 	std::array<std::array<int16_t, 300 + 1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
 		preComputeQualityStrideEfficiency, preComputeQualityTouchStrideEfficiency;
+	void TouchSkills(const SkillName skillName, const int skillDurabilityCost, const int skillEfficiency, int& skillCPCost);
+	void BuffSkills(const SkillName skillName);
 private:
 	const int maxCP{};
 	const float progressPerOne{}, qualityPerOne{};
@@ -115,8 +117,8 @@ private:
 
 
 	void SynthesisSkills(const SkillName skillName, const int& skillDurabilityCost, int& skillEfficiency);
-	void TouchSkills(const SkillName skillName, const int skillDurabilityCost, const int skillEfficiency, int& skillCPCost);
-	void BuffSkills(const SkillName skillName);
+	
+	
 	void RepairSkills(const SkillName skillName);
 	void OtherSkills(const SkillName skillName, const int& skillDurabilityCost);
 	void SynthesisBuffs(int& skillEfficiency);

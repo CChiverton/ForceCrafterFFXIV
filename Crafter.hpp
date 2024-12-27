@@ -34,6 +34,7 @@ public:
 private:
 
 	std::vector<CraftingHistory> craftingHistory{};
+	std::vector<int> bestQuality{};
 	uint16_t bestTime{ 99 }, bestQualityTime{ 99 };
 	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{}, successfulQualityCrafts{};
 	const bool forceMaxQuality, forceGreaterByregot;
