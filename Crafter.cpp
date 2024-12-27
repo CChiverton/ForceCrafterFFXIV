@@ -71,7 +71,7 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 	if (!startingMoves.empty()) {
 		std::cout << "For the starting moves:";
 		for (const Skills::SkillTest& move : startingMoves) {
-			if (!Craft(move)) {
+			if (!CastSkill(move)) {
 				std::cout << "Invalid. The starting moves break/finish the item.\n";
 				invalid = true;
 				return;
@@ -105,93 +105,6 @@ Crafter::~Crafter() {
 	}
 }
 
-void Crafter::FindMinQualityForMax() {
-	//std::cout << playerState.currentCP << '\n';
-	for (const SkillTest& move : qualitySkills) {
-		craftableItem->UpdateDurability(1000);
-		if (QualityCheck(move.skillName)) {
-			continue;
-		}
-		QualityOnlyCrafts(move);
-	}
-	for (const SkillTest& move : otherSkills) {
-		QualityOnlyCrafts(move);
-	}
-	ContinueCraft();
-}
-
-void Crafter::QualityOnlyCrafts(const SkillTest& move) {
-	if (CastSkill(move)) {
-		if (craftableItem->IsItemMaxQuality()) {
-			SaveCraftingHistory(move.skillName);
-			AddSuccessfulQualityCraft();
-			ContinueCraft();
-		}
-		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestQualityTime) {
-			LoadLastCraftingRecord();
-		}
-		else if (!craftableItem->IsItemBroken()) {
-			SaveCraftingHistory(move.skillName);
-			FindMinQualityForMax();
-		}
-		else if (craftableItem->IsItemBroken()) {
-			LoadLastCraftingRecord();
-		}
-	}
-}
-
-void Crafter::CraftAndRecord(const SkillTest& move) {
-	if (Craft(move)) {
-
-		bool requireQuality = forceMaxQuality && !craftableItem->IsItemMaxQuality();
-		int remainingCraftTurns = maxTurnLimit - 1 - playerState.currentTurn;
-		//std::cout << remainingCraftTurns << '\n';
-
-		if (craftableItem->IsItemCrafted()) {
-			if (requireQuality) {
-				//std::cout << "Not maximum quality when needed\n";
-				LoadLastCraftingRecord();
-				return;
-			}
-			//SaveCraftingHistory(move.skillName);
-			AddSuccessfulCraft(move.skillName);
-			//ContinueCraft();
-			return;
-		}
-		if (requireQuality && remainingCraftTurns < minTouchSkills) {
-			//std::cout << remainingCraftTurns << " is less than " << minTouchSkills << '\n';
-			if ((craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality()) > bestQuality[remainingCraftTurns]) {	// two quality turns and synth turn, strongest ending possible
-				//std::cout << "Turns remaining: " << remainingCraftTurns << '\n';
-				LoadLastCraftingRecord();																											// if worse than this then it is impossible
-				return;
-			}
-		}
-		
-		if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
-			//std::cout << "Run out of moves\n";
-			LoadLastCraftingRecord();
-			return;
-		}
-		else if (craftingRecord.player.buffInfo.finalAppraisal == 1 && (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1) {		// not appraised
-			LoadLastCraftingRecord();
-			return;
-		}
-		else if (!craftableItem->IsItemBroken()) {
-			SaveCraftingHistory(move.skillName);
-			ForceCraft();
-		}
-		else if (craftableItem->IsItemBroken()) {
-			LoadLastCraftingRecord();
-			return;
-		}
-#if ProgressUpdate
-		if (playerState.currentTurn == baseTurn) {
-			std::cout << Skills::GetSkillName(move.skillName) << " completed\n";
-		}
-#endif
-		//std::cout << "Finisheng Turn " << player->GetCurrentTurn() + 1 << ": " << Skills::GetSkillName(move) << '\n';
-	}
-}
 
 void Crafter::ForceCraft() {
 	if (invalid) return;
@@ -253,6 +166,95 @@ void Crafter::ForceCraft() {
 
 /*----------------------PRIVATE-------------------------------------*/
 
+void Crafter::CraftAndRecord(const SkillTest& move) {
+	if (CastSkill(move)) {
+
+		bool requireQuality = forceMaxQuality && !craftableItem->IsItemMaxQuality();
+		int remainingCraftTurns = maxTurnLimit - 1 - playerState.currentTurn;
+		//std::cout << remainingCraftTurns << '\n';
+
+		if (craftableItem->IsItemCrafted()) {
+			if (requireQuality) {
+				//std::cout << "Not maximum quality when needed\n";
+				LoadLastCraftingRecord();
+				return;
+			}
+			//SaveCraftingHistory(move.skillName);
+			AddSuccessfulCraft(move.skillName);
+			//ContinueCraft();
+			return;
+		}
+		if (requireQuality && remainingCraftTurns < minTouchSkills) {
+			//std::cout << remainingCraftTurns << " is less than " << minTouchSkills << '\n';
+			if ((craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality()) > bestQuality[remainingCraftTurns]) {	// two quality turns and synth turn, strongest ending possible
+				//std::cout << "Turns remaining: " << remainingCraftTurns << '\n';
+				LoadLastCraftingRecord();																											// if worse than this then it is impossible
+				return;
+			}
+		}
+
+		if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
+			//std::cout << "Run out of moves\n";
+			LoadLastCraftingRecord();
+			return;
+		}
+		else if (craftingRecord.player.buffInfo.finalAppraisal == 1 && (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1) {		// not appraised
+			LoadLastCraftingRecord();
+			return;
+		}
+		else if (!craftableItem->IsItemBroken()) {
+			SaveCraftingHistory(move.skillName);
+			ForceCraft();
+		}
+		else if (craftableItem->IsItemBroken()) {
+			LoadLastCraftingRecord();
+			return;
+		}
+#if ProgressUpdate
+		if (playerState.currentTurn == baseTurn) {
+			std::cout << Skills::GetSkillName(move.skillName) << " completed\n";
+		}
+#endif
+		//std::cout << "Finisheng Turn " << player->GetCurrentTurn() + 1 << ": " << Skills::GetSkillName(move) << '\n';
+	}
+}
+
+
+void Crafter::FindMinQualityForMax() {
+	//std::cout << playerState.currentCP << '\n';
+	for (const SkillTest& move : qualitySkills) {
+		craftableItem->UpdateDurability(1000);
+		if (QualityCheck(move.skillName)) {
+			continue;
+		}
+		QualityOnlyCrafts(move);
+	}
+	for (const SkillTest& move : otherSkills) {
+		QualityOnlyCrafts(move);
+	}
+	ContinueCraft();
+}
+
+void Crafter::QualityOnlyCrafts(const SkillTest& move) {
+	if (CastSkill(move)) {
+		if (craftableItem->IsItemMaxQuality()) {
+			SaveCraftingHistory(move.skillName);
+			AddSuccessfulQualityCraft();
+			ContinueCraft();
+		}
+		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestQualityTime) {
+			LoadLastCraftingRecord();
+		}
+		else if (!craftableItem->IsItemBroken()) {
+			SaveCraftingHistory(move.skillName);
+			FindMinQualityForMax();
+		}
+		else if (craftableItem->IsItemBroken()) {
+			LoadLastCraftingRecord();
+		}
+	}
+}
+
 void Crafter::StarterCraft() {
 	for (const SkillTest& move : startingMoveList) {
 		std::cout << "Scanned moves\n";
@@ -274,13 +276,9 @@ void Crafter::SynthesisCraft() {
 
 void Crafter::QualityCraft() {
 	for (const SkillTest& move : qualitySkills) {
-		
-
 		if (QualityCheck(move.skillName)) {
 			continue;
 		}
-
-		
 		CraftAndRecord(move);
 	}
 }
@@ -290,7 +288,6 @@ void Crafter::BuffCraft() {
 		if (BuffCheck(move.skillName)) {
 			continue;
 		}
-
 		CraftAndRecord(move);
 	}
 }
@@ -307,11 +304,6 @@ void Crafter::OtherCraft() {
 	for (const SkillTest& move : otherSkills) {
 		CraftAndRecord(move);
 	}
-}
-
-void Crafter::UpdateValidBuffCheck(int appropriateActionTurn, bool actionUsedThisTurn) {
-	appropriateActionTurn <<= 1;
-	appropriateActionTurn |= actionUsedThisTurn;
 }
 
 bool Crafter::SimilarTrees(SkillName skillName) {
@@ -342,75 +334,14 @@ bool Crafter::SimilarTrees(SkillName skillName) {
 	return false;
 }
 
-inline void Crafter::SaveCraftingHistory(SkillName skillName) {
-	craftingRecord.player = playerState;
-	craftingRecord.item = craftableItem->GetItemState();
-	craftingRecord.currentTime = playerState.currentTime;
-	craftingRecord.skillName = skillName;
-	craftingHistory.emplace_back(craftingRecord);
-	actionTracker->ProgressSynthSkills(skillName);
-	actionTracker->ProgressTouchActions(skillName);
-}
-
-inline void Crafter::DeleteCraftingHistory() {
-	craftingHistory.pop_back();
-}
-
-
-bool Crafter::Craft(Skills::SkillTest skillName) {
-	if (!CastSkill(skillName)) {
-		//std::cout << "Invalid move " << Skills::GetSkillName(skillName) << '\n';
-		return false;
-	}
-	//std::cout << Skills::GetSkillName(skillName) << '\n';
-
-	return true;
-}
-
-void Crafter::AddSuccessfulQualityCraft() {
-	bestQualityTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
-	std::vector<SkillName> success{};
-	//success.reserve(craftingHistory.size());
-	for (const auto& entry : craftingHistory) {
-		success.emplace_back(entry.skillName);
-	}
-	successfulQualityCrafts[craftingRecord.currentTime].emplace_back(success);
-}
-void Crafter::AddSuccessfulCraft(SkillName skillName) {
-	//std::cout << "Craft successful\n";
-	craftingRecord.player = playerState;
-	craftingRecord.item = craftableItem->GetItemState();
-	craftingRecord.currentTime = playerState.currentTime;
-	craftingRecord.skillName = skillName;
-
-
-	bestTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
-	// First few steps of saving a record
-	
-	std::vector<SkillName> success{};
-	//success.reserve(craftingHistory.size());
-	for (const auto& entry : craftingHistory) {
-		success.emplace_back(entry.skillName);
-	}
-	success.emplace_back(craftingRecord.skillName);
-	successfulCrafts[craftingRecord.currentTime].emplace_back(success);
-	LoadLastCraftingRecord();
-	//actionTracker->Backtrack();
-}
-
-inline void Crafter::LoadLastCraftingRecord() {
-	LoadPlayerStats(craftingHistory.back().player);
-	craftableItem->LoadItemState(craftingHistory.back().item);
-	craftingRecord = craftingHistory.back();
-	/*std::cout << "After loading item stats are\n";
-	player->craftableItem->OutputStats();*/
-}
 
 void Crafter::ContinueCraft() {
 	DeleteCraftingHistory();
 	LoadLastCraftingRecord();
 	actionTracker->Backtrack();
 }
+
+
 
 bool Crafter::QualityCheck(SkillName skillName) {
 	bool skipTouchSkill{ false };
@@ -475,6 +406,61 @@ bool Crafter::BuffCheck(SkillName skillName) {
 
 	//std::cout << "Too high quality\n";
 	return buffSkip;
+}
+
+/********************************* CRAFTING RECORDS *********************************/
+inline void Crafter::SaveCraftingHistory(SkillName skillName) {
+	craftingRecord.player = playerState;
+	craftingRecord.item = craftableItem->GetItemState();
+	craftingRecord.currentTime = playerState.currentTime;
+	craftingRecord.skillName = skillName;
+	craftingHistory.emplace_back(craftingRecord);
+	actionTracker->ProgressSynthSkills(skillName);
+	actionTracker->ProgressTouchActions(skillName);
+}
+
+inline void Crafter::DeleteCraftingHistory() {
+	craftingHistory.pop_back();
+}
+
+void Crafter::AddSuccessfulQualityCraft() {
+	bestQualityTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
+	std::vector<SkillName> success{};
+	//success.reserve(craftingHistory.size());
+	for (const auto& entry : craftingHistory) {
+		success.emplace_back(entry.skillName);
+	}
+	successfulQualityCrafts[craftingRecord.currentTime].emplace_back(success);
+}
+
+void Crafter::AddSuccessfulCraft(SkillName skillName) {
+	//std::cout << "Craft successful\n";
+	craftingRecord.player = playerState;
+	craftingRecord.item = craftableItem->GetItemState();
+	craftingRecord.currentTime = playerState.currentTime;
+	craftingRecord.skillName = skillName;
+
+
+	bestTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
+	// First few steps of saving a record
+
+	std::vector<SkillName> success{};
+	//success.reserve(craftingHistory.size());
+	for (const auto& entry : craftingHistory) {
+		success.emplace_back(entry.skillName);
+	}
+	success.emplace_back(craftingRecord.skillName);
+	successfulCrafts[craftingRecord.currentTime].emplace_back(success);
+	LoadLastCraftingRecord();
+	//actionTracker->Backtrack();
+}
+
+inline void Crafter::LoadLastCraftingRecord() {
+	LoadPlayerStats(craftingHistory.back().player);
+	craftableItem->LoadItemState(craftingHistory.back().item);
+	craftingRecord = craftingHistory.back();
+	/*std::cout << "After loading item stats are\n";
+	player->craftableItem->OutputStats();*/
 }
 
 void Crafter::PrintCrafts() {

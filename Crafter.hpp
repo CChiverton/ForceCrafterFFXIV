@@ -12,26 +12,51 @@
 
 class Crafter : public Player {
 public:
-	Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit);
-
+	Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress,
+		int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit);
 	~Crafter();
+
+	void ForceCraft();
+
 private:
+	/*******************CRAFTING**********************/
+	void CraftAndRecord(const SkillTest& move);
+	void FindMinQualityForMax();
+	void QualityOnlyCrafts(const SkillTest& move);
+
+	void StarterCraft();
+	void SynthesisCraft();
+	void QualityCraft();
+	void BuffCraft();
+	void RepairCraft(int remainingDurability);
+	void OtherCraft();
+
+	// For example, BasicSynthesis->CarefulSynthesis and CarefulSynthesis->BasicSynthesis are the same if both buffed or unbuffed
+	//@TODO update to include muscle memory buff
+		// Only cancel out one order pair, the other will be tried out
+	bool SimilarTrees(SkillName skillName);
+	void ContinueCraft();
+
+	bool QualityCheck(SkillName skillName);
+	bool BuffCheck(SkillName skillName);
+
+
+	/*********************** CRAFTING RECORDS ************************/
+	inline void SaveCraftingHistory(SkillName skillName);
+	inline void DeleteCraftingHistory();
+	void AddSuccessfulQualityCraft();
+	void AddSuccessfulCraft(SkillName skillName);
+	inline void LoadLastCraftingRecord();
+
+	void PrintCrafts();
+
+
 	struct CraftingHistory {
 		Player::PlayerState player;
 		Item::ItemState item;
 		int currentTime{ 0 };
 		SkillName skillName{ SkillName::NONE };
 	}craftingRecord;
-
-public:
-
-	void FindMinQualityForMax();
-	void QualityOnlyCrafts(const SkillTest& move);
-	void CraftAndRecord(const SkillTest& move);
-
-	void ForceCraft();
-
-private:
 
 	std::vector<CraftingHistory> craftingHistory{};
 	std::vector<int> bestQuality{};
@@ -44,33 +69,8 @@ private:
 	int16_t baseTurn{};
 	int16_t minTouchSkills{ 0 };
 
-	void StarterCraft();
-	void SynthesisCraft();
-	void QualityCraft();
-	void BuffCraft();
-	void RepairCraft(int remainingDurability);
-	void OtherCraft();
 
-	void UpdateValidBuffCheck(int appropriateActionTurn, bool actionUsedThisTurn);
-
-	// For example, BasicSynthesis->CarefulSynthesis and CarefulSynthesis->BasicSynthesis are the same if both buffed or unbuffed
-	//@TODO update to include muscle memory buff
-		// Only cancel out one order pair, the other will be tried out
-	bool SimilarTrees(SkillName skillName);
-
-	inline void SaveCraftingHistory(SkillName skillName);
-	inline void DeleteCraftingHistory();
-
-	bool Craft(Skills::SkillTest skillName);
-	void AddSuccessfulQualityCraft();
-	void AddSuccessfulCraft(SkillName skillName);
-	inline void LoadLastCraftingRecord();
-	void ContinueCraft();
-
-	bool QualityCheck(SkillName skillName);
-	bool BuffCheck(SkillName skillName);
-
-	void PrintCrafts();
+	/************************** MOVES LIST ****************************/
 
 	const std::array<SkillTest, 2> startingMoveList = {
 		skillTest[(int)SkillName::MUSCLEMEMORY],
