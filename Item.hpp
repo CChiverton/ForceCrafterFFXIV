@@ -74,6 +74,10 @@ public:
 		return currentItemState.quality;
 	}
 
+	inline int GetMaxQuality() const {
+		return maxItemState.quality;
+	}
+
 
 	void OutputStats() const {
 		std::cout << "Progress: " << currentItemState.progress << "/" << maxItemState.progress << '\n';

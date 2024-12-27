@@ -162,15 +162,23 @@ void Crafter::ForceCraft() {
 		StarterCraft();
 	}
 	else {
+		bool isMaxQuality = craftableItem->IsItemMaxQuality();
+		bool requireQuality = forceMaxQuality && !isMaxQuality;
+		if (requireQuality && playerState.currentTurn + 4 == maxTurnLimit) {
+			if ((craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality()) > preComputeQualityTouchStrideEfficiency[10][300]) {	// two quality turns and synth turn, strongest ending possible
+				ContinueCraft();																											// if worse than this then it is impossible
+				return;
+			}
+		}
 		int remainingTime = bestTime - craftingRecord.currentTime;
 		
-		bool isMaxQuality = craftableItem->IsItemMaxQuality();
+		
 
 		bool lastMove = ((remainingTime < 5) || craftingRecord.player.currentTurn == maxTurnLimit - 1); // Only one move left to match the best time and turn limit
 		bool requireSynth = actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker->synthActionUsed, 2);
 		bool requireAppraisal = ActionUsedDuringBuff(craftingRecord.player.buffInfo.finalAppraisal, actionTracker->synthActionUsed, 0b1111);
 		bool synthActionRequired = lastMove || requireSynth || requireAppraisal;
-		bool requireQuality = forceMaxQuality && !isMaxQuality;
+		
 
 		if (requireQuality) {
 			if (!synthActionRequired) {
@@ -201,7 +209,6 @@ void Crafter::ForceCraft() {
 	/*if (!(synthActionRequired || (secondToLastMove && itemDurability >= 20) || requireTouch)) {
 		RepairCraft(previousStep, finalAppraisalTimer);
 	}*/
-
 	ContinueCraft();
 	//std::cout << player->GetCurrentTurn() << " TRIED ALL POSSIBLE MOVES AT THIS LEVEL\n";
 }

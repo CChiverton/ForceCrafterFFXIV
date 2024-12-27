@@ -91,13 +91,15 @@ public:
 
 	void ResetPlayerStats();
 
+	static constexpr unsigned char maxInnerQuiet{ 10 };
+	std::array<std::array<int16_t, 300 + 1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
+		preComputeQualityStrideEfficiency, preComputeQualityTouchStrideEfficiency;
 private:
 	const int maxCP{};
 	const float progressPerOne{}, qualityPerOne{};
 	bool successfulCast{ true };
-	static constexpr unsigned char maxInnerQuiet{ 10 };
-	std::array<std::array<int16_t, 300+1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
-		preComputeQualityStrideEfficiency, preComputeQualityTouchStrideEfficiency;
+	
+	
 
 	
 
