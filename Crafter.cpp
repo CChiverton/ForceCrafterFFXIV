@@ -14,6 +14,7 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 	
 	if (forceMaxQuality) {
 		playerState.currentTurn = 2;
+		SaveCraftingHistory(SkillName::NONE);
 		FindMinQualityForMax();
 		if (!successfulQualityCrafts.empty()) {
 			minTouchSkills = successfulQualityCrafts[bestQualityTime][0].size();
@@ -25,6 +26,7 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 			int maxQuality = craftableItem->GetMaxQuality();
 			for (int i{ 0 }; i < minTouchSkills; ++i) {
 				SkillName move = successfulQualityCrafts[bestQualityTime][0][i];
+				if (move == SkillName::NONE)	continue;
 				for (const auto& entry : skillTest) {		// find skill efficiency
 					if (entry.skillName == move) {
 						if (entry.efficiency == 0) {
@@ -40,6 +42,7 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 				
 				bestQuality.emplace(bestQuality.begin(), maxQuality - craftableItem->GetCurrentQuality());
 			}
+			--minTouchSkills;
 			craftingHistory.clear();
 			std::cout << "The minimum number of touch skills required to achieve max quality is " << minTouchSkills << '\n';
 		}
@@ -52,6 +55,46 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 		craftingRecord.player = playerState;
 		craftingRecord.item = craftableItem->GetItemState();
 	}
+
+	
+
+	playerState.currentTurn = 2;
+	SaveCraftingHistory(SkillName::NONE);
+	FindMinSynthForMax();
+	if (!successfulSynthCrafts.empty()) {
+		minSynthSkills = successfulSynthCrafts[bestSynthTime][0].size();
+		RemoveItem();
+		AddItem(maxProgress, maxQuality, maxDurability);
+		int durability = 0;
+		int maxProgress = craftableItem->GetMaxProgress();
+		for (int i{ 0 }; i < minSynthSkills; ++i) {
+			SkillName move = successfulSynthCrafts[bestSynthTime][0][i];
+			if (move == SkillName::NONE)	continue;
+			for (const auto& entry : skillTest) {		// find skill efficiency
+				if (entry.efficiency == 0) {
+					BuffSkills(move);
+				} else
+				if (entry.skillName == move) {
+					SynthesisSkills(entry.skillName, durability, entry.efficiency);
+				}
+				
+			}
+			std::cout << Skills::GetSkillName(move) << '\n';
+			bestSynth.emplace(bestSynth.begin(), maxProgress - craftableItem->GetCurrentProgress());
+			std::cout << maxProgress - craftableItem->GetCurrentProgress() << '\n';
+		}
+		--minSynthSkills;
+		craftingHistory.clear();
+		std::cout << "The minimum number of synth skills required to craft the item is " << minSynthSkills << '\n';
+	}
+	else {
+		std::cout << "There was no way to craft this item.\n";
+	}
+	craftingHistory.clear();
+	RemoveItem();
+	AddItem(maxProgress, maxQuality, maxDurability);
+	craftingRecord.player = playerState;
+	craftingRecord.item = craftableItem->GetItemState();
 
 	SaveCraftingHistory(SkillName::NONE);		// An extra move is pruned off so it is necessary to keep the skills going
 	
@@ -153,9 +196,20 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 		}
 
 		if (requireQuality && remainingCraftTurns < minTouchSkills) {
-			if ((craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality()) > bestQuality[remainingCraftTurns]) {	
+			int remainingQuality = craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality();
+			if (remainingQuality > bestQuality[remainingCraftTurns]) {	
 				LoadLastCraftingRecord();							// two quality turns and synth turn, strongest ending possible
 				return;												// if worse than this then it is impossible
+			}
+			int minQualityTurnsLeft = 0;
+			for (minQualityTurnsLeft; remainingQuality > bestQuality[minQualityTurnsLeft]; ++minQualityTurnsLeft);
+			//std::cout << "There are " << minQualityTurnsLeft << " to get " << remainingQuality << '\n';
+			int minSynthTurnsLeft = 0;
+			for (minSynthTurnsLeft; (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) > bestSynth[minSynthTurnsLeft]; ++minSynthTurnsLeft);
+			//std::cout << "There are " << minSynthTurnsLeft << " to get " << (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) << " progress\n";
+			if ((minQualityTurnsLeft + minSynthTurnsLeft) > maxTurnLimit - playerState.currentTurn) {
+				LoadLastCraftingRecord();
+				return;
 			}
 		}
 
@@ -198,6 +252,14 @@ void Crafter::FindMinQualityForMax() {
 	ContinueCraft();
 }
 
+void Crafter::FindMinSynthForMax() {
+	for (const SkillTest& move : synthesisSkills) {
+		craftableItem->UpdateDurability(1000);
+		SynthOnlyCrafts(move);
+	}
+	ContinueCraft();
+}
+
 void Crafter::QualityOnlyCrafts(const SkillTest& move) {
 	if (CastSkill(move)) {
 		if (craftableItem->IsItemMaxQuality()) {
@@ -211,6 +273,26 @@ void Crafter::QualityOnlyCrafts(const SkillTest& move) {
 		else if (!craftableItem->IsItemBroken()) {
 			SaveCraftingHistory(move.skillName);
 			FindMinQualityForMax();
+		}
+		else if (craftableItem->IsItemBroken()) {
+			LoadLastCraftingRecord();
+		}
+	}
+}
+
+void Crafter::SynthOnlyCrafts(const SkillTest& move) {
+	if (CastSkill(move)) {
+		if (craftableItem->IsItemCrafted()) {
+			SaveCraftingHistory(move.skillName);
+			AddSuccessfulSynthCraft();
+			ContinueCraft();
+		}
+		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestSynthTime) {
+			LoadLastCraftingRecord();
+		}
+		else if (!craftableItem->IsItemBroken()) {
+			SaveCraftingHistory(move.skillName);
+			FindMinSynthForMax();
 		}
 		else if (craftableItem->IsItemBroken()) {
 			LoadLastCraftingRecord();
@@ -383,6 +465,7 @@ inline void Crafter::DeleteCraftingHistory() {
 }
 
 void Crafter::AddSuccessfulQualityCraft() {
+	if (craftingRecord.currentTime > bestQualityTime)	return;
 	bestQualityTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
 	std::vector<SkillName> success{};
 	//success.reserve(craftingHistory.size());
@@ -390,6 +473,17 @@ void Crafter::AddSuccessfulQualityCraft() {
 		success.emplace_back(entry.skillName);
 	}
 	successfulQualityCrafts[craftingRecord.currentTime].emplace_back(success);
+}
+
+void Crafter::AddSuccessfulSynthCraft() {
+	if (craftingRecord.currentTime > bestSynthTime)	return;
+	bestSynthTime = craftingRecord.currentTime;
+	std::vector<SkillName> success{};
+	//success.reserve(craftingHistory.size());
+	for (const auto& entry : craftingHistory) {
+		success.emplace_back(entry.skillName);
+	}
+	successfulSynthCrafts[craftingRecord.currentTime].emplace_back(success);
 }
 
 void Crafter::AddSuccessfulCraft(SkillName skillName) {

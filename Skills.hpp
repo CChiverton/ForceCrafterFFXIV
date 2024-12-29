@@ -97,7 +97,8 @@ namespace Skills {
 		TOUCH,
 		BUFF,
 		REPAIR,
-		OTHER
+		OTHER,
+		NONE
 	};
 
 	const struct Skill {
@@ -117,7 +118,7 @@ namespace Skills {
 		int castTime;
 	};
 
-	const std::array<SkillTest , 23>skillTest =
+	const std::array<SkillTest , 24>skillTest =
 	{ {	{ SkillName::BASICSYNTHESIS, SkillType::SYNTHESIS,		0,		10,		120,		3 } ,
 		{ SkillName::CAREFULSYNTHESIS, SkillType::SYNTHESIS,		7,		10,		180,		3 } ,
 		{ SkillName::PRUDENTSYNTHESIS,	 SkillType::SYNTHESIS,		18,		5,		180,		3 } ,
@@ -140,6 +141,7 @@ namespace Skills {
 		{ SkillName::MASTERSMEND,		 SkillType::REPAIR,		88,		0,		0,			3 } ,
 		{ SkillName::MANIPULATION,		 SkillType::REPAIR,		96,		0,		0,			2 } ,
 		{ SkillName::IMMACULATEMEND,	 SkillType::REPAIR,		112,	0,		0,			3 } ,
-		{ SkillName::DELICATESYNTHESIS,	 SkillType::OTHER,			32,		10,		100,		3 } }
+		{ SkillName::DELICATESYNTHESIS,	 SkillType::OTHER,			32,		10,		100,		3 },
+		{ SkillName::NONE,				 SkillType::NONE,			0,		0,		0,		0 } }	
 	};
 }

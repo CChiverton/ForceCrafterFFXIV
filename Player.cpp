@@ -203,7 +203,7 @@ inline const float Player::InnerQuietEfficiencyMultiplier() const {
 	return (1 + (playerState.innerQuiet / 10.0f));
 }
 
-void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabilityCost, int& skillEfficiency) {
+void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabilityCost, int skillEfficiency) {
 	switch (skillName) {
 	case Skills::SkillName::PRUDENTSYNTHESIS:
 		if (!playerState.buffInfo.wasteNotActive) {

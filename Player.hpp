@@ -94,6 +94,7 @@ public:
 	static constexpr unsigned char maxInnerQuiet{ 10 };
 	std::array<std::array<int16_t, SkillName::REFINEDTOUCH+1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
 		preComputeQualityStrideEfficiency, preComputeQualityTouchStrideEfficiency;
+	void SynthesisSkills(const SkillName skillName, const int& skillDurabilityCost, int skillEfficiency);
 	void TouchSkills(const SkillName skillName, const int skillDurabilityCost, int& skillCPCost);
 	void BuffSkills(const SkillName skillName);
 private:
@@ -116,7 +117,7 @@ private:
 	inline const float InnerQuietEfficiencyMultiplier() const;
 
 
-	void SynthesisSkills(const SkillName skillName, const int& skillDurabilityCost, int& skillEfficiency);
+	
 	
 	
 	void RepairSkills(const SkillName skillName);
