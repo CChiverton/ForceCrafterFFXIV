@@ -3,7 +3,7 @@
 #include <array>
 
 namespace Skills {
-	enum class SkillName
+	enum SkillName : int
 	{
 		BASICSYNTHESIS = 0,
 		CAREFULSYNTHESIS,

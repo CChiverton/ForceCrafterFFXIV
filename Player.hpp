@@ -92,9 +92,9 @@ public:
 	void ResetPlayerStats();
 
 	static constexpr unsigned char maxInnerQuiet{ 10 };
-	std::array<std::array<int16_t, 300 + 1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
+	std::array<std::array<int16_t, SkillName::REFINEDTOUCH+1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
 		preComputeQualityStrideEfficiency, preComputeQualityTouchStrideEfficiency;
-	void TouchSkills(const SkillName skillName, const int skillDurabilityCost, const int skillEfficiency, int& skillCPCost);
+	void TouchSkills(const SkillName skillName, const int skillDurabilityCost, int& skillCPCost);
 	void BuffSkills(const SkillName skillName);
 private:
 	const int maxCP{};
@@ -110,7 +110,7 @@ private:
 	bool CheckItem();
 
 	const int CalculateProgress(const int16_t efficiency);
-	const int CalculateQuality(const int16_t efficiency);
+	const int CalculateQuality(SkillName skillName);
 
 	void AddInnerQuiet(unsigned char stacks);
 	inline const float InnerQuietEfficiencyMultiplier() const;

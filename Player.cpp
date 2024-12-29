@@ -12,40 +12,43 @@ Player::Player(int maximumCP, float progressPerHundred, float qualityPerHundred)
 }
 
 inline void Player::PreComputeQualityEfficiency() {
-	const int basic = 100, standard = 125, advanced = 150, prep = 200, reflect = 300;
+	const int basic = SkillName::BASICTOUCH, standard = SkillName::STANDARDTOUCH, advanced = SkillName::ADVANCEDTOUCH,
+		prep = SkillName::PREPARATORYTOUCH, reflect = SkillName::REFLECT, byregot = SkillName::BYREGOTSBLESSING;
 	for (int i{ 0 }; i < 11; i++) {
 		/* Basic, Prudent, refined, delicate */
-		preComputeQualityEfficiency[i][basic] = basic * qualityPerOne * InnerQuietEfficiencyMultiplier();
+		preComputeQualityEfficiency[i][basic] = 100 * qualityPerOne * InnerQuietEfficiencyMultiplier();
 		preComputeQualityTouchEfficiency[i][basic] = preComputeQualityEfficiency[i][basic] + preComputeQualityEfficiency[i][basic] / 2;
 		preComputeQualityStrideEfficiency[i][basic] = preComputeQualityEfficiency[i][basic] * 2;
 		preComputeQualityTouchStrideEfficiency[i][basic] = preComputeQualityEfficiency[i][basic] + preComputeQualityTouchEfficiency[i][basic];
 		
 		/* Standard */
-		preComputeQualityEfficiency[i][standard] = standard * qualityPerOne * InnerQuietEfficiencyMultiplier();
+		preComputeQualityEfficiency[i][standard] = 125 * qualityPerOne * InnerQuietEfficiencyMultiplier();
 		preComputeQualityTouchEfficiency[i][standard] = preComputeQualityEfficiency[i][standard] + preComputeQualityEfficiency[i][standard] / 2;
 		preComputeQualityStrideEfficiency[i][standard] = preComputeQualityEfficiency[i][standard] * 2;
 		preComputeQualityTouchStrideEfficiency[i][standard] = preComputeQualityEfficiency[i][standard] + preComputeQualityTouchEfficiency[i][standard];
 		/* Advanced */
-		preComputeQualityEfficiency[i][advanced] = advanced * qualityPerOne * InnerQuietEfficiencyMultiplier();
+		preComputeQualityEfficiency[i][advanced] = 150 * qualityPerOne * InnerQuietEfficiencyMultiplier();
 		preComputeQualityTouchEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] + preComputeQualityEfficiency[i][advanced] / 2;
 		preComputeQualityStrideEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] * 2;
 		preComputeQualityTouchStrideEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] + preComputeQualityTouchEfficiency[i][advanced];
 		/* Preparatory */
-		preComputeQualityEfficiency[i][prep] = prep * qualityPerOne * InnerQuietEfficiencyMultiplier();
+		preComputeQualityEfficiency[i][prep] = 200 * qualityPerOne * InnerQuietEfficiencyMultiplier();
 		preComputeQualityTouchEfficiency[i][prep] = preComputeQualityEfficiency[i][prep] + preComputeQualityEfficiency[i][prep] / 2;
 		preComputeQualityStrideEfficiency[i][prep] = preComputeQualityEfficiency[i][prep] * 2;
 		preComputeQualityTouchStrideEfficiency[i][prep] = preComputeQualityEfficiency[i][prep] + preComputeQualityTouchEfficiency[i][prep];
 		/* Reflect */
-		preComputeQualityEfficiency[i][reflect] = reflect * qualityPerOne * InnerQuietEfficiencyMultiplier();
+		preComputeQualityEfficiency[i][reflect] = 300 * qualityPerOne * InnerQuietEfficiencyMultiplier();
 		preComputeQualityTouchEfficiency[i][reflect] = preComputeQualityEfficiency[i][reflect] + preComputeQualityEfficiency[i][reflect] / 2;
 		preComputeQualityStrideEfficiency[i][reflect] = preComputeQualityEfficiency[i][reflect] * 2;
 		preComputeQualityTouchStrideEfficiency[i][reflect] = preComputeQualityEfficiency[i][reflect] + preComputeQualityTouchEfficiency[i][reflect];
 		/* Byregot */
 		int efficiency = 100 + (20 * i);
-		preComputeQualityEfficiency[i][efficiency] = efficiency * qualityPerOne * InnerQuietEfficiencyMultiplier();
-		preComputeQualityTouchEfficiency[i][efficiency] = preComputeQualityEfficiency[i][efficiency] + preComputeQualityEfficiency[i][efficiency] / 2;
-		preComputeQualityStrideEfficiency[i][efficiency] = preComputeQualityEfficiency[i][efficiency] * 2;
-		preComputeQualityTouchStrideEfficiency[i][efficiency] = preComputeQualityEfficiency[i][efficiency] + preComputeQualityTouchEfficiency[i][efficiency];
+		preComputeQualityEfficiency[i][byregot] = efficiency * qualityPerOne * InnerQuietEfficiencyMultiplier();
+		preComputeQualityTouchEfficiency[i][byregot] = preComputeQualityEfficiency[i][byregot] + preComputeQualityEfficiency[i][byregot] / 2;
+		preComputeQualityStrideEfficiency[i][byregot] = preComputeQualityEfficiency[i][byregot] * 2;
+		preComputeQualityTouchStrideEfficiency[i][byregot] = preComputeQualityEfficiency[i][byregot] + preComputeQualityTouchEfficiency[i][byregot];
+
+		//std::cout << efficiency << '\n';
 
 		AddInnerQuiet(1);
 	}
@@ -79,7 +82,7 @@ bool Player::CastSkill(const Skills::SkillTest& skill) {
 		break;
 	case SkillType::TOUCH:
 		//TouchBuffs(skillEfficiency);
-		TouchSkills(skill.skillName, skillDurabilityCost, skillEfficiency, skillCPCost);
+		TouchSkills(skill.skillName, skillDurabilityCost, skillCPCost);
 		break;
 	case SkillType::BUFF:
 		BuffSkills(skill.skillName);
@@ -171,21 +174,21 @@ const int Player::CalculateProgress(const int16_t efficiency) {
 	return result;
 }
 
-const int Player::CalculateQuality(const int16_t efficiency) {
+const int Player::CalculateQuality(SkillName skillName) {
 	if (playerState.buffInfo.innovationActive) {
 		if (playerState.buffInfo.greatStridesActive) {
 			playerState.buffInfo.greatStrides = 0;
 			playerState.buffInfo.greatStridesActive = false;
-			return preComputeQualityTouchStrideEfficiency[playerState.innerQuiet][efficiency];
+			return preComputeQualityTouchStrideEfficiency[playerState.innerQuiet][skillName];
 		}
-		return preComputeQualityTouchEfficiency[playerState.innerQuiet][efficiency];
+		return preComputeQualityTouchEfficiency[playerState.innerQuiet][skillName];
 	}
 	if (playerState.buffInfo.greatStridesActive) {
 		playerState.buffInfo.greatStrides = 0;
 		playerState.buffInfo.greatStridesActive = false;
-		return preComputeQualityStrideEfficiency[playerState.innerQuiet][efficiency];
+		return preComputeQualityStrideEfficiency[playerState.innerQuiet][skillName];
 	}
-	return preComputeQualityEfficiency[playerState.innerQuiet][efficiency];
+	return preComputeQualityEfficiency[playerState.innerQuiet][skillName];
 }
 
 void Player::AddInnerQuiet(unsigned char stacks) {
@@ -236,29 +239,29 @@ void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabili
 }
 
 //@TODO Change the way cp cost is checked so combo works
-void Player::TouchSkills(const SkillName skillName, const int skillDurabilityCost, const int skillEfficiency, int& skillCPCost) {
+void Player::TouchSkills(const SkillName skillName, const int skillDurabilityCost, int& skillCPCost) {
 	switch (skillName) {
 	case Skills::SkillName::BASICTOUCH:
-		craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
+		craftableItem->AddQuality(CalculateQuality(skillName), skillDurabilityCost);
 		AddInnerQuiet(1);
 		break;
 	case Skills::SkillName::STANDARDTOUCH:
 		if (playerState.lastSkillUsed == SkillName::BASICTOUCH) {
 			skillCPCost = 18;
 		}
-		craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
+		craftableItem->AddQuality(CalculateQuality(skillName), skillDurabilityCost);
 		AddInnerQuiet(1);
 		break;
 	case Skills::SkillName::ADVANCEDTOUCH:
 		if (playerState.lastSkillUsed == SkillName::STANDARDTOUCH) {
 			skillCPCost = 18;
 		}
-		craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
+		craftableItem->AddQuality(CalculateQuality(skillName), skillDurabilityCost);
 		AddInnerQuiet(1);
 		break;
 	case Skills::SkillName::BYREGOTSBLESSING:
 		if (playerState.innerQuiet > 0) {
-			craftableItem->AddQuality(CalculateQuality(100 + (20 * playerState.innerQuiet)), skillDurabilityCost);
+			craftableItem->AddQuality(CalculateQuality(skillName), skillDurabilityCost);
 			playerState.innerQuiet = 0;
 		}
 		else {
@@ -267,19 +270,19 @@ void Player::TouchSkills(const SkillName skillName, const int skillDurabilityCos
 		break;
 	case Skills::SkillName::PRUDENTTOUCH:
 		if (!playerState.buffInfo.wasteNotActive) {
-			craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
+			craftableItem->AddQuality(CalculateQuality(SkillName::BASICTOUCH), skillDurabilityCost);
 		}
 		else {
 			successfulCast = false;
 		}
 		break;
 	case Skills::SkillName::PREPARATORYTOUCH:
-		craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
+		craftableItem->AddQuality(CalculateQuality(skillName), skillDurabilityCost);
 		AddInnerQuiet(2);
 		break;
 	case Skills::SkillName::REFLECT:
 		if (playerState.currentTurn == 1) {
-			craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
+			craftableItem->AddQuality(CalculateQuality(skillName), skillDurabilityCost);
 			AddInnerQuiet(2);
 		}
 		else {
@@ -287,7 +290,7 @@ void Player::TouchSkills(const SkillName skillName, const int skillDurabilityCos
 		}
 		break;
 	case Skills::SkillName::REFINEDTOUCH:
-		craftableItem->AddQuality(CalculateQuality(skillEfficiency), skillDurabilityCost);
+		craftableItem->AddQuality(CalculateQuality(SkillName::BASICTOUCH), skillDurabilityCost);
 		if (playerState.lastSkillUsed == Skills::SkillName::BASICTOUCH) {
 			AddInnerQuiet(1);
 		}
@@ -350,7 +353,7 @@ void Player::RepairSkills(const SkillName skillName) {
 void Player::OtherSkills(const SkillName skillName, const int& skillDurabilityCost) {
 	switch (skillName) {
 	case SkillName::DELICATESYNTHESIS:
-		craftableItem->AddQuality(CalculateQuality(100), 0);
+		craftableItem->AddQuality(CalculateQuality(SkillName::BASICTOUCH), 0);
 		AddInnerQuiet(1);
 		craftableItem->AddProgress(CalculateProgress(150), skillDurabilityCost);
 		break;
