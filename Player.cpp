@@ -99,8 +99,8 @@ bool Player::CastSkill(const Skills::SkillTest& skill) {
 			craftableItem->AddProgress(-(craftableItem->GetCurrentProgress() - craftableItem->GetMaxProgress() + 1), 0);
 		}
 
-		if (playerState.buffInfo.manipulation < 9 && playerState.buffInfo.manipulationActive) {
-			craftableItem->UpdateDurability(5);
+		if (playerState.buffInfo.manipulationActive && playerState.buffInfo.manipulation < 9 && !craftableItem->IsItemBroken()) {
+			craftableItem->UpdateDurability(5);		// Item needs to not be broken for the buff to be applied
 		}
 		//std::cout << craftableItem->GetDurability() << '\n';
 		playerState.lastSkillUsed = skill.skillName;
