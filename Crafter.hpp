@@ -67,6 +67,8 @@ private:
 	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{}, successfulQualityCrafts{}, successfulSynthCrafts{};
 	const bool forceMaxQuality, forceGreaterByregot;
 	const unsigned char maxTurnLimit;
+	unsigned char bestTurn{ 99 };
+	int idealTurnLimit{99};
 	std::unique_ptr<ActionTracker> actionTracker;
 	bool invalid{ false };
 	int16_t baseTurn{};

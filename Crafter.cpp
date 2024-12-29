@@ -79,9 +79,9 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 				}
 				
 			}
-			std::cout << Skills::GetSkillName(move) << '\n';
+			//std::cout << Skills::GetSkillName(move) << '\n';
 			bestSynth.emplace(bestSynth.begin(), maxProgress - craftableItem->GetCurrentProgress());
-			std::cout << maxProgress - craftableItem->GetCurrentProgress() << '\n';
+			//std::cout << maxProgress - craftableItem->GetCurrentProgress() << '\n';
 		}
 		--minSynthSkills;
 		craftingHistory.clear();
@@ -146,7 +146,7 @@ void Crafter::ForceCraft() {
 		bool requireQuality = forceMaxQuality && !craftableItem->IsItemMaxQuality();
 		int remainingTime = bestTime - craftingRecord.currentTime;
 		
-		bool synthActionRequired = remainingTime < 5 || craftingRecord.player.currentTurn == maxTurnLimit - 1		// Only one move left to match the best time and turn limit
+		bool synthActionRequired = remainingTime < 5 || craftingRecord.player.currentTurn == idealTurnLimit - 1		// Only one move left to match the best time and turn limit
 				|| actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker->synthActionUsed, 2)	// Requires a synth action
 				|| actionTracker->ActionsUsedDuringBuff(5, craftingRecord.player.buffInfo.finalAppraisal, 4, actionTracker->synthActionUsed, 1);	// Requires a synth action
 		
@@ -161,8 +161,8 @@ void Crafter::ForceCraft() {
 		//bool secondToLastMove = (remainingTime < 7 || craftingRecord.player.currentTurn == maxTurnLimit - 2);
 		if (!(actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.innovation, 3, actionTracker->touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
 			|| actionTracker->ActionsUsedDuringBuff(3, craftingRecord.player.buffInfo.greatStrides, 2, actionTracker->touchActionUsed, 1)
-			|| ((remainingTime < 7 || craftingRecord.player.currentTurn == maxTurnLimit - 2) && requireQuality) ||
-			((minTouchSkills - actionTracker->numTouchSkillsUsed) == ((maxTurnLimit - 1) - (playerState.currentTurn)))
+			|| ((remainingTime < 7 || craftingRecord.player.currentTurn == idealTurnLimit - 2) && requireQuality) ||
+			((minTouchSkills - actionTracker->numTouchSkillsUsed) == ((idealTurnLimit - 1) - (playerState.currentTurn)))
 			)) {
 			SynthesisCraft();
 
@@ -183,8 +183,12 @@ void Crafter::ForceCraft() {
 
 void Crafter::CraftAndRecord(const SkillTest& move) {
 	if (CastSkill(move)) {
+		static const int maxTurnsWithoutSynth = maxTurnLimit - 1;
 		bool requireQuality = forceMaxQuality && !craftableItem->IsItemMaxQuality();
-		int remainingCraftTurns = maxTurnLimit - 1 - playerState.currentTurn;
+		idealTurnLimit = bestTurn + 3;		// Arbritraty. 1 extra turn added to match the same time would be 3 2 second skill buffs used instead
+		if (idealTurnLimit > maxTurnsWithoutSynth)	idealTurnLimit = maxTurnLimit;
+		int remainingCraftTurns =  idealTurnLimit - playerState.currentTurn;
+		
 
 		if (craftableItem->IsItemCrafted()) {
 			if (requireQuality) {
@@ -207,13 +211,13 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 			int minSynthTurnsLeft = 0;
 			for (minSynthTurnsLeft; (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) > bestSynth[minSynthTurnsLeft]; ++minSynthTurnsLeft);
 			//std::cout << "There are " << minSynthTurnsLeft << " to get " << (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) << " progress\n";
-			if ((minQualityTurnsLeft + minSynthTurnsLeft) > maxTurnLimit - playerState.currentTurn) {
+			if ((minQualityTurnsLeft + minSynthTurnsLeft) > idealTurnLimit - playerState.currentTurn) {
 				LoadLastCraftingRecord();
 				return;
 			}
 		}
 
-		if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
+		if (playerState.currentTurn >= idealTurnLimit || (playerState.currentTime + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
 			LoadLastCraftingRecord();
 			return;
 		}
@@ -231,6 +235,9 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 		}
 #if ProgressUpdate
 		if (playerState.currentTurn == baseTurn) {
+			std::cout << Skills::GetSkillName(move.skillName) << " completed\n";
+		}
+		else if (playerState.currentTurn == baseTurn + 1) {
 			std::cout << Skills::GetSkillName(move.skillName) << " completed\n";
 		}
 #endif
@@ -432,7 +439,7 @@ bool Crafter::BuffCheck(SkillName skillName) {
 	case SkillName::WASTENOTII:
 		break;
 	case SkillName::FINALAPPRAISAL:
-		if (playerState.currentTurn + 6 >= maxTurnLimit) {
+		if (playerState.currentTurn + 6 >= idealTurnLimit) {
 			buffSkip = true;
 		}
 		else if (!forceMaxQuality || craftableItem->IsItemMaxQuality()) {
@@ -491,7 +498,11 @@ void Crafter::AddSuccessfulCraft(SkillName skillName) {
 	craftingRecord.item = craftableItem->GetItemState();
 	craftingRecord.currentTime = playerState.currentTime;
 	craftingRecord.skillName = skillName;
+	if (bestTime > craftingRecord.currentTime) {
+		std::cout << "New best time found!: " << craftingRecord.currentTime << "s\n";
+	}
 	bestTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
+	if (craftingRecord.player.currentTurn < bestTurn) bestTurn = craftingRecord.player.currentTurn;
 
 	std::vector<SkillName> success{};
 	success.reserve(craftingHistory.size());
