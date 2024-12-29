@@ -12,7 +12,7 @@ public:
 	uint32_t basicSynthesis{ 0b0 }, carefulSynthesis{ 0b0 }, prudentSynthesis{ 0b0 }, groundwork{ 0b0 };
 	uint32_t basicTouch{ 0b0 }, standardTouch{ 0b0 }, advancedTouch{ 0b0 }, byregots{ 0b0 }, prudentTouch{ 0b0 }, prepTouch{ 0b0 }, refinedTouch{ 0b0 };
 	uint32_t synthActionUsed{ 0b0 },touchActionUsed{ 0b0 };
-	uint32_t numTouchSkillsUsed{ 0b0 };
+	uint32_t numTouchSkillsUsed{ 0b0 }, numSynthSkillsUsed{ 0b0 };
 
 	void PrintHistory() {
 		std::cout << "Basic: " << (basicSynthesis & 0b1000) << (basicSynthesis & 0b100) << (basicSynthesis & 0b10) << (basicSynthesis & 0b1) << '\n';
@@ -50,9 +50,12 @@ public:
 			groundwork |= 0b1;
 			synthActionUsed |= groundwork & 0b1;
 			break;
+		case SkillName::MUSCLEMEMORY:
+			synthActionUsed |= 0b1;
 		default:
 			break;
 		}
+		if (synthActionUsed & 0b1)	++numSynthSkillsUsed;
 	}
 
 	void ProgressTouchActions(SkillName skillName) {
@@ -93,9 +96,12 @@ public:
 			refinedTouch |= 0b1;
 			touchActionUsed |= refinedTouch & 0b1;
 			break;
+		case SkillName::REFLECT:
+			touchActionUsed |= 0b1;
 		default:
 			break;
 		}
+		// If adding delicate synthesis to this, condition for X number of touch skills used must be reviewed
 		if (touchActionUsed & 0b1)	++numTouchSkillsUsed;
 	}
 
@@ -104,7 +110,9 @@ public:
 		carefulSynthesis >>= 1;
 		prudentSynthesis >>= 1;
 		groundwork >>= 1;
+		if (synthActionUsed & 0b1)	--numSynthSkillsUsed;
 		synthActionUsed >>= 1;
+		
 	}
 
 	inline void BacktrackTouchActions() {

@@ -215,7 +215,13 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 				LoadLastCraftingRecord();
 				return;
 			}
+			else if ((actionTracker->numTouchSkillsUsed + minQualityTurnsLeft) == minTouchSkills		// action tracker is progressed after cast so this is really checking
+				|| (actionTracker->numSynthSkillsUsed + minSynthTurnsLeft) == minSynthSkills) {		// if the number of skills used is one greater and not crafted
+				LoadLastCraftingRecord();
+				return;
+			}
 		}
+
 
 		if (playerState.currentTurn >= idealTurnLimit || (playerState.currentTime + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
 			LoadLastCraftingRecord();
@@ -238,7 +244,7 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 			std::cout << Skills::GetSkillName(move.skillName) << " completed\n";
 		}
 		else if (playerState.currentTurn == baseTurn + 1) {
-			std::cout << Skills::GetSkillName(move.skillName) << " completed\n";
+			//std::cout << Skills::GetSkillName(move.skillName) << " completed\n";
 		}
 #endif
 	}
