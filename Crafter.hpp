@@ -77,12 +77,13 @@ private:
 		skillTest[(int)SkillName::REFLECT]
 	};
 
-	const std::array<SkillTest, 5> synthesisSkills = {
+	const std::array<SkillTest, 6> synthesisSkills = {
 		skillTest[(int)SkillName::MUSCLEMEMORY],
 		skillTest[(int)SkillName::BASICSYNTHESIS],
 		skillTest[(int)SkillName::CAREFULSYNTHESIS],
 		skillTest[(int)SkillName::PRUDENTSYNTHESIS],
-		skillTest[(int)SkillName::GROUNDWORK]
+		skillTest[(int)SkillName::GROUNDWORK],
+		skillTest[(int)SkillName::VENERATION]
 	};
 
 		// All skills focused on touch regardless of category
@@ -99,10 +100,9 @@ private:
 		skillTest[(int)SkillName::INNOVATION],
 	};
 
-	const std::array<SkillTest, 5> buffSkills = {
+	const std::array<SkillTest, 4> buffSkills = {
 		skillTest[(int)SkillName::WASTENOTI],
 		skillTest[(int)SkillName::WASTENOTII],
-		skillTest[(int)SkillName::VENERATION],
 		skillTest[(int)SkillName::MANIPULATION],
 		skillTest[(int)SkillName::FINALAPPRAISAL],
 	};

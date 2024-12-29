@@ -31,12 +31,13 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 							BuffSkills(move);
 						}
 						else {
-							TouchSkills(move, 0, entry.efficiency, durability);
+							TouchSkills(move, 0, durability);
 						}
 						break;
 					}
 
 				}
+				
 				bestQuality.emplace(bestQuality.begin(), maxQuality - craftableItem->GetCurrentQuality());
 			}
 			craftingHistory.clear();
@@ -225,9 +226,11 @@ void Crafter::StarterCraft() {
 
 void Crafter::SynthesisCraft() {
 	bool checkForCarefulGroundWork = (((actionTracker->prudentSynthesis & 0b11) | (actionTracker->groundwork & 0b11)) == 0b11);	// either have been used for the past two turns	
+	bool venerationBuff = playerState.buffInfo.veneration > 0;
 	for (const SkillTest& move : synthesisSkills) {
 		if (SimilarTrees(move.skillName))	continue;
 
+		if (move.skillName == SkillName::VENERATION  && venerationBuff)	continue;
 		if (checkForCarefulGroundWork && (move.skillName == SkillName::CAREFULSYNTHESIS 
 										|| move.skillName == SkillName::GROUNDWORK))	continue;	// will be faster and same with veneration buff
 
@@ -345,8 +348,6 @@ bool Crafter::BuffCheck(SkillName skillName) {
 	switch (skillName) {
 	case SkillName::WASTENOTI:
 	case SkillName::WASTENOTII:
-		break;
-	case SkillName::VENERATION:
 		break;
 	case SkillName::FINALAPPRAISAL:
 		if (playerState.currentTurn + 6 >= maxTurnLimit) {

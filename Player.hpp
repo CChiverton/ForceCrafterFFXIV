@@ -31,7 +31,7 @@ public:
 
 	std::unique_ptr<Item> craftableItem = nullptr;
 
-	inline const int& GetBuffDuration(SkillName skillName) const {
+	inline const unsigned char GetBuffDuration(SkillName skillName) const {
 		switch (skillName) {
 		case SkillName::MUSCLEMEMORY:
 			return playerState.buffInfo.muscleMemory;
