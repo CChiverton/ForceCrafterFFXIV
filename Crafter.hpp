@@ -72,7 +72,7 @@ private:
 	std::unique_ptr<ActionTracker> actionTracker;
 	bool invalid{ false };
 	int16_t baseTurn{};
-	int16_t minTouchSkills{ 0 }, minSynthSkills{ 0 };
+	int16_t minTouchSkills{ 0 }, minSynthSkills{ 0 }, minDurabilitySkills{ 0 };
 
 
 	/************************** MOVES LIST ****************************/

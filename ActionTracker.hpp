@@ -11,8 +11,8 @@ public:
 	uint32_t venerationHistory{ 0b0 }, wasteNotHistory{ 0b0 }, strideHistory{ 0b0 }, innovationHistory{ 0b0 };
 	uint32_t basicSynthesis{ 0b0 }, carefulSynthesis{ 0b0 }, prudentSynthesis{ 0b0 }, groundwork{ 0b0 };
 	uint32_t basicTouch{ 0b0 }, standardTouch{ 0b0 }, advancedTouch{ 0b0 }, byregots{ 0b0 }, prudentTouch{ 0b0 }, prepTouch{ 0b0 }, refinedTouch{ 0b0 };
-	uint32_t synthActionUsed{ 0b0 },touchActionUsed{ 0b0 };
-	uint32_t numTouchSkillsUsed{ 0b0 }, numSynthSkillsUsed{ 0b0 };
+	uint32_t synthActionUsed{ 0b0 },touchActionUsed{ 0b0 }, durabilityActionUsed;
+	uint32_t numTouchSkillsUsed{ 0b0 }, numSynthSkillsUsed{ 0b0 }, numDurabilitySkillsUsed{ 0b0 };
 
 	void PrintHistory() {
 		std::cout << "Basic: " << (basicSynthesis & 0b1000) << (basicSynthesis & 0b100) << (basicSynthesis & 0b10) << (basicSynthesis & 0b1) << '\n';
@@ -105,6 +105,19 @@ public:
 		if (touchActionUsed & 0b1)	++numTouchSkillsUsed;
 	}
 
+	void ProgressDurabilityActions(SkillName skillName) {
+		durabilityActionUsed <<= 1;
+		switch (skillName) {
+		case SkillName::WASTENOTI:
+		case SkillName::WASTENOTII:
+		case SkillName::MANIPULATION:
+		case SkillName::MASTERSMEND:
+		case SkillName::IMMACULATEMEND:
+			durabilityActionUsed |= 0b1;
+		}
+		if (durabilityActionUsed & 0b1) ++numDurabilitySkillsUsed;
+	}
+
 	inline void BacktrackSynthSkills() {
 		basicSynthesis >>= 1;
 		carefulSynthesis >>= 1;
@@ -125,6 +138,11 @@ public:
 		refinedTouch >>= 1;
 		if (touchActionUsed & 0b1)	--numTouchSkillsUsed;
 		touchActionUsed >>= 1;
+	}
+
+	inline void BacktrackDurabilityActions() {
+		if (durabilityActionUsed & 0b1)	--numDurabilitySkillsUsed;
+		durabilityActionUsed >>= 1;
 	}
 
 	static constexpr int BuffHistory(int history, int bitmask) {
@@ -172,5 +190,6 @@ public:
 		BacktrackBuffs();
 		BacktrackSynthSkills();
 		BacktrackTouchActions();
+		BacktrackDurabilityActions();
 	}
 };

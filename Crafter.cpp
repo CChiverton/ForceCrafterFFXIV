@@ -11,7 +11,8 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 	craftingRecord.player = playerState;
 	craftingRecord.item = craftableItem->GetItemState();
 	craftingHistory.reserve(maximumTurnLimit + 1);
-	
+	int durabilityCosts{ 0 };
+	int twentyCosts{ 0 };
 	if (forceMaxQuality) {
 		playerState.currentTurn = 2;
 		SaveCraftingHistory(SkillName::NONE);
@@ -34,6 +35,8 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 						}
 						else {
 							TouchSkills(move, 0, durability);
+							durabilityCosts += entry.costDurability;
+							if (entry.costDurability == 20) ++twentyCosts;
 						}
 						break;
 					}
@@ -76,6 +79,8 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 				} else
 				if (entry.skillName == move) {
 					SynthesisSkills(entry.skillName, durability, entry.efficiency);
+					durabilityCosts += entry.costDurability;
+					if (entry.costDurability == 20) ++twentyCosts;
 				}
 				
 			}
@@ -95,6 +100,22 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 	AddItem(maxProgress, maxQuality, maxDurability);
 	craftingRecord.player = playerState;
 	craftingRecord.item = craftableItem->GetItemState();
+
+	std::cout << "The total durability lost to attain crafted item is: " << durabilityCosts << '\n';
+	durabilityCosts -= 10;		// emulating starter move
+	if (twentyCosts >= 6) {
+		durabilityCosts -= 60;		// emulating the strongest casts durability savings
+		++minDurabilitySkills;
+	}
+	if (craftableItem->GetMaxDurability() < durabilityCosts) {
+		durabilityCosts -= 40;	// emulating manipulation
+		++minDurabilitySkills;
+	}
+	if (durabilityCosts > craftableItem->GetMaxDurability()) {
+		++minDurabilitySkills;		// emulating a repair action
+	}
+	std::cout << "The estimated durability after finishing crafting for " << minDurabilitySkills << " durability-saving skills is " << durabilityCosts << '\n';
+
 
 	SaveCraftingHistory(SkillName::NONE);		// An extra move is pruned off so it is necessary to keep the skills going
 	
@@ -471,6 +492,7 @@ inline void Crafter::SaveCraftingHistory(SkillName skillName) {
 	craftingHistory.emplace_back(craftingRecord);
 	actionTracker->ProgressSynthSkills(skillName);
 	actionTracker->ProgressTouchActions(skillName);
+	actionTracker->ProgressDurabilityActions(skillName);
 }
 
 inline void Crafter::DeleteCraftingHistory() {
@@ -506,6 +528,7 @@ void Crafter::AddSuccessfulCraft(SkillName skillName) {
 	craftingRecord.skillName = skillName;
 	if (bestTime > craftingRecord.currentTime) {
 		std::cout << "New best time found!: " << craftingRecord.currentTime << "s\n";
+		std::cout << actionTracker->numDurabilitySkillsUsed << " durability actions used\n";
 	}
 	bestTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
 	if (craftingRecord.player.currentTurn < bestTurn) bestTurn = craftingRecord.player.currentTurn;
