@@ -2,6 +2,7 @@
 //
 
 #include <iostream>
+#include <chrono>
 #include "Crafter.hpp"
 #include "Player.hpp"
 #include "Setup.hpp"
@@ -65,7 +66,11 @@ int main()
 #endif
 
     
+    auto start = std::chrono::steady_clock::now();
     crafter.ForceCraft();
+    auto end = std::chrono::steady_clock::now();
+
+    std::cout << "The elapsed time is " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " seconds\n";
 
     std::cin;
 
