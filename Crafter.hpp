@@ -61,7 +61,7 @@ private:
 		SkillName skillName{ SkillName::NONE };
 	}craftingRecord;
 
-	std::vector<CraftingHistory> craftingHistory{};
+	std::array<CraftingHistory, 60> craftingHistory;
 	std::vector<int> bestQuality{}, bestSynth{};
 	uint16_t bestTime{ 99 }, bestQualityTime{ 99 }, bestSynthTime{ 99 };
 	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{}, successfulQualityCrafts{}, successfulSynthCrafts{};
