@@ -246,21 +246,15 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 		}
 
 
-		if (playerState.currentTurn >= idealTurnLimit || (playerState.currentTime + 3) > bestTime) {		// can't use lastMove here, causes some form of memory leak
+		if (playerState.currentTurn >= idealTurnLimit || (playerState.currentTime + 3) > bestTime
+			|| (craftingRecord.player.buffInfo.finalAppraisal == 1 && (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1)	// not appraised
+			|| craftableItem->IsItemBroken()) {
 			LoadLastCraftingRecord();
 			return;
 		}
-		else if (craftingRecord.player.buffInfo.finalAppraisal == 1 && (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1) {		// not appraised
-			LoadLastCraftingRecord();
-			return;
-		}
-		else if (!craftableItem->IsItemBroken()) {
+		else {
 			SaveCraftingHistory(move.skillName);
 			ForceCraft();
-		}
-		else if (craftableItem->IsItemBroken()) {
-			LoadLastCraftingRecord();
-			return;
 		}
 #if ProgressUpdate
 		if (playerState.currentTurn == baseTurn) {
