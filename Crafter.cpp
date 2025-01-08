@@ -258,12 +258,9 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 
 			int minDurabilityTurnsLeft = minDurabilitySkills - actionTracker->numDurabilitySkillsUsed;
 			if (minDurabilityTurnsLeft < 0)	minDurabilityTurnsLeft = 0;
-			if ((minQualityTurnsLeft + minSynthTurnsLeft + minDurabilityTurnsLeft) > maxTurnLimit - playerState.currentTurn) {
-				LoadLastCraftingRecord();
-				return;
-			}
-			else if ((actionTracker->numTouchSkillsUsed + minQualityTurnsLeft) == minTouchSkills		// action tracker is progressed after cast so this is really checking
-				|| (actionTracker->numSynthSkillsUsed + minSynthTurnsLeft) == minSynthSkills) {		// if the number of skills used is one greater and not crafted
+			if ((minQualityTurnsLeft + minSynthTurnsLeft + minDurabilityTurnsLeft) > maxTurnLimit - playerState.currentTurn ||
+				actionTracker->touchTime == bestQualityTime		// action tracker is progressed after cast so this is really checking
+				|| actionTracker->synthTime == bestSynthTime) { // if the number of skills used is one greater and not crafted
 				LoadLastCraftingRecord();
 				return;
 			}

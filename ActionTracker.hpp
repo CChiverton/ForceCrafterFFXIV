@@ -13,6 +13,7 @@ public:
 	uint32_t basicTouch{ 0b0 }, standardTouch{ 0b0 }, advancedTouch{ 0b0 }, byregots{ 0b0 }, prudentTouch{ 0b0 }, prepTouch{ 0b0 }, refinedTouch{ 0b0 };
 	uint32_t synthActionUsed{ 0b0 },touchActionUsed{ 0b0 }, durabilityActionUsed;
 	uint32_t numTouchSkillsUsed{ 0b0 }, numSynthSkillsUsed{ 0b0 }, numDurabilitySkillsUsed{ 0b0 };
+	uint32_t touchTime{ 0 }, synthTime{ 0 };
 
 	void PrintHistory() {
 		std::cout << "Basic: " << (basicSynthesis & 0b1000) << (basicSynthesis & 0b100) << (basicSynthesis & 0b10) << (basicSynthesis & 0b1) << '\n';
@@ -55,7 +56,10 @@ public:
 		default:
 			break;
 		}
-		if (synthActionUsed & 0b1)	++numSynthSkillsUsed;
+		if (synthActionUsed & 0b1) {
+			++numSynthSkillsUsed;
+			synthTime += 3;
+		}
 	}
 
 	void ProgressTouchActions(SkillName skillName) {
@@ -98,11 +102,15 @@ public:
 			break;
 		case SkillName::REFLECT:
 			touchActionUsed |= 0b1;
+			break;
 		default:
 			break;
 		}
 		// If adding delicate synthesis to this, condition for X number of touch skills used must be reviewed
-		if (touchActionUsed & 0b1)	++numTouchSkillsUsed;
+		if (touchActionUsed & 0b1) {
+			++numTouchSkillsUsed;
+			touchTime += 3;
+		}
 	}
 
 	void ProgressDurabilityActions(SkillName skillName) {
@@ -123,7 +131,10 @@ public:
 		carefulSynthesis >>= 1;
 		prudentSynthesis >>= 1;
 		groundwork >>= 1;
-		if (synthActionUsed & 0b1)	--numSynthSkillsUsed;
+		if (synthActionUsed & 0b1) {
+			--numSynthSkillsUsed;
+			synthTime -= 3;
+		}
 		synthActionUsed >>= 1;
 		
 	}
@@ -136,7 +147,10 @@ public:
 		prudentTouch >>= 1;
 		prepTouch >>= 1;
 		refinedTouch >>= 1;
-		if (touchActionUsed & 0b1)	--numTouchSkillsUsed;
+		if (touchActionUsed & 0b1) {
+			--numTouchSkillsUsed;
+			touchTime -= 3;
+		}
 		touchActionUsed >>= 1;
 	}
 
@@ -171,18 +185,22 @@ public:
 	void ProgressBuffs(bool venerationBuff, bool wasteNotBuff, bool strideBuff, bool innoBuff) {
 		venerationHistory <<= 1;
 		venerationHistory |= venerationBuff;
+		if (venerationBuff)	synthTime += 2;
 		wasteNotHistory <<= 1;
 		wasteNotHistory |= wasteNotBuff;
 		strideHistory <<= 1;
 		strideHistory |= strideBuff;
 		innovationHistory <<= 1;
 		innovationHistory |= innoBuff;
+		if (innoBuff)	touchTime += 2;
 	}
 
 	inline void BacktrackBuffs() {
+		if (venerationHistory & 0b1)	synthTime -= 2;
 		venerationHistory >>= 1;
 		wasteNotHistory >>= 1;
 		strideHistory >>= 1;
+		if (innovationHistory & 0b1)	touchTime -= 2;
 		innovationHistory >>= 1;
 	}
 
