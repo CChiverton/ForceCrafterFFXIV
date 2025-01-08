@@ -118,16 +118,21 @@ bool Player::CastSkill(const Skills::SkillTest& skill) {
 		break;
 	default:
 		std::cout << "A serious error has occured\n";
+		break;
 	}
 
 	if (successfulCast) {
+		/* Apply appraisal buff */
 		if (playerState.buffInfo.finalAppraisalActive && craftableItem->IsItemCrafted()) {
 			craftableItem->AddProgress(-(craftableItem->GetCurrentProgress() - craftableItem->GetMaxProgress() + 1), 0);
 		}
 
+		/* Apply manipulation buff */
 		if (playerState.buffInfo.manipulationActive && playerState.buffInfo.manipulation < 9 && !craftableItem->IsItemBroken()) {
 			craftableItem->UpdateDurability(5);		// Item needs to not be broken for the buff to be applied
 		}
+
+		/* Update player state */
 		playerState.lastSkillUsed = skill.skillName;
 		playerState.currentCP -= skillCPCost;
 		++playerState.currentTurn;
@@ -294,6 +299,8 @@ void Player::OtherSkills(const SkillName skillName, const int& skillDurabilityCo
 		AddInnerQuiet(1);
 		craftableItem->AddProgress(CalculateProgress(150), skillDurabilityCost);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -387,29 +394,31 @@ inline void Player::PreComputeQualityEfficiency() {
 		preComputeQualityTouchEfficiency[i][standard] = preComputeQualityEfficiency[i][standard] + preComputeQualityEfficiency[i][standard] / 2;
 		preComputeQualityStrideEfficiency[i][standard] = preComputeQualityEfficiency[i][standard] * 2;
 		preComputeQualityTouchStrideEfficiency[i][standard] = preComputeQualityEfficiency[i][standard] + preComputeQualityTouchEfficiency[i][standard];
+		
 		/* Advanced */
 		preComputeQualityEfficiency[i][advanced] = 150 * qualityPerOne * InnerQuietEfficiencyMultiplier();
 		preComputeQualityTouchEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] + preComputeQualityEfficiency[i][advanced] / 2;
 		preComputeQualityStrideEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] * 2;
 		preComputeQualityTouchStrideEfficiency[i][advanced] = preComputeQualityEfficiency[i][advanced] + preComputeQualityTouchEfficiency[i][advanced];
+		
 		/* Preparatory */
 		preComputeQualityEfficiency[i][prep] = 200 * qualityPerOne * InnerQuietEfficiencyMultiplier();
 		preComputeQualityTouchEfficiency[i][prep] = preComputeQualityEfficiency[i][prep] + preComputeQualityEfficiency[i][prep] / 2;
 		preComputeQualityStrideEfficiency[i][prep] = preComputeQualityEfficiency[i][prep] * 2;
 		preComputeQualityTouchStrideEfficiency[i][prep] = preComputeQualityEfficiency[i][prep] + preComputeQualityTouchEfficiency[i][prep];
+		
 		/* Reflect */
 		preComputeQualityEfficiency[i][reflect] = 300 * qualityPerOne * InnerQuietEfficiencyMultiplier();
 		preComputeQualityTouchEfficiency[i][reflect] = preComputeQualityEfficiency[i][reflect] + preComputeQualityEfficiency[i][reflect] / 2;
 		preComputeQualityStrideEfficiency[i][reflect] = preComputeQualityEfficiency[i][reflect] * 2;
 		preComputeQualityTouchStrideEfficiency[i][reflect] = preComputeQualityEfficiency[i][reflect] + preComputeQualityTouchEfficiency[i][reflect];
+		
 		/* Byregot */
 		int efficiency = 100 + (20 * i);
 		preComputeQualityEfficiency[i][byregot] = efficiency * qualityPerOne * InnerQuietEfficiencyMultiplier();
 		preComputeQualityTouchEfficiency[i][byregot] = preComputeQualityEfficiency[i][byregot] + preComputeQualityEfficiency[i][byregot] / 2;
 		preComputeQualityStrideEfficiency[i][byregot] = preComputeQualityEfficiency[i][byregot] * 2;
 		preComputeQualityTouchStrideEfficiency[i][byregot] = preComputeQualityEfficiency[i][byregot] + preComputeQualityTouchEfficiency[i][byregot];
-
-		//std::cout << efficiency << '\n';
 
 		AddInnerQuiet(1);
 	}
