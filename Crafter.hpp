@@ -20,6 +20,9 @@ public:
 
 private:
 	/*******************CRAFTING**********************/
+	void FindFastestQuality(int& durabilityCosts, int& twentyCosts);
+	void FindFastestSynth(int& durabilityCosts, int& twentyCosts);
+	void FindDurabilityCost(int& durabilityCosts, int& twentyCosts);
 	void CraftAndRecord(const SkillTest& move);
 	void FindMinQualityForMax();
 	void FindMinSynthForMax();
