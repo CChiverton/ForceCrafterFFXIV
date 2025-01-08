@@ -4,7 +4,6 @@
 
 #include "Item.hpp"
 #include "Skills.hpp"
-
 #include <array>
 #include <unordered_map>
 
@@ -14,48 +13,6 @@ class Player {
 
 public:
 	Player(int maximumCP, float progressPerHundred, float qualityPerHundred);
-
-	inline void PreComputeQualityEfficiency();
-	void AddItem(const int& maxProgress, const int& maxQuality, const int& maxDurability);
-	void RemoveItem();
-
-	bool CastSkill(const Skills::SkillTest& skillName);
-
-	inline const int& GetSkillTime(Skills::SkillName skillName) const;
-	inline const unsigned char& GetCurrentTime() const {
-		return playerState.currentTime;
-	}
-	inline const unsigned char& GetCurrentTurn() const {
-		return playerState.currentTurn;
-	}
-
-	std::unique_ptr<Item> craftableItem = nullptr;
-
-	inline const unsigned char GetBuffDuration(SkillName skillName) const {
-		switch (skillName) {
-		case SkillName::MUSCLEMEMORY:
-			return playerState.buffInfo.muscleMemory;
-		case SkillName::WASTENOTI:
-		case SkillName::WASTENOTII:
-			return playerState.buffInfo.wasteNot;
-		case SkillName::GREATSTRIDES:
-			return playerState.buffInfo.greatStrides;
-		case SkillName::INNOVATION:
-			return playerState.buffInfo.innovation;
-		case SkillName::VENERATION:
-			return playerState.buffInfo.veneration;
-		case SkillName::FINALAPPRAISAL:
-			return playerState.buffInfo.finalAppraisal;
-		case SkillName::MANIPULATION:
-			return playerState.buffInfo.manipulation;
-		default:
-			std::cout << "This is not a buff\n";
-			std::cout << Skills::GetSkillName(skillName) << '\n';
-			break;
-		}
-	
-		return 0;
-	}
 
 	struct BuffInfo {
 		unsigned char muscleMemory = 0;
@@ -83,40 +40,50 @@ public:
 		Skills::SkillName lastSkillUsed{ Skills::SkillName::NONE };
 	}playerState;
 
-	void LoadPlayerStats(const PlayerState&);
-
-	const PlayerState& GetPlayerState() const {
-		return playerState;
-	}
-
 	void ResetPlayerStats();
+	void LoadPlayerStats(const PlayerState&);
+	
+	/* Getters */
+	const PlayerState& GetPlayerState() const;
+	inline const unsigned char GetCurrentTime() const;
+	inline const unsigned char GetCurrentTurn() const;
+	const unsigned char GetBuffDuration(SkillName skillName) const;
 
-	static constexpr unsigned char maxInnerQuiet{ 10 };
-	std::array<std::array<int16_t, SkillName::REFINEDTOUCH+1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
-		preComputeQualityStrideEfficiency, preComputeQualityTouchStrideEfficiency;
+protected:
+	/* Item control */
+	std::unique_ptr<Item> craftableItem = nullptr;
+	void AddItem(const int& maxProgress, const int& maxQuality, const int& maxDurability);
+	void RemoveItem();
+
+	/* Skills application */
+	bool CastSkill(const Skills::SkillTest& skillName);
 	void SynthesisSkills(const SkillName skillName, const int& skillDurabilityCost, int skillEfficiency);
 	void TouchSkills(const SkillName skillName, const int skillDurabilityCost, int& skillCPCost);
 	void BuffSkills(const SkillName skillName);
+	void RepairSkills(const SkillName skillName);
+	void OtherSkills(const SkillName skillName, const int& skillDurabilityCost);
 private:
-	const int maxCP{};
-	const float progressPerOne{}, qualityPerOne{};
-	bool successfulCast{ true };
-
+	/* Calculations */
 	const int CalculateProgress(const int16_t efficiency);
 	const int CalculateQuality(SkillName skillName);
 
+	/* Inner Quiet*/
 	void AddInnerQuiet(unsigned char stacks);
 	inline const float InnerQuietEfficiencyMultiplier() const;
 
-
-	
-	
-	
-	void RepairSkills(const SkillName skillName);
-	void OtherSkills(const SkillName skillName, const int& skillDurabilityCost);
+	/* Buffs */
 	void SynthesisBuffs(int& skillEfficiency);
 	void TouchBuffs(int& skillEfficiency);
 	void DecrementBuffs();
+
+	inline void PreComputeQualityEfficiency();
+
+	static constexpr unsigned char maxInnerQuiet{ 10 };
+	std::array<std::array<int16_t, SkillName::REFINEDTOUCH + 1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
+		preComputeQualityStrideEfficiency, preComputeQualityTouchStrideEfficiency;
+	const int maxCP{};
+	const float progressPerOne{}, qualityPerOne{};
+	bool successfulCast{ true };
 
 	const std::unordered_map<Skills::SkillName, Skill> SkillList =/*CP	Durability	Efficiency	Time*/
 	{ {	SkillName::BASICSYNTHESIS,		{ SkillType::SYNTHESIS,		0,		10,		120,		3}},
