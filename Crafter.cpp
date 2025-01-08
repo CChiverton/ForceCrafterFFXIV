@@ -177,7 +177,8 @@ void Crafter::ForceCraft() {
 		
 		bool synthActionRequired = remainingTime < 5
 				|| actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker->synthActionUsed, 2)	// Requires a synth action
-				|| actionTracker->ActionsUsedDuringBuff(5, craftingRecord.player.buffInfo.finalAppraisal, 4, actionTracker->synthActionUsed, 1);	// Requires a synth action
+				|| (GetBuffDuration(SkillName::FINALAPPRAISAL) == 1
+				&& (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1);	// Requires a synth action
 		
 
 		if (requireQuality) {
@@ -189,7 +190,7 @@ void Crafter::ForceCraft() {
 
 		//bool secondToLastMove = (remainingTime < 7 || craftingRecord.player.currentTurn == maxTurnLimit - 2);
 		if (!(actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.innovation, 3, actionTracker->touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
-			|| actionTracker->ActionsUsedDuringBuff(3, craftingRecord.player.buffInfo.greatStrides, 2, actionTracker->touchActionUsed, 1)
+			|| GetBuffDuration(SkillName::GREATSTRIDES) == 1
 			|| (remainingTime < 7 && requireQuality) ||
 			(remainingTime == (bestQualityTime - actionTracker->touchTime))
 			)) {
