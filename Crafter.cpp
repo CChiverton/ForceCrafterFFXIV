@@ -212,12 +212,8 @@ void Crafter::ForceCraft() {
 
 void Crafter::CraftAndRecord(const SkillTest& move) {
 	if (CastSkill(move)) {
-		static const int maxTurnsWithoutSynth = maxTurnLimit - 1;
-		bool requireQuality = forceMaxQuality && !craftableItem->IsItemMaxQuality();
-		int remainingCraftTurns =  maxTurnLimit - playerState.currentTurn;
-		int remainingCraftTime = bestTime - playerState.currentTime;
+		const bool requireQuality = forceMaxQuality && !craftableItem->IsItemMaxQuality();
 		
-
 		if (craftableItem->IsItemCrafted()) {
 			if (requireQuality) {
 				LoadLastCraftingRecord();
@@ -227,12 +223,11 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 			return;
 		}
 
+		const int remainingCraftTurns = maxTurnLimit - playerState.currentTurn;
+		const int remainingCraftTime = bestTime - playerState.currentTime;
+
 		if (requireQuality && remainingCraftTurns < minTouchSkills) {
 			int remainingQuality = craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality();
-			if (remainingQuality > bestQuality[remainingCraftTurns]) {	
-				LoadLastCraftingRecord();							// two quality turns and synth turn, strongest ending possible
-				return;												// if worse than this then it is impossible
-			}
 			int minQualityTurnsLeft = 1;
 			int maxQualityTime = 0;
 			//std::cout << maxQualityTime << '\n';
