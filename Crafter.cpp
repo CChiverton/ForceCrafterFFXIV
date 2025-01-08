@@ -191,7 +191,7 @@ void Crafter::ForceCraft() {
 		if (!(actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.innovation, 3, actionTracker->touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
 			|| actionTracker->ActionsUsedDuringBuff(3, craftingRecord.player.buffInfo.greatStrides, 2, actionTracker->touchActionUsed, 1)
 			|| (remainingTime < 7 && requireQuality) ||
-			((minTouchSkills - actionTracker->numTouchSkillsUsed) == ((maxTurnLimit - 1) - (playerState.currentTurn)))
+			(remainingTime == (bestQualityTime - actionTracker->touchTime))
 			)) {
 			SynthesisCraft();
 
@@ -225,11 +225,12 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 
 		const int remainingCraftTurns = maxTurnLimit - playerState.currentTurn;
 		const int remainingCraftTime = bestTime - playerState.currentTime;
+		int minQualityTurnsLeft = 0;
+		int maxQualityTime = 0;
 
 		if (requireQuality && remainingCraftTurns < minTouchSkills) {
 			int remainingQuality = craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality();
-			int minQualityTurnsLeft = 1;
-			int maxQualityTime = 0;
+			minQualityTurnsLeft = 1;
 			//std::cout << maxQualityTime << '\n';
 			for (minQualityTurnsLeft; remainingQuality > bestQuality[minQualityTurnsLeft]; ++minQualityTurnsLeft) {
 				if (bestQuality[minQualityTurnsLeft] == bestQuality[minQualityTurnsLeft - 1]) {
@@ -239,32 +240,32 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 					maxQualityTime += 3;
 				}
 			}
+		}
 
-			int minSynthTurnsLeft = 1;
-			int maxSynthTime = 0;
-			int remainingProgress = craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress();
-			for (minSynthTurnsLeft; remainingProgress > bestSynth[minSynthTurnsLeft]; ++minSynthTurnsLeft) {
-				if (bestSynth[minSynthTurnsLeft] == bestSynth[minSynthTurnsLeft - 1]) {
-					maxSynthTime += 2;
-				}
-				else {
-					maxSynthTime += 3;
-				}
+		int minSynthTurnsLeft = 1;
+		int maxSynthTime = 0;
+		int remainingProgress = craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress();
+		for (minSynthTurnsLeft; remainingProgress > bestSynth[minSynthTurnsLeft]; ++minSynthTurnsLeft) {
+			if (bestSynth[minSynthTurnsLeft] == bestSynth[minSynthTurnsLeft - 1]) {
+				maxSynthTime += 2;
 			}
-			if (remainingCraftTime <= maxQualityTime + maxSynthTime) {
-				LoadLastCraftingRecord();							// two quality turns and synth turn, strongest ending possible
-				return;
-			}
-
-			int minDurabilityTurnsLeft = minDurabilitySkills - actionTracker->numDurabilitySkillsUsed;
-			if (minDurabilityTurnsLeft < 0)	minDurabilityTurnsLeft = 0;
-			if ((minQualityTurnsLeft + minSynthTurnsLeft + minDurabilityTurnsLeft) > maxTurnLimit - playerState.currentTurn ||
-				actionTracker->touchTime == bestQualityTime		// action tracker is progressed after cast so this is really checking
-				|| actionTracker->synthTime == bestSynthTime) { // if the number of skills used is one greater and not crafted
-				LoadLastCraftingRecord();
-				return;
+			else {
+				maxSynthTime += 3;
 			}
 		}
+		if (remainingCraftTime <= maxQualityTime + maxSynthTime) {
+			LoadLastCraftingRecord();							// two quality turns and synth turn, strongest ending possible
+			return;
+		}
+
+		int minDurabilityTurnsLeft = minDurabilitySkills - actionTracker->numDurabilitySkillsUsed;
+		if (minDurabilityTurnsLeft < 0)	minDurabilityTurnsLeft = 0;
+		if ((minQualityTurnsLeft + minSynthTurnsLeft + minDurabilityTurnsLeft) > maxTurnLimit - playerState.currentTurn ||
+			actionTracker->touchTime > bestQualityTime		// action tracker is progressed after cast so this is really checking
+			|| actionTracker->synthTime == bestSynthTime) { // if the number of skills used is one greater and not crafted
+			LoadLastCraftingRecord();
+			return;
+		} else
 
 
 		if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestTime
