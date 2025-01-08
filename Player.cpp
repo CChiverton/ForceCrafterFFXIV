@@ -116,7 +116,6 @@ bool Player::CastSkill(const Skills::SkillTest& skill) {
 	}
 
 	return successfulCast;
-	//CheckItem();
 }
 
 const int& Player::GetSkillTime(SkillName skillName) const {
@@ -151,18 +150,6 @@ void Player::ResetPlayerStats() {
 
 void Player::LoadPlayerStats(const PlayerState& state) {
 	playerState = state;
-}
-
-bool Player::CheckItem() {
-	//std::cout << "Checking item\n";
-	if (!craftableItem->IsItemWorkable()) {
-		RemoveItem();
-		if (craftableItem == nullptr) {
-			std::cout << "Item has been deleted\n";
-		}
-		return false;
-	}
-	return true;
 }
 
 const int Player::CalculateProgress(const int16_t efficiency) {

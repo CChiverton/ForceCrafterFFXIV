@@ -101,14 +101,6 @@ private:
 	const int maxCP{};
 	const float progressPerOne{}, qualityPerOne{};
 	bool successfulCast{ true };
-	
-	
-
-	
-
-	
-	
-	bool CheckItem();
 
 	const int CalculateProgress(const int16_t efficiency);
 	const int CalculateQuality(SkillName skillName);
