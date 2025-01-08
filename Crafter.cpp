@@ -380,7 +380,9 @@ void Crafter::SynthesisCraft() {
 }
 
 void Crafter::QualityCraft() {
+	int itemDurability = playerState.buffInfo.wasteNotActive ? craftableItem->GetDurability() * 2 : craftableItem->GetDurability();	// double it to act as if the skill is half cost
 	for (const SkillTest& move : qualitySkills) {
+		if (itemDurability <= move.costDurability) continue;	// won't catch prudent touch but that is still caught by the craft process
 		if (QualityCheck(move.skillName)) {
 			continue;
 		}
