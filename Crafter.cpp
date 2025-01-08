@@ -44,6 +44,10 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 				
 				bestQuality.emplace(bestQuality.begin(), maxQuality - craftableItem->GetCurrentQuality());
 			}
+			int difference = bestQuality[0];
+			for (auto& entry : bestQuality) {
+				entry -= difference;
+			}
 			--minTouchSkills;
 			std::cout << "The minimum number of touch skills required to achieve max quality is " << minTouchSkills << '\n';
 		}
@@ -85,6 +89,10 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 			//std::cout << Skills::GetSkillName(move) << '\n';
 			bestSynth.emplace(bestSynth.begin(), maxProgress - craftableItem->GetCurrentProgress());
 			//std::cout << maxProgress - craftableItem->GetCurrentProgress() << '\n';
+		}
+		int difference = bestSynth[0];
+		for (auto& entry : bestSynth) {
+			entry -= difference;
 		}
 		--minSynthSkills;
 		std::cout << "The minimum number of synth skills required to craft the item is " << minSynthSkills << '\n';
@@ -209,6 +217,7 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 		idealTurnLimit = bestTurn + 3;		// Arbritraty. 1 extra turn added to match the same time would be 3 2 second skill buffs used instead
 		if (idealTurnLimit > maxTurnsWithoutSynth)	idealTurnLimit = maxTurnLimit;
 		int remainingCraftTurns =  idealTurnLimit - playerState.currentTurn;
+		int remainingCraftTime = bestTime - playerState.currentTime;
 		
 
 		if (craftableItem->IsItemCrafted()) {
@@ -226,12 +235,34 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 				LoadLastCraftingRecord();							// two quality turns and synth turn, strongest ending possible
 				return;												// if worse than this then it is impossible
 			}
-			int minQualityTurnsLeft = 0;
-			for (minQualityTurnsLeft; remainingQuality > bestQuality[minQualityTurnsLeft]; ++minQualityTurnsLeft);
-			//std::cout << "There are " << minQualityTurnsLeft << " to get " << remainingQuality << '\n';
-			int minSynthTurnsLeft = 0;
-			for (minSynthTurnsLeft; (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) > bestSynth[minSynthTurnsLeft]; ++minSynthTurnsLeft);
-			//std::cout << "There are " << minSynthTurnsLeft << " to get " << (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) << " progress\n";
+			int minQualityTurnsLeft = 1;
+			int maxQualityTime = 0;
+			//std::cout << maxQualityTime << '\n';
+			for (minQualityTurnsLeft; remainingQuality > bestQuality[minQualityTurnsLeft]; ++minQualityTurnsLeft) {
+				if (bestQuality[minQualityTurnsLeft] == bestQuality[minQualityTurnsLeft - 1]) {
+					maxQualityTime += 2;
+				}
+				else {
+					maxQualityTime += 3;
+				}
+			}
+
+			int minSynthTurnsLeft = 1;
+			int maxSynthTime = 0;
+			int remainingProgress = craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress();
+			for (minSynthTurnsLeft; remainingProgress > bestSynth[minSynthTurnsLeft]; ++minSynthTurnsLeft) {
+				if (bestSynth[minSynthTurnsLeft] == bestSynth[minSynthTurnsLeft - 1]) {
+					maxSynthTime += 2;
+				}
+				else {
+					maxSynthTime += 3;
+				}
+			}
+			if (remainingCraftTime <= maxQualityTime + maxSynthTime) {
+				LoadLastCraftingRecord();							// two quality turns and synth turn, strongest ending possible
+				return;
+			}
+
 			int minDurabilityTurnsLeft = minDurabilitySkills - actionTracker->numDurabilitySkillsUsed;
 			if (minDurabilityTurnsLeft < 0)	minDurabilityTurnsLeft = 0;
 			if ((minQualityTurnsLeft + minSynthTurnsLeft + minDurabilityTurnsLeft) > idealTurnLimit - playerState.currentTurn) {
