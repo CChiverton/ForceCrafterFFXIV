@@ -292,15 +292,13 @@ void Crafter::QualityOnlyCrafts(const SkillTest& move) {
 			AddSuccessfulQualityCraft();
 			ContinueCraft();
 		}
-		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestQualityTime) {
+		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestQualityTime
+			|| craftableItem->IsItemBroken()) {
 			LoadLastCraftingRecord();
 		}
-		else if (!craftableItem->IsItemBroken()) {
+		else {
 			SaveCraftingHistory(move.skillName);
 			FindMinQualityForMax();
-		}
-		else if (craftableItem->IsItemBroken()) {
-			LoadLastCraftingRecord();
 		}
 	}
 }
@@ -312,15 +310,13 @@ void Crafter::SynthOnlyCrafts(const SkillTest& move) {
 			AddSuccessfulSynthCraft();
 			ContinueCraft();
 		}
-		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestSynthTime) {
+		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestSynthTime
+			|| craftableItem->IsItemBroken()) {
 			LoadLastCraftingRecord();
 		}
-		else if (!craftableItem->IsItemBroken()) {
+		else {
 			SaveCraftingHistory(move.skillName);
 			FindMinSynthForMax();
-		}
-		else if (craftableItem->IsItemBroken()) {
-			LoadLastCraftingRecord();
 		}
 	}
 }
