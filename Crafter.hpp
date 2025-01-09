@@ -68,14 +68,14 @@ private:
 	std::vector<int> bestQuality{}, bestSynth{};
 	uint16_t bestTime{ 99 }, bestQualityTime{ 99 }, bestSynthTime{ 99 };
 	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{}, successfulQualityCrafts{}, successfulSynthCrafts{};
-	const bool forceMaxQuality, forceGreaterByregot;
 	const unsigned char maxTurnLimit;
-	unsigned char bestTurn{ 99 };
-	int idealTurnLimit{99};
 	std::unique_ptr<ActionTracker> actionTracker;
+	int16_t minTouchSkills{ 0 }, minSynthSkills{ 0 }, minDurabilitySkills{ 0 };
+
+	/* Constructor controlled */
 	bool invalid{ false };
 	int16_t baseTurn{};
-	int16_t minTouchSkills{ 0 }, minSynthSkills{ 0 }, minDurabilitySkills{ 0 };
+	const bool forceMaxQuality, forceGreaterByregot;
 
 
 	/************************** MOVES LIST ****************************/

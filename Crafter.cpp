@@ -549,7 +549,6 @@ void Crafter::AddSuccessfulCraft(SkillName skillName) {
 		//std::cout << actionTracker->numDurabilitySkillsUsed << " durability actions used\n";
 	}
 	bestTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
-	if (craftingRecord.player.currentTurn < bestTurn) bestTurn = craftingRecord.player.currentTurn;
 
 	std::vector<SkillName> success{};
 	for (int i{ 1 }; i < playerState.currentTurn; ++i) {
