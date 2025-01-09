@@ -478,11 +478,14 @@ bool Crafter::BuffCheck(SkillName skillName) {
 }
 
 /********************************* CRAFTING RECORDS *********************************/
-inline void Crafter::SaveCraftingHistory(SkillName skillName) {
+inline void Crafter::SaveCraftingRecord(SkillName skillName) {
 	craftingRecord.player = playerState;
 	craftingRecord.item = craftableItem->GetItemState();
 	craftingRecord.currentTime = playerState.currentTime;
 	craftingRecord.skillName = skillName;
+}
+inline void Crafter::SaveCraftingHistory(SkillName skillName) {
+	SaveCraftingRecord(skillName);
 	craftingHistory.at(playerState.currentTurn) = craftingRecord;
 	actionTracker.ProgressSynthSkills(skillName);
 	actionTracker.ProgressTouchActions(skillName);
@@ -493,31 +496,28 @@ inline void Crafter::DeleteCraftingHistory() {
 	//craftingHistory.pop_back();
 }
 
-void Crafter::AddSuccessfulQualityCraft() {
-	if (craftingRecord.currentTime > bestQualityTime)	return;
-	bestQualityTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
+inline std::vector<SkillName> Crafter::CompileSuccessfulCraft() {
 	std::vector<SkillName> success{};
 	for (int i{ 2 }; i <= playerState.currentTurn; ++i) {
 		success.emplace_back(craftingHistory[i].skillName);
 	}
-	successfulQualityCrafts[craftingRecord.currentTime].emplace_back(success);
+	return success;
+}
+
+void Crafter::AddSuccessfulQualityCraft() {
+	if (craftingRecord.currentTime > bestQualityTime)	return;
+	bestQualityTime = craftingRecord.currentTime;
+	successfulQualityCrafts[craftingRecord.currentTime].emplace_back(CompileSuccessfulCraft());
 }
 
 void Crafter::AddSuccessfulSynthCraft() {
 	if (craftingRecord.currentTime > bestSynthTime)	return;
 	bestSynthTime = craftingRecord.currentTime;
-	std::vector<SkillName> success{};
-	for (int i{ 2 }; i <= playerState.currentTurn; ++i) {
-		success.emplace_back(craftingHistory[i].skillName);
-	}
-	successfulSynthCrafts[craftingRecord.currentTime].emplace_back(success);
+	successfulSynthCrafts[craftingRecord.currentTime].emplace_back(CompileSuccessfulCraft());
 }
 
 void Crafter::AddSuccessfulCraft(SkillName skillName) {
-	craftingRecord.player = playerState;
-	craftingRecord.item = craftableItem->GetItemState();
-	craftingRecord.currentTime = playerState.currentTime;
-	craftingRecord.skillName = skillName;
+	SaveCraftingRecord(skillName);
 	if (bestTime > craftingRecord.currentTime) {
 		std::cout << "New best time found!: " << craftingRecord.currentTime << "s\n";
 		//std::cout << actionTracker.numDurabilitySkillsUsed << " durability actions used\n";

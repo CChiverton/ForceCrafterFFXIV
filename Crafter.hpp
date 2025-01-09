@@ -50,8 +50,10 @@ private:
 
 
 	/*********************** CRAFTING RECORDS ************************/
+	inline void SaveCraftingRecord(SkillName skillName);
 	inline void SaveCraftingHistory(SkillName skillName);
 	inline void DeleteCraftingHistory();
+	inline std::vector<SkillName> CompileSuccessfulCraft();
 	void AddSuccessfulQualityCraft();
 	void AddSuccessfulSynthCraft();
 	void AddSuccessfulCraft(SkillName skillName);
