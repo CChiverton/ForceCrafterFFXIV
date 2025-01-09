@@ -29,6 +29,9 @@ private:
 	void QualityOnlyCrafts(const SkillTest& move);
 	void SynthOnlyCrafts(const SkillTest& move);
 
+	void CalculateRemainingQualityTime(int& minQualityTurnsLeft, int& maxQualityTime);
+	void CalculateRemainingSynthTime(int& minSynthTurnsLeft, int& maxSynthTime);
+
 	void StarterCraft();
 	void SynthesisCraft();
 	void QualityCraft();
