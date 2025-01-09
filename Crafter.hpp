@@ -55,6 +55,7 @@ private:
 	inline void LoadLastCraftingRecord();
 
 	void PrintCrafts();
+	void PrintSuccessfulCrafts();
 
 
 	struct CraftingHistory {

@@ -41,18 +41,7 @@ Crafter::~Crafter() {
 		return;
 	}
 
-	std::cout << "The fastest time was " << bestTime << " seconds.\n";
-	std::cout << "Ways to achieve this are:\n";
-	int i{ 1 };
-	for (const auto& entry : successfulCrafts[bestTime]) {
-		std::cout << "Solution " << i << ": ";
-		for (const auto& move : entry) {
-			if (move == SkillName::NONE)	continue;
-			std::cout << Skills::GetSkillName(move) << ", ";
-		}
-		std::cout << '\n';
-		++i;
-	}
+	PrintSuccessfulCrafts();
 }
 
 void Crafter::FindFastestQuality(int& durabilityCosts, int& twentyCosts) {
@@ -555,4 +544,19 @@ void Crafter::PrintCrafts() {
 		std::cout << Skills::GetSkillName(entry.skillName) << ", ";
 	}
 	std::cout << '\n';
+}
+
+void Crafter::PrintSuccessfulCrafts() {
+	std::cout << "The fastest time was " << bestTime << " seconds.\n";
+	std::cout << "Ways to achieve this are:\n";
+	int i{ 1 };
+	for (const auto& entry : successfulCrafts[bestTime]) {
+		std::cout << "Solution " << i << ": ";
+		for (const auto& move : entry) {
+			if (move == SkillName::NONE)	continue;
+			std::cout << Skills::GetSkillName(move) << ", ";
+		}
+		std::cout << '\n';
+		++i;
+	}
 }
