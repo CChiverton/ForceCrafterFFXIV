@@ -64,12 +64,12 @@ private:
 		SkillName skillName{ SkillName::NONE };
 	}craftingRecord;
 
+	ActionTracker actionTracker;
 	std::array<CraftingHistory, 60> craftingHistory;
 	std::vector<int> bestQuality{}, bestSynth{};
 	uint16_t bestTime{ 99 }, bestQualityTime{ 99 }, bestSynthTime{ 99 };
 	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{}, successfulQualityCrafts{}, successfulSynthCrafts{};
 	const unsigned char maxTurnLimit;
-	std::unique_ptr<ActionTracker> actionTracker;
 	int16_t minTouchSkills{ 0 }, minSynthSkills{ 0 }, minDurabilitySkills{ 0 };
 
 	/* Constructor controlled */
@@ -80,12 +80,12 @@ private:
 
 	/************************** MOVES LIST ****************************/
 
-	const std::array<SkillTest, 2> startingMoveList = {
+	static inline const std::array<SkillTest, 2> startingMoveList = {
 		skillTest[(int)SkillName::MUSCLEMEMORY],
 		skillTest[(int)SkillName::REFLECT]
 	};
 
-	const std::array<SkillTest, 6> synthesisSkills = {
+	static inline const std::array<SkillTest, 6> synthesisSkills = {
 		skillTest[(int)SkillName::MUSCLEMEMORY],
 		skillTest[(int)SkillName::BASICSYNTHESIS],
 		skillTest[(int)SkillName::CAREFULSYNTHESIS],
@@ -95,7 +95,7 @@ private:
 	};
 
 		// All skills focused on touch regardless of category
-	const std::array<SkillTest, 10> qualitySkills = {
+	static inline const std::array<SkillTest, 10> qualitySkills = {
 		skillTest[(int)SkillName::REFLECT],
 		skillTest[(int)SkillName::BYREGOTSBLESSING],
 		skillTest[(int)SkillName::PREPARATORYTOUCH],
@@ -108,18 +108,18 @@ private:
 		skillTest[(int)SkillName::INNOVATION],
 	};
 
-	const std::array<SkillTest, 4> buffSkills = {
+	static inline const std::array<SkillTest, 4> buffSkills = {
 		skillTest[(int)SkillName::WASTENOTI],
 		skillTest[(int)SkillName::WASTENOTII],
 		skillTest[(int)SkillName::MANIPULATION],
 		skillTest[(int)SkillName::FINALAPPRAISAL],
 	};
 
-	const std::array<SkillTest, 2> repairSkills = {
+	static inline const std::array<SkillTest, 2> repairSkills = {
 		skillTest[(int)SkillName::MASTERSMEND],
 		skillTest[(int)SkillName::IMMACULATEMEND]
 	};
-	const std::array <SkillTest, 1> otherSkills = {
+	static inline const std::array <SkillTest, 1> otherSkills = {
 		skillTest[(int)SkillName::DELICATESYNTHESIS]
 	};
 };

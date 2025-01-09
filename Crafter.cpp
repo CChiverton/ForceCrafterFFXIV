@@ -4,7 +4,6 @@
 
 Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit)
 	: forceMaxQuality(forceQuality), forceGreaterByregot(greaterByregot), maxTurnLimit(maximumTurnLimit),
-	actionTracker(new ActionTracker()),
 	Player(maxCP, progressPerHundred, qualityPerHundred) {
 	AddItem(maxProgress, maxQuality, maxDurability);
 
@@ -164,7 +163,7 @@ void Crafter::FindDurabilityCost(int& durabilityCosts, int& twentyCosts) {
 
 void Crafter::ForceCraft() {
 	if (invalid) return;
-	actionTracker->ProgressBuffs(craftingRecord.player.buffInfo.innovationActive, craftingRecord.player.buffInfo.wasteNotActive,
+	actionTracker.ProgressBuffs(craftingRecord.player.buffInfo.innovationActive, craftingRecord.player.buffInfo.wasteNotActive,
 		craftingRecord.player.buffInfo.greatStridesActive, craftingRecord.player.buffInfo.innovationActive);
 
 	if (playerState.currentTurn == 1) {
@@ -175,7 +174,7 @@ void Crafter::ForceCraft() {
 		int remainingTime = bestTime - craftingRecord.currentTime;
 		
 		bool synthActionRequired = remainingTime < 5
-				|| actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker->synthActionUsed, 2)	// Requires a synth action
+				|| actionTracker.ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker.synthActionUsed, 2)	// Requires a synth action
 				|| (GetBuffDuration(SkillName::FINALAPPRAISAL) == 1
 				&& (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1);	// Requires a synth action
 		
@@ -188,10 +187,10 @@ void Crafter::ForceCraft() {
 		}
 
 		//bool secondToLastMove = (remainingTime < 7 || craftingRecord.player.currentTurn == maxTurnLimit - 2);
-		if (!(actionTracker->ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.innovation, 3, actionTracker->touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
+		if (!(actionTracker.ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.innovation, 3, actionTracker.touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
 			|| GetBuffDuration(SkillName::GREATSTRIDES) == 1
 			|| (remainingTime < 7 && requireQuality) ||
-			(remainingTime == (bestQualityTime - actionTracker->touchTime))
+			(remainingTime == (bestQualityTime - actionTracker.touchTime))
 			)) {
 			SynthesisCraft();
 
@@ -258,11 +257,11 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 			return;
 		}
 
-		int minDurabilityTurnsLeft = minDurabilitySkills - actionTracker->numDurabilitySkillsUsed;
+		int minDurabilityTurnsLeft = minDurabilitySkills - actionTracker.numDurabilitySkillsUsed;
 		if (minDurabilityTurnsLeft < 0)	minDurabilityTurnsLeft = 0;
 		if ((minQualityTurnsLeft + minSynthTurnsLeft + minDurabilityTurnsLeft) > maxTurnLimit - playerState.currentTurn ||
-			actionTracker->touchTime > bestQualityTime		// action tracker is progressed after cast so this is really checking
-			|| actionTracker->synthTime == bestSynthTime) { // if the number of skills used is one greater and not crafted
+			actionTracker.touchTime > bestQualityTime		// action tracker is progressed after cast so this is really checking
+			|| actionTracker.synthTime == bestSynthTime) { // if the number of skills used is one greater and not crafted
 			LoadLastCraftingRecord();
 			return;
 		} else
@@ -359,7 +358,7 @@ void Crafter::StarterCraft() {
 }
 
 void Crafter::SynthesisCraft() {
-	bool checkForCarefulGroundWork = (((actionTracker->prudentSynthesis & 0b11) | (actionTracker->groundwork & 0b11)) == 0b11);	// either have been used for the past two turns	
+	bool checkForCarefulGroundWork = (((actionTracker.prudentSynthesis & 0b11) | (actionTracker.groundwork & 0b11)) == 0b11);	// either have been used for the past two turns	
 	bool venerationBuff = playerState.buffInfo.veneration > 0;
 	for (const SkillTest& move : synthesisSkills) {
 		if (SimilarTrees(move.skillName))	continue;
@@ -407,12 +406,12 @@ void Crafter::OtherCraft() {
 }
 
 bool Crafter::SimilarTrees(SkillName skillName) {
-	bool basic = actionTracker->basicSynthesis & 0b1;
-	bool careful = actionTracker->carefulSynthesis & 0b1;
-	bool prudent = actionTracker->prudentSynthesis & 0b1;
-	bool ground = actionTracker->groundwork & 0b1;
-	int history = actionTracker->venerationHistory & 0b11;
-	int wasteNotHistory = actionTracker->wasteNotHistory & 0b11;
+	bool basic = actionTracker.basicSynthesis & 0b1;
+	bool careful = actionTracker.carefulSynthesis & 0b1;
+	bool prudent = actionTracker.prudentSynthesis & 0b1;
+	bool ground = actionTracker.groundwork & 0b1;
+	int history = actionTracker.venerationHistory & 0b11;
+	int wasteNotHistory = actionTracker.wasteNotHistory & 0b11;
 	if (history != 0b11 && history != 0b00)	return false;	// only proceed if the veneration history is actually the same
 	if (wasteNotHistory != 0b11 && wasteNotHistory != 0b00)	return false;	// only proceed if the veneration history is actually the same
 
@@ -438,7 +437,7 @@ bool Crafter::SimilarTrees(SkillName skillName) {
 void Crafter::ContinueCraft() {
 	DeleteCraftingHistory();
 	LoadLastCraftingRecord();
-	actionTracker->Backtrack();
+	actionTracker.Backtrack();
 }
 
 
@@ -510,9 +509,9 @@ inline void Crafter::SaveCraftingHistory(SkillName skillName) {
 	craftingRecord.currentTime = playerState.currentTime;
 	craftingRecord.skillName = skillName;
 	craftingHistory.at(playerState.currentTurn) = craftingRecord;
-	actionTracker->ProgressSynthSkills(skillName);
-	actionTracker->ProgressTouchActions(skillName);
-	actionTracker->ProgressDurabilityActions(skillName);
+	actionTracker.ProgressSynthSkills(skillName);
+	actionTracker.ProgressTouchActions(skillName);
+	actionTracker.ProgressDurabilityActions(skillName);
 }
 
 inline void Crafter::DeleteCraftingHistory() {
@@ -546,7 +545,7 @@ void Crafter::AddSuccessfulCraft(SkillName skillName) {
 	craftingRecord.skillName = skillName;
 	if (bestTime > craftingRecord.currentTime) {
 		std::cout << "New best time found!: " << craftingRecord.currentTime << "s\n";
-		//std::cout << actionTracker->numDurabilitySkillsUsed << " durability actions used\n";
+		//std::cout << actionTracker.numDurabilitySkillsUsed << " durability actions used\n";
 	}
 	bestTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
 
