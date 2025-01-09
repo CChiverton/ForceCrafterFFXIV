@@ -15,12 +15,11 @@ Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float 
 	}
 
 	FindFastestSynth(durabilityCosts, twentyCosts);
-
+	FindDurabilityCost(durabilityCosts, twentyCosts);
+	
 	playerState.currentTurn = 2;
 	LoadLastCraftingRecord();
 
-	FindDurabilityCost(durabilityCosts, twentyCosts);
-	
 	if (!startingMoves.empty()) {
 		std::cout << "For the starting moves:";
 		for (const Skills::SkillTest& move : startingMoves) {
@@ -174,9 +173,8 @@ void Crafter::ForceCraft() {
 		int remainingTime = bestTime - craftingRecord.currentTime;
 		
 		bool synthActionRequired = remainingTime < 5
-				|| actionTracker.ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker.synthActionUsed, 2)	// Requires a synth action
-				|| (GetBuffDuration(SkillName::FINALAPPRAISAL) == 1
-				&& (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1);	// Requires a synth action
+				|| actionTracker.ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker.synthActionUsed, 2)				// Requires a synth action
+				|| (GetBuffDuration(SkillName::FINALAPPRAISAL) == 1 && (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1);	// Requires a synth action
 		
 
 		if (requireQuality) {
@@ -186,12 +184,10 @@ void Crafter::ForceCraft() {
 			OtherCraft();
 		}
 
-		//bool secondToLastMove = (remainingTime < 7 || craftingRecord.player.currentTurn == maxTurnLimit - 2);
-		if (!(actionTracker.ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.innovation, 3, actionTracker.touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
-			|| GetBuffDuration(SkillName::GREATSTRIDES) == 1
-			|| (remainingTime < 7 && requireQuality) ||
-			(remainingTime == (bestQualityTime - actionTracker.touchTime))
-			)) {
+		if (!actionTracker.ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.innovation, 3, actionTracker.touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
+			&& !GetBuffDuration(SkillName::GREATSTRIDES) == 1							// Great strides will be wasted if anything other than a touch skill is used
+			&& !(remainingTime < 7 && requireQuality)									// In the last two steps and quality isn't required
+			&& !(remainingTime == (bestQualityTime - actionTracker.touchTime))) {		// There aren't quality skills needed to match the fastest found quality level
 			SynthesisCraft();
 
 			if (!synthActionRequired) {
