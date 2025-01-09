@@ -58,77 +58,73 @@ Crafter::~Crafter() {
 void Crafter::FindFastestQuality(int& durabilityCosts, int& twentyCosts) {
 	playerState.currentTurn = 2;
 	FindMinQualityForMax();
-	if (!successfulQualityCrafts.empty()) {
-		minTouchSkills = successfulQualityCrafts[bestQualityTime][0].size();
-		AddItem(craftableItem->GetMaxProgress(), craftableItem->GetMaxQuality(), craftableItem->GetMaxDurability());
-		int durability = 0;
-		for (const auto& skill : successfulQualityCrafts[bestQualityTime][0]) {
-			if (skill == SkillName::NONE)	continue;
-			for (const auto& entry : skillTest) {		// find skill efficiency
-				if (entry.skillName == skill) {
-					if (entry.efficiency == 0) {
-						BuffSkills(skill);
-					}
-					else {
-						TouchSkills(skill, 0, durability);
-						durabilityCosts += entry.costDurability;
-						if (entry.costDurability == 20) ++twentyCosts;
-					}
-					break;
+	if (successfulQualityCrafts.empty()) {
+		std::cout << "There was no way to find max quality with your QP100 and the maximum number of steps.\n";
+		return;
+	}
+	minTouchSkills = successfulQualityCrafts[bestQualityTime][0].size();
+	AddItem(craftableItem->GetMaxProgress(), craftableItem->GetMaxQuality(), craftableItem->GetMaxDurability());
+	int durability = 0;
+	for (const auto& skill : successfulQualityCrafts[bestQualityTime][0]) {
+		if (skill == SkillName::NONE)	continue;
+		for (const auto& entry : skillTest) {		// find skill efficiency
+			if (entry.skillName == skill) {
+				if (entry.efficiency == 0) {
+					BuffSkills(skill);
 				}
-
+				else {
+					TouchSkills(skill, 0, durability);
+					durabilityCosts += entry.costDurability;
+					if (entry.costDurability == 20) ++twentyCosts;
+				}
+				break;
 			}
 
-			bestQuality.emplace(bestQuality.begin(), craftableItem->GetRemainingQuality());
 		}
-		int difference = bestQuality[0];
-		for (auto& entry : bestQuality) {
-			entry -= difference;
-		}
-		--minTouchSkills;	// Deletes the number from SkillName::NONE
+
+		bestQuality.emplace(bestQuality.begin(), craftableItem->GetRemainingQuality());
+	}
+	int difference = bestQuality[0];
+	for (auto& entry : bestQuality) {
+		entry -= difference;
+	}
+	--minTouchSkills;	// Deletes the number from SkillName::NONE
 		std::cout << "The minimum number of touch skills required to achieve max quality is " << minTouchSkills << '\n';
-	}
-	else {
-		std::cout << "There was no way to find max quality with your QP100 and the maximum number of steps.\n";
-	}
-	playerState.currentTurn = 3;
-	LoadLastCraftingRecord();
 }
 
 void Crafter::FindFastestSynth(int& durabilityCosts, int& twentyCosts) {
 	playerState.currentTurn = 3;
 	LoadLastCraftingRecord();
 	FindMinSynthForMax();
-	if (!successfulSynthCrafts.empty()) {
-		minSynthSkills = successfulSynthCrafts[bestSynthTime][0].size();
-		AddItem(craftableItem->GetMaxProgress(), craftableItem->GetMaxQuality(), craftableItem->GetMaxDurability());
-		int durability = 0;
-		for (const auto& skill : successfulSynthCrafts[bestSynthTime][0]) {
-			if (skill == SkillName::NONE)	continue;
-			for (const auto& entry : skillTest) {		// find skill efficiency
-				if (entry.efficiency == 0) {
-					BuffSkills(skill);
-				}
-				else if (entry.skillName == skill) {
-					SynthesisSkills(entry.skillName, durability, entry.efficiency);
-					durabilityCosts += entry.costDurability;
-					if (entry.costDurability == 20) ++twentyCosts;
-				}
-
-			}
-			//std::cout << Skills::GetSkillName(move) << '\n';
-			bestSynth.emplace(bestSynth.begin(), craftableItem->GetRemainingProgress());
-			//std::cout << craftableItem->GetRemainingProgress() << '\n';
-		}
-		int difference = bestSynth[0];
-		for (auto& entry : bestSynth) {
-			entry -= difference;
-		}
-		std::cout << "The minimum number of synth skills required to craft the item is " << minSynthSkills << '\n';
-	}
-	else {
+	if (successfulSynthCrafts.empty()) {
 		std::cout << "There was no way to craft this item.\n";
+		return;
 	}
+	minSynthSkills = successfulSynthCrafts[bestSynthTime][0].size();
+	AddItem(craftableItem->GetMaxProgress(), craftableItem->GetMaxQuality(), craftableItem->GetMaxDurability());
+	int durability = 0;
+	for (const auto& skill : successfulSynthCrafts[bestSynthTime][0]) {
+		if (skill == SkillName::NONE)	continue;
+		for (const auto& entry : skillTest) {		// find skill efficiency
+			if (entry.efficiency == 0) {
+				BuffSkills(skill);
+			}
+			else if (entry.skillName == skill) {
+				SynthesisSkills(entry.skillName, durability, entry.efficiency);
+				durabilityCosts += entry.costDurability;
+				if (entry.costDurability == 20) ++twentyCosts;
+			}
+
+		}
+		//std::cout << Skills::GetSkillName(skill) << '\n';
+		bestSynth.emplace(bestSynth.begin(), craftableItem->GetRemainingProgress());
+		//std::cout << craftableItem->GetRemainingProgress() << '\n';
+	}
+	int difference = bestSynth[0];
+	for (auto& entry : bestSynth) {
+		entry -= difference;
+	}
+	std::cout << "The minimum number of synth skills required to craft the item is " << minSynthSkills << '\n';
 }
 
 void Crafter::FindDurabilityCost(int& durabilityCosts, int& twentyCosts) {
@@ -191,8 +187,8 @@ void Crafter::ForceCraft() {
 				}
 			}
 		}	
+		ContinueCraft();
 	}
-	ContinueCraft();
 }
 
 

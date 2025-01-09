@@ -32,7 +32,7 @@ public:
 
 	struct PlayerState {
 		int currentCP{ 0 };
-		unsigned char currentTurn{ 1 };
+		int currentTurn{ 1 };
 		unsigned char currentTime{ 0 };
 		unsigned char innerQuiet{ 0 };;
 		BuffInfo buffInfo{};
