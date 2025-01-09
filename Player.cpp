@@ -156,7 +156,7 @@ void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabili
 		}
 		break;
 	case Skills::SkillName::GROUNDWORK:
-		if (craftableItem->GetDurability() < skillDurabilityCost) {
+		if (craftableItem->GetCurrentDurability() < skillDurabilityCost) {
 			craftableItem->AddProgress(CalculateProgress(skillEfficiency / 2), skillDurabilityCost);
 		}
 		else {

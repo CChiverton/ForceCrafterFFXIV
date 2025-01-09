@@ -79,7 +79,7 @@ void Crafter::FindFastestQuality(int& durabilityCosts, int& twentyCosts) {
 
 			}
 
-			bestQuality.emplace(bestQuality.begin(), craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality());
+			bestQuality.emplace(bestQuality.begin(), craftableItem->GetRemainingQuality());
 		}
 		int difference = bestQuality[0];
 		for (auto& entry : bestQuality) {
@@ -117,8 +117,8 @@ void Crafter::FindFastestSynth(int& durabilityCosts, int& twentyCosts) {
 
 			}
 			//std::cout << Skills::GetSkillName(move) << '\n';
-			bestSynth.emplace(bestSynth.begin(), craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress());
-			//std::cout << craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress() << '\n';
+			bestSynth.emplace(bestSynth.begin(), craftableItem->GetRemainingProgress());
+			//std::cout << craftableItem->GetRemainingProgress() << '\n';
 		}
 		int difference = bestSynth[0];
 		for (auto& entry : bestSynth) {
@@ -167,7 +167,7 @@ void Crafter::ForceCraft() {
 		
 		bool synthActionRequired = remainingTime < 5
 				|| actionTracker.ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker.synthActionUsed, 2)				// Requires a synth action
-				|| (GetBuffDuration(SkillName::FINALAPPRAISAL) == 1 && (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1);	// Requires a synth action
+				|| (GetBuffDuration(SkillName::FINALAPPRAISAL) == 1 && craftableItem->GetRemainingProgress() != 1);										// Requires a synth action
 		
 
 		if (requireQuality) {
@@ -185,7 +185,7 @@ void Crafter::ForceCraft() {
 
 			if (!synthActionRequired) {
 				BuffCraft();
-				int repairableDurability = craftableItem->GetMaxDurability() - craftableItem->GetDurability();
+				int repairableDurability = craftableItem->GetRemainingDurability();
 				if ((repairableDurability >= 25)) {
 					RepairCraft(repairableDurability);
 				}
@@ -217,7 +217,7 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 		int maxQualityTime = 0;
 
 		if (requireQuality && remainingCraftTurns < minTouchSkills) {
-			int remainingQuality = craftableItem->GetMaxQuality() - craftableItem->GetCurrentQuality();
+			int remainingQuality = craftableItem->GetRemainingQuality();
 			minQualityTurnsLeft = 1;
 			//std::cout << maxQualityTime << '\n';
 			for (minQualityTurnsLeft; remainingQuality > bestQuality[minQualityTurnsLeft]; ++minQualityTurnsLeft) {
@@ -232,7 +232,7 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 
 		int minSynthTurnsLeft = 1;
 		int maxSynthTime = 0;
-		int remainingProgress = craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress();
+		int remainingProgress = craftableItem->GetRemainingProgress();
 		for (minSynthTurnsLeft; remainingProgress > bestSynth[minSynthTurnsLeft]; ++minSynthTurnsLeft) {
 			if (bestSynth[minSynthTurnsLeft] == bestSynth[minSynthTurnsLeft - 1]) {
 				maxSynthTime += 2;
@@ -257,7 +257,7 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 
 
 		if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestTime
-			|| (craftingRecord.player.buffInfo.finalAppraisal == 1 && (craftableItem->GetMaxProgress() - craftableItem->GetCurrentProgress()) != 1)	// not appraised
+			|| (craftingRecord.player.buffInfo.finalAppraisal == 1 && craftableItem->GetRemainingProgress() != 1)	// not appraised
 			|| craftableItem->IsItemBroken()) {
 			LoadLastCraftingRecord();
 			return;
@@ -361,7 +361,7 @@ void Crafter::SynthesisCraft() {
 }
 
 void Crafter::QualityCraft() {
-	int itemDurability = playerState.buffInfo.wasteNotActive ? craftableItem->GetDurability() * 2 : craftableItem->GetDurability();	// double it to act as if the skill is half cost
+	int itemDurability = playerState.buffInfo.wasteNotActive ? craftableItem->GetCurrentDurability() * 2 : craftableItem->GetCurrentDurability();	// double it to act as if the skill is half cost
 	for (const SkillTest& move : qualitySkills) {
 		if (itemDurability <= move.costDurability) continue;	// won't catch prudent touch but that is still caught by the craft process
 		if (QualityCheck(move.skillName)) {

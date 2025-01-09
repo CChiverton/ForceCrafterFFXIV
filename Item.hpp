@@ -46,6 +46,9 @@ public:
 	inline int GetMaxProgress() const {
 		return maxItemState.progress;
 	}
+	inline int GetRemainingProgress() const {
+		return maxItemState.progress - currentItemState.progress;
+	}
 	bool IsItemCrafted() const {
 		return currentItemState.progress >= maxItemState.progress;
 	}
@@ -57,16 +60,22 @@ public:
 	inline int GetMaxQuality() const {
 		return maxItemState.quality;
 	}
+	inline int GetRemainingQuality() const {
+		return maxItemState.quality - currentItemState.quality;
+	}
 	bool IsItemMaxQuality() const {
 		return currentItemState.quality >= maxItemState.quality;
 	}
 
 	/* DURABILITY*/
-	inline int GetDurability() const {
+	inline int GetCurrentDurability() const {
 		return currentItemState.durability;
 	}
 	inline int GetMaxDurability() const {
 		return maxItemState.durability;
+	}
+	inline int GetRemainingDurability() const {
+		return maxItemState.durability - currentItemState.durability;
 	}
 
 
