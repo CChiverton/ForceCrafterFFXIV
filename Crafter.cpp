@@ -331,7 +331,7 @@ void Crafter::StarterCraft() {
 }
 
 void Crafter::SynthesisCraft() {
-	bool checkForCarefulGroundWork = (((actionTracker.prudentSynthesis & 0b11) | (actionTracker.groundwork & 0b11)) == 0b11);	// either have been used for the past two turns	
+	bool checkForCarefulGroundWork = (((ActionTracker::BuffHistory(actionTracker.prudentSynthesis, 0b11)) | (ActionTracker::BuffHistory(actionTracker.groundwork, 0b11))) == 0b11);	// either have been used for the past two turns	
 	bool venerationBuff = playerState.buffInfo.veneration > 0;
 	for (const SkillTest& move : synthesisSkills) {
 		if (SimilarTrees(move.skillName))	continue;
@@ -379,13 +379,13 @@ void Crafter::OtherCraft() {
 }
 
 bool Crafter::SimilarTrees(SkillName skillName) {
-	if (((actionTracker.venerationHistory & 0b1) != playerState.buffInfo.venerationActive)					// only proceed if the veneration history is actually the same
-		|| ((actionTracker.wasteNotHistory & 0b1) != playerState.buffInfo.wasteNotActive))	return false;	// only proceed if the waste not history is actually the same
+	if (((ActionTracker::BuffHistory(actionTracker.venerationHistory, 0b1)) != playerState.buffInfo.venerationActive)					// only proceed if the veneration history is actually the same
+		|| ((ActionTracker::BuffHistory(actionTracker.wasteNotHistory, 0b1)) != playerState.buffInfo.wasteNotActive))	return false;	// only proceed if the waste not history is actually the same
 
-	bool basic = actionTracker.basicSynthesis & 0b1;
-	bool careful = actionTracker.carefulSynthesis & 0b1;
-	bool prudent = actionTracker.prudentSynthesis & 0b1;
-	//bool ground = actionTracker.groundwork & 0b1;
+	bool basic = ActionTracker::BuffHistory(actionTracker.basicSynthesis, 0b1);
+	bool careful = ActionTracker::BuffHistory(actionTracker.carefulSynthesis, 0b1);
+	bool prudent = ActionTracker::BuffHistory(actionTracker.prudentSynthesis, 0b1);
+	//bool ground = ActionTracker::BuffHistory(actionTracker.groundwork, 0b1);
 
 	switch (skillName) {
 	case SkillName::BASICSYNTHESIS:
