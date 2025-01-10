@@ -379,14 +379,13 @@ void Crafter::OtherCraft() {
 }
 
 bool Crafter::SimilarTrees(SkillName skillName) {
+	if (((actionTracker.venerationHistory & 0b1) != playerState.buffInfo.venerationActive)					// only proceed if the veneration history is actually the same
+		|| ((actionTracker.wasteNotHistory & 0b1) != playerState.buffInfo.wasteNotActive))	return false;	// only proceed if the waste not history is actually the same
+
 	bool basic = actionTracker.basicSynthesis & 0b1;
 	bool careful = actionTracker.carefulSynthesis & 0b1;
 	bool prudent = actionTracker.prudentSynthesis & 0b1;
-	bool ground = actionTracker.groundwork & 0b1;
-	int history = actionTracker.venerationHistory & 0b11;
-	int wasteNotHistory = actionTracker.wasteNotHistory & 0b11;
-	if (history != 0b11 && history != 0b00)	return false;	// only proceed if the veneration history is actually the same
-	if (wasteNotHistory != 0b11 && wasteNotHistory != 0b00)	return false;	// only proceed if the veneration history is actually the same
+	//bool ground = actionTracker.groundwork & 0b1;
 
 	switch (skillName) {
 	case SkillName::BASICSYNTHESIS:
@@ -475,7 +474,7 @@ inline void Crafter::SaveCraftingRecord(SkillName skillName) {
 inline void Crafter::SaveCraftingHistory(SkillName skillName) {
 	SaveCraftingRecord(skillName);
 	craftingHistory.at(playerState.currentTurn) = craftingRecord;
-	actionTracker.Progress(skillName, craftingRecord.player.buffInfo.innovationActive, craftingRecord.player.buffInfo.wasteNotActive,
+	actionTracker.Progress(skillName, craftingRecord.player.buffInfo.venerationActive, craftingRecord.player.buffInfo.wasteNotActive,
 		craftingRecord.player.buffInfo.greatStridesActive, craftingRecord.player.buffInfo.innovationActive);
 }
 
