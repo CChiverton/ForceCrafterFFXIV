@@ -12,7 +12,14 @@ public:
 		maxItemState.durability = maxDurability;
 		currentItemState.durability = maxItemState.durability;
 	}
-
+	Item() {
+		maxItemState.progress = 0;
+		currentItemState.progress = 0;
+		maxItemState.quality = 0;
+		currentItemState.quality = 0;
+		maxItemState.durability = 0;
+		currentItemState.durability = 0;
+	}
 	struct ItemState {
 		int progress{};
 		int quality{};

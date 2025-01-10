@@ -52,7 +52,7 @@ void Crafter::FindFastestQuality(int& durabilityCosts, int& twentyCosts) {
 		return;
 	}
 	minTouchSkills = successfulQualityCrafts[bestQualityTime][0].size();
-	AddItem(craftableItem->GetMaxProgress(), craftableItem->GetMaxQuality(), craftableItem->GetMaxDurability());
+	AddItem(craftableItem.GetMaxProgress(), craftableItem.GetMaxQuality(), craftableItem.GetMaxDurability());
 	int durability = 0;
 	for (const auto& skill : successfulQualityCrafts[bestQualityTime][0]) {
 		if (skill == SkillName::NONE)	continue;
@@ -71,7 +71,7 @@ void Crafter::FindFastestQuality(int& durabilityCosts, int& twentyCosts) {
 
 		}
 
-		bestQuality.emplace(bestQuality.begin(), craftableItem->GetRemainingQuality());
+		bestQuality.emplace(bestQuality.begin(), craftableItem.GetRemainingQuality());
 	}
 	int difference = bestQuality[0];
 	for (auto& entry : bestQuality) {
@@ -90,7 +90,7 @@ void Crafter::FindFastestSynth(int& durabilityCosts, int& twentyCosts) {
 		return;
 	}
 	minSynthSkills = successfulSynthCrafts[bestSynthTime][0].size();
-	AddItem(craftableItem->GetMaxProgress(), craftableItem->GetMaxQuality(), craftableItem->GetMaxDurability());
+	AddItem(craftableItem.GetMaxProgress(), craftableItem.GetMaxQuality(), craftableItem.GetMaxDurability());
 	int durability = 0;
 	for (const auto& skill : successfulSynthCrafts[bestSynthTime][0]) {
 		if (skill == SkillName::NONE)	continue;
@@ -106,8 +106,8 @@ void Crafter::FindFastestSynth(int& durabilityCosts, int& twentyCosts) {
 
 		}
 		//std::cout << Skills::GetSkillName(skill) << '\n';
-		bestSynth.emplace(bestSynth.begin(), craftableItem->GetRemainingProgress());
-		//std::cout << craftableItem->GetRemainingProgress() << '\n';
+		bestSynth.emplace(bestSynth.begin(), craftableItem.GetRemainingProgress());
+		//std::cout << craftableItem.GetRemainingProgress() << '\n';
 	}
 	int difference = bestSynth[0];
 	for (auto& entry : bestSynth) {
@@ -119,21 +119,21 @@ void Crafter::FindFastestSynth(int& durabilityCosts, int& twentyCosts) {
 void Crafter::FindDurabilityCost(int& durabilityCosts, int& twentyCosts) {
 	std::cout << "The total durability lost to attain crafted item is: " << durabilityCosts << '\n';
 	durabilityCosts -= 10;		// emulating starter move
-	while (durabilityCosts > craftableItem->GetMaxDurability()) {
+	while (durabilityCosts > craftableItem.GetMaxDurability()) {
 		if (twentyCosts >= 6) {
 			durabilityCosts -= 60;		// emulating the strongest casts durability savings
 			twentyCosts -= 6;
 			++minDurabilitySkills;
 		}
-		if (craftableItem->GetMaxDurability() < durabilityCosts) {
+		if (craftableItem.GetMaxDurability() < durabilityCosts) {
 			durabilityCosts -= 40;	// emulating manipulation
 			++minDurabilitySkills;
 		}
-		if (durabilityCosts > craftableItem->GetMaxDurability()) {
+		if (durabilityCosts > craftableItem.GetMaxDurability()) {
 			++minDurabilitySkills;		// emulating a repair action
 		}
 	}
-	std::cout << "The estimated durability after finishing crafting for " << minDurabilitySkills << " durability-saving skills is " << craftableItem->GetMaxDurability() - durabilityCosts << '\n';
+	std::cout << "The estimated durability after finishing crafting for " << minDurabilitySkills << " durability-saving skills is " << craftableItem.GetMaxDurability() - durabilityCosts << '\n';
 
 }
 
@@ -145,12 +145,12 @@ void Crafter::ForceCraft() {
 		StarterCraft();
 	}
 	else {
-		bool requireQuality = forceMaxQuality && !craftableItem->IsItemMaxQuality();
+		bool requireQuality = forceMaxQuality && !craftableItem.IsItemMaxQuality();
 		int remainingTime = bestTime - craftingRecord.currentTime;
 		
 		bool synthActionRequired = remainingTime < 5
 				|| actionTracker.ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker.synthActionUsed, 2)				// Requires a synth action
-				|| (GetBuffDuration(SkillName::FINALAPPRAISAL) == 1 && craftableItem->GetRemainingProgress() != 1);										// Requires a synth action
+				|| (GetBuffDuration(SkillName::FINALAPPRAISAL) == 1 && craftableItem.GetRemainingProgress() != 1);										// Requires a synth action
 		
 
 		if (requireQuality) {
@@ -168,7 +168,7 @@ void Crafter::ForceCraft() {
 
 			if (!synthActionRequired) {
 				BuffCraft();
-				int repairableDurability = craftableItem->GetRemainingDurability();
+				int repairableDurability = craftableItem.GetRemainingDurability();
 				if ((repairableDurability >= 25)) {
 					RepairCraft(repairableDurability);
 				}
@@ -183,9 +183,9 @@ void Crafter::ForceCraft() {
 
 void Crafter::CraftAndRecord(const SkillTest& move) {
 	if (CastSkill(move)) {
-		const bool requireQuality = forceMaxQuality && !craftableItem->IsItemMaxQuality();
+		const bool requireQuality = forceMaxQuality && !craftableItem.IsItemMaxQuality();
 		
-		if (craftableItem->IsItemCrafted()) {
+		if (craftableItem.IsItemCrafted()) {
 			if (requireQuality) {
 				LoadLastCraftingRecord();
 				return;
@@ -219,8 +219,8 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 		} 
 		/* Current state based crafting */
 		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestTime
-			|| (craftingRecord.player.buffInfo.finalAppraisal == 1 && craftableItem->GetRemainingProgress() != 1)	// not appraised
-			|| craftableItem->IsItemBroken()) {
+			|| (craftingRecord.player.buffInfo.finalAppraisal == 1 && craftableItem.GetRemainingProgress() != 1)	// not appraised
+			|| craftableItem.IsItemBroken()) {
 			LoadLastCraftingRecord();
 			return;
 		}
@@ -242,7 +242,7 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 
 void Crafter::FindMinQualityForMax() {
 	for (const SkillTest& move : qualitySkills) {
-		craftableItem->UpdateDurability(1000);
+		craftableItem.UpdateDurability(1000);
 		if (QualityCheck(move.skillName)) {
 			continue;
 		}
@@ -256,7 +256,7 @@ void Crafter::FindMinQualityForMax() {
 
 void Crafter::FindMinSynthForMax() {
 	for (const SkillTest& move : synthesisSkills) {
-		craftableItem->UpdateDurability(1000);
+		craftableItem.UpdateDurability(1000);
 		SynthOnlyCrafts(move);
 	}
 	ContinueCraft();
@@ -264,13 +264,13 @@ void Crafter::FindMinSynthForMax() {
 
 void Crafter::QualityOnlyCrafts(const SkillTest& move) {
 	if (CastSkill(move)) {
-		if (craftableItem->IsItemMaxQuality()) {
+		if (craftableItem.IsItemMaxQuality()) {
 			SaveCraftingHistory(move.skillName);
 			AddSuccessfulQualityCraft();
 			ContinueCraft();
 		}
 		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestQualityTime
-			|| craftableItem->IsItemBroken()) {
+			|| craftableItem.IsItemBroken()) {
 			LoadLastCraftingRecord();
 		}
 		else {
@@ -282,13 +282,13 @@ void Crafter::QualityOnlyCrafts(const SkillTest& move) {
 
 void Crafter::SynthOnlyCrafts(const SkillTest& move) {
 	if (CastSkill(move)) {
-		if (craftableItem->IsItemCrafted()) {
+		if (craftableItem.IsItemCrafted()) {
 			SaveCraftingHistory(move.skillName);
 			AddSuccessfulSynthCraft();
 			ContinueCraft();
 		}
 		else if (playerState.currentTurn >= maxTurnLimit || (playerState.currentTime + 3) > bestSynthTime
-			|| craftableItem->IsItemBroken()) {
+			|| craftableItem.IsItemBroken()) {
 			LoadLastCraftingRecord();
 		}
 		else {
@@ -299,7 +299,7 @@ void Crafter::SynthOnlyCrafts(const SkillTest& move) {
 }
 
 void Crafter::CalculateRemainingQualityTime(int& minQualityTurnsLeft, int& maxQualityTime) {
-	int remainingQuality = craftableItem->GetRemainingQuality();
+	int remainingQuality = craftableItem.GetRemainingQuality();
 	minQualityTurnsLeft = 1;
 	//std::cout << maxQualityTime << '\n';
 	for (minQualityTurnsLeft; remainingQuality > bestQuality[minQualityTurnsLeft]; ++minQualityTurnsLeft) {
@@ -313,7 +313,7 @@ void Crafter::CalculateRemainingQualityTime(int& minQualityTurnsLeft, int& maxQu
 }
 
 void Crafter::CalculateRemainingSynthTime(int& minSynthTurnsLeft, int& maxSynthTime) {
-	int remainingProgress = craftableItem->GetRemainingProgress();
+	int remainingProgress = craftableItem.GetRemainingProgress();
 	for (minSynthTurnsLeft; remainingProgress > bestSynth[minSynthTurnsLeft]; ++minSynthTurnsLeft) {
 		if (bestSynth[minSynthTurnsLeft] == bestSynth[minSynthTurnsLeft - 1]) {
 			maxSynthTime += 2;
@@ -345,7 +345,7 @@ void Crafter::SynthesisCraft() {
 }
 
 void Crafter::QualityCraft() {
-	int itemDurability = playerState.buffInfo.wasteNotActive ? craftableItem->GetCurrentDurability() * 2 : craftableItem->GetCurrentDurability();	// double it to act as if the skill is half cost
+	int itemDurability = playerState.buffInfo.wasteNotActive ? craftableItem.GetCurrentDurability() * 2 : craftableItem.GetCurrentDurability();	// double it to act as if the skill is half cost
 	for (const SkillTest& move : qualitySkills) {
 		if (itemDurability <= move.costDurability) continue;	// won't catch prudent touch but that is still caught by the craft process
 		if (QualityCheck(move.skillName)) {
@@ -452,7 +452,7 @@ bool Crafter::BuffCheck(SkillName skillName) {
 	case SkillName::WASTENOTII:
 		break;
 	case SkillName::FINALAPPRAISAL:
-		buffSkip = playerState.currentTurn + 6 >= maxTurnLimit || !forceMaxQuality || craftableItem->IsItemMaxQuality();
+		buffSkip = playerState.currentTurn + 6 >= maxTurnLimit || !forceMaxQuality || craftableItem.IsItemMaxQuality();
 		break;
 	case SkillName::MANIPULATION:
 		//if (player->GetCurrentTurn() + 3 >= maxTurnLimit) buffSkip = true;			// logical limiter, this would be able to get 1 move extra in
@@ -467,7 +467,7 @@ bool Crafter::BuffCheck(SkillName skillName) {
 /********************************* CRAFTING RECORDS *********************************/
 inline void Crafter::SaveCraftingRecord(SkillName skillName) {
 	craftingRecord.player = playerState;
-	craftingRecord.item = craftableItem->GetItemState();
+	craftingRecord.item = craftableItem.GetItemState();
 	craftingRecord.currentTime = playerState.currentTime;
 	craftingRecord.skillName = skillName;
 }
@@ -521,7 +521,7 @@ void Crafter::AddSuccessfulCraft(SkillName skillName) {
 
 inline void Crafter::LoadLastCraftingRecord() {
 	LoadPlayerStats(craftingHistory[playerState.currentTurn-1].player);
-	craftableItem->LoadItemState(craftingHistory[playerState.currentTurn].item);
+	craftableItem.LoadItemState(craftingHistory[playerState.currentTurn].item);
 	craftingRecord = craftingHistory[playerState.currentTurn];
 }
 

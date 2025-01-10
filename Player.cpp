@@ -78,14 +78,12 @@ const unsigned char Player::GetBuffDuration(SkillName skillName) const {
 
 /* ITEM CONTROL */
 void Player::AddItem(const int& maxProgress, const int& maxQuality, const int& maxDurability) {
-	RemoveItem();
 	ResetPlayerStats();
-	craftableItem.reset(new Item(maxProgress, maxQuality, maxDurability));
+	craftableItem = Item(maxProgress, maxQuality, maxDurability);
 }
 
 void Player::RemoveItem() {
-	if (craftableItem != nullptr)	craftableItem.reset(nullptr);
-	craftableItem = nullptr;
+	craftableItem = Item();
 }
 
 
@@ -123,13 +121,13 @@ bool Player::CastSkill(const Skills::SkillTest& skill) {
 
 	if (successfulCast) {
 		/* Apply appraisal buff */
-		if (playerState.buffInfo.finalAppraisalActive && craftableItem->IsItemCrafted()) {
-			craftableItem->AddProgress(-(craftableItem->GetCurrentProgress() - craftableItem->GetMaxProgress() + 1), 0);
+		if (playerState.buffInfo.finalAppraisalActive && craftableItem.IsItemCrafted()) {
+			craftableItem.AddProgress(craftableItem.GetRemainingProgress() - 1, 0);
 		}
 
 		/* Apply manipulation buff */
-		if (playerState.buffInfo.manipulationActive && playerState.buffInfo.manipulation < 9 && !craftableItem->IsItemBroken()) {
-			craftableItem->UpdateDurability(5);		// Item needs to not be broken for the buff to be applied
+		if (playerState.buffInfo.manipulationActive && playerState.buffInfo.manipulation < 9 && !craftableItem.IsItemBroken()) {
+			craftableItem.UpdateDurability(5);		// Item needs to not be broken for the buff to be applied
 		}
 
 		/* Update player state */
@@ -149,24 +147,24 @@ void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabili
 	switch (skillName) {
 	case Skills::SkillName::PRUDENTSYNTHESIS:
 		if (!playerState.buffInfo.wasteNotActive) {
-			craftableItem->AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
+			craftableItem.AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
 		}
 		else {
 			successfulCast = false;
 		}
 		break;
 	case Skills::SkillName::GROUNDWORK:
-		if (craftableItem->GetCurrentDurability() < skillDurabilityCost) {
-			craftableItem->AddProgress(CalculateProgress(skillEfficiency / 2), skillDurabilityCost);
+		if (craftableItem.GetCurrentDurability() < skillDurabilityCost) {
+			craftableItem.AddProgress(CalculateProgress(skillEfficiency / 2), skillDurabilityCost);
 		}
 		else {
-			craftableItem->AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
+			craftableItem.AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
 		}
 
 		break;
 	case Skills::SkillName::MUSCLEMEMORY:
 		if (playerState.currentTurn == 1) {
-			craftableItem->AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
+			craftableItem.AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
 			playerState.buffInfo.muscleMemory = 6;
 			playerState.buffInfo.muscleMemoryActive = true;
 		}
@@ -175,7 +173,7 @@ void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabili
 		}
 		break;
 	default:
-		craftableItem->AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
+		craftableItem.AddProgress(CalculateProgress(skillEfficiency), skillDurabilityCost);
 		break;
 	}
 }
@@ -184,26 +182,26 @@ void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabili
 void Player::TouchSkills(const SkillName skillName, const int skillDurabilityCost, int& skillCPCost) {
 	switch (skillName) {
 	case Skills::SkillName::BASICTOUCH:
-		craftableItem->AddQuality(CalculateQuality(skillName), skillDurabilityCost);
+		craftableItem.AddQuality(CalculateQuality(skillName), skillDurabilityCost);
 		AddInnerQuiet(1);
 		break;
 	case Skills::SkillName::STANDARDTOUCH:
 		if (playerState.lastSkillUsed == SkillName::BASICTOUCH) {
 			skillCPCost = 18;
 		}
-		craftableItem->AddQuality(CalculateQuality(skillName), skillDurabilityCost);
+		craftableItem.AddQuality(CalculateQuality(skillName), skillDurabilityCost);
 		AddInnerQuiet(1);
 		break;
 	case Skills::SkillName::ADVANCEDTOUCH:
 		if (playerState.lastSkillUsed == SkillName::STANDARDTOUCH) {
 			skillCPCost = 18;
 		}
-		craftableItem->AddQuality(CalculateQuality(skillName), skillDurabilityCost);
+		craftableItem.AddQuality(CalculateQuality(skillName), skillDurabilityCost);
 		AddInnerQuiet(1);
 		break;
 	case Skills::SkillName::BYREGOTSBLESSING:
 		if (playerState.innerQuiet > 0) {
-			craftableItem->AddQuality(CalculateQuality(skillName), skillDurabilityCost);
+			craftableItem.AddQuality(CalculateQuality(skillName), skillDurabilityCost);
 			playerState.innerQuiet = 0;
 		}
 		else {
@@ -212,19 +210,19 @@ void Player::TouchSkills(const SkillName skillName, const int skillDurabilityCos
 		break;
 	case Skills::SkillName::PRUDENTTOUCH:
 		if (!playerState.buffInfo.wasteNotActive) {
-			craftableItem->AddQuality(CalculateQuality(SkillName::BASICTOUCH), skillDurabilityCost);
+			craftableItem.AddQuality(CalculateQuality(SkillName::BASICTOUCH), skillDurabilityCost);
 		}
 		else {
 			successfulCast = false;
 		}
 		break;
 	case Skills::SkillName::PREPARATORYTOUCH:
-		craftableItem->AddQuality(CalculateQuality(skillName), skillDurabilityCost);
+		craftableItem.AddQuality(CalculateQuality(skillName), skillDurabilityCost);
 		AddInnerQuiet(2);
 		break;
 	case Skills::SkillName::REFLECT:
 		if (playerState.currentTurn == 1) {
-			craftableItem->AddQuality(CalculateQuality(skillName), skillDurabilityCost);
+			craftableItem.AddQuality(CalculateQuality(skillName), skillDurabilityCost);
 			AddInnerQuiet(2);
 		}
 		else {
@@ -232,7 +230,7 @@ void Player::TouchSkills(const SkillName skillName, const int skillDurabilityCos
 		}
 		break;
 	case Skills::SkillName::REFINEDTOUCH:
-		craftableItem->AddQuality(CalculateQuality(SkillName::BASICTOUCH), skillDurabilityCost);
+		craftableItem.AddQuality(CalculateQuality(SkillName::BASICTOUCH), skillDurabilityCost);
 		if (playerState.lastSkillUsed == Skills::SkillName::BASICTOUCH) {
 			AddInnerQuiet(1);
 		}
@@ -278,14 +276,14 @@ void Player::BuffSkills(const SkillName skillName) {
 void Player::RepairSkills(const SkillName skillName) {
 	switch (skillName) {
 	case SkillName::MASTERSMEND:
-		craftableItem->UpdateDurability(30);
+		craftableItem.UpdateDurability(30);
 		break;
 	case SkillName::MANIPULATION:
 		playerState.buffInfo.manipulation = 9;
 		playerState.buffInfo.manipulationActive = true;
 		break;
 	case SkillName::IMMACULATEMEND:
-		craftableItem->UpdateDurability(1000);
+		craftableItem.UpdateDurability(1000);
 		break;
 	default:
 		break;
@@ -295,9 +293,9 @@ void Player::RepairSkills(const SkillName skillName) {
 void Player::OtherSkills(const SkillName skillName, const int& skillDurabilityCost) {
 	switch (skillName) {
 	case SkillName::DELICATESYNTHESIS:
-		craftableItem->AddQuality(CalculateQuality(SkillName::BASICTOUCH), 0);
+		craftableItem.AddQuality(CalculateQuality(SkillName::BASICTOUCH), 0);
 		AddInnerQuiet(1);
-		craftableItem->AddProgress(CalculateProgress(150), skillDurabilityCost);
+		craftableItem.AddProgress(CalculateProgress(150), skillDurabilityCost);
 		break;
 	default:
 		break;

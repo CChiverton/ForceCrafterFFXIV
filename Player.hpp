@@ -50,7 +50,7 @@ public:
 
 protected:
 	/* Item control */
-	std::unique_ptr<Item> craftableItem = nullptr;
+	Item craftableItem;
 	void AddItem(const int& maxProgress, const int& maxQuality, const int& maxDurability);
 	void RemoveItem();
 
