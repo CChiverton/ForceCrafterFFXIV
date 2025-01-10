@@ -162,7 +162,7 @@ void Crafter::ForceCraft() {
 
 		if (!actionTracker.ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.innovation, 3, actionTracker.touchActionUsed, 2)	// If there is only one buff use it may as well be great strides
 			&& !GetBuffDuration(SkillName::GREATSTRIDES) == 1							// Great strides will be wasted if anything other than a touch skill is used
-			&& !(remainingTime < 7 && requireQuality)									// In the last two steps and quality isn't required
+			&& !(remainingTime < 8 && requireQuality)									// In the last two steps and quality isn't required
 			&& !(remainingTime == (bestQualityTime - actionTracker.touchTime))) {		// There aren't quality skills needed to match the fastest found quality level
 			SynthesisCraft();
 
@@ -210,7 +210,7 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 		if (minDurabilityTurnsLeft < 0)	minDurabilityTurnsLeft = 0;
 
 		/* Prediction based crafting */
-		if (remainingCraftTime <= maxQualityTime + maxSynthTime
+		if (remainingCraftTime < maxQualityTime + maxSynthTime
 			|| (minQualityTurnsLeft + minSynthTurnsLeft + minDurabilityTurnsLeft) > maxTurnLimit - playerState.currentTurn
 			|| actionTracker.touchTime > bestQualityTime				// Quality crafting should not exceed this limit
 			|| actionTracker.synthTime == bestSynthTime) {				// As the final synth should craft the object it should never reach here
