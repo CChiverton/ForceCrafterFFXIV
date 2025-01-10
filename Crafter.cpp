@@ -419,18 +419,13 @@ bool Crafter::QualityCheck(SkillName skillName) {
 	bool skipTouchSkill{ false };
 	switch (skillName) {
 	case SkillName::BYREGOTSBLESSING:
-		if (playerState.innerQuiet < minTouchSkills/2) {
-			skipTouchSkill = true;
-		}
-		else if (forceGreaterByregot) {
-			skipTouchSkill = !playerState.buffInfo.greatStridesActive;
-		}
+		skipTouchSkill = playerState.innerQuiet < minTouchSkills / 2 || (forceGreaterByregot && !playerState.buffInfo.greatStridesActive);
 		break;
 	case SkillName::BASICTOUCH:
-		if (playerState.lastSkillUsed == SkillName::BASICTOUCH || playerState.lastSkillUsed == SkillName::STANDARDTOUCH)	return true;
+		skipTouchSkill = playerState.lastSkillUsed == SkillName::BASICTOUCH || playerState.lastSkillUsed == SkillName::STANDARDTOUCH;
 		break;
 	case SkillName::STANDARDTOUCH:
-		if (playerState.lastSkillUsed == SkillName::STANDARDTOUCH)	return true;
+		skipTouchSkill = playerState.lastSkillUsed == SkillName::STANDARDTOUCH;
 		break;
 	case SkillName::REFINEDTOUCH:
 		skipTouchSkill = playerState.lastSkillUsed != SkillName::BASICTOUCH;
@@ -458,12 +453,7 @@ bool Crafter::BuffCheck(SkillName skillName) {
 	case SkillName::WASTENOTII:
 		break;
 	case SkillName::FINALAPPRAISAL:
-		if (playerState.currentTurn + 6 >= maxTurnLimit) {
-			buffSkip = true;
-		}
-		else if (!forceMaxQuality || craftableItem->IsItemMaxQuality()) {
-			buffSkip = true;
-		}
+		buffSkip = playerState.currentTurn + 6 >= maxTurnLimit || !forceMaxQuality || craftableItem->IsItemMaxQuality();
 		break;
 	case SkillName::MANIPULATION:
 		//if (player->GetCurrentTurn() + 3 >= maxTurnLimit) buffSkip = true;			// logical limiter, this would be able to get 1 move extra in
