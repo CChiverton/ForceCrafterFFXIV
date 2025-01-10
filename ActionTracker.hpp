@@ -155,6 +155,13 @@ public:
 		if (innoBuff)	touchTime += 2;
 	}
 
+	inline void Progress(SkillName skillName, bool venerationBuff, bool wasteNotBuff, bool strideBuff, bool innoBuff) {
+		ProgressSynthSkills(skillName);
+		ProgressTouchActions(skillName);
+		ProgressDurabilityActions(skillName);
+		ProgressBuffs(venerationBuff, wasteNotBuff, strideBuff, innoBuff);
+	}
+
 	/* BACKTRACK */
 	inline void BacktrackSynthSkills() {
 		basicSynthesis >>= 1;

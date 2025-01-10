@@ -140,8 +140,6 @@ void Crafter::FindDurabilityCost(int& durabilityCosts, int& twentyCosts) {
 
 void Crafter::ForceCraft() {
 	if (invalid) return;
-	actionTracker.ProgressBuffs(craftingRecord.player.buffInfo.innovationActive, craftingRecord.player.buffInfo.wasteNotActive,
-		craftingRecord.player.buffInfo.greatStridesActive, craftingRecord.player.buffInfo.innovationActive);
 
 	if (playerState.currentTurn == 1) {
 		StarterCraft();
@@ -487,9 +485,8 @@ inline void Crafter::SaveCraftingRecord(SkillName skillName) {
 inline void Crafter::SaveCraftingHistory(SkillName skillName) {
 	SaveCraftingRecord(skillName);
 	craftingHistory.at(playerState.currentTurn) = craftingRecord;
-	actionTracker.ProgressSynthSkills(skillName);
-	actionTracker.ProgressTouchActions(skillName);
-	actionTracker.ProgressDurabilityActions(skillName);
+	actionTracker.Progress(skillName, craftingRecord.player.buffInfo.innovationActive, craftingRecord.player.buffInfo.wasteNotActive,
+		craftingRecord.player.buffInfo.greatStridesActive, craftingRecord.player.buffInfo.innovationActive);
 }
 
 inline void Crafter::DeleteCraftingHistory() {
