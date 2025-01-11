@@ -48,6 +48,13 @@ public:
 	inline const uint8_t GetCurrentTurn() const;
 	const uint8_t GetBuffDuration(SkillName skillName) const;
 
+	void OutputStats() {
+		std::cout << "Current CP: " << playerState.currentCP << '\n';
+		std::cout << "Current Turn: " << (int)playerState.currentTurn << '\n';
+		std::cout << "Current Time: " << (int)playerState.currentTime << '\n';
+		std::cout << "Current Quiet " << (int)playerState.innerQuiet << '\n';
+	}
+
 protected:
 	/* Item control */
 	Item craftableItem;
@@ -81,6 +88,5 @@ private:
 	std::array<std::array<int16_t, SkillName::REFINEDTOUCH + 1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
 		preComputeQualityStrideEfficiency, preComputeQualityTouchStrideEfficiency;
 	const int32_t maxCP{};
-	const float progressPerOne{}, qualityPerOne{};
 	bool successfulCast{ true };
 };
