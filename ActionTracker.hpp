@@ -9,8 +9,9 @@ public:
 	~ActionTracker() {};
 
 	uint32_t venerationHistory{ 0b0 }, wasteNotHistory{ 0b0 }, strideHistory{ 0b0 }, innovationHistory{ 0b0 }, muscleHistory{ 0b0 };
-	uint32_t basicSynthesis{ 0b0 }, carefulSynthesis{ 0b0 }, prudentSynthesis{ 0b0 }, groundwork{ 0b0 };
-	uint32_t basicTouch{ 0b0 }, standardTouch{ 0b0 }, advancedTouch{ 0b0 }, byregots{ 0b0 }, prudentTouch{ 0b0 }, prepTouch{ 0b0 }, refinedTouch{ 0b0 };
+	uint32_t basicSynthesis{ 0b0 }, carefulSynthesis{ 0b0 }, prudentSynthesis{ 0b0 }, groundwork{ 0b0 }, veneration{ 0b0 };
+	uint32_t basicTouch{ 0b0 }, standardTouch{ 0b0 }, advancedTouch{ 0b0 }, byregots{ 0b0 }, prudentTouch{ 0b0 }, prepTouch{ 0b0 }, refinedTouch{ 0b0 },
+		innovation{ 0b0 };
 	uint32_t synthActionUsed{ 0b0 }, touchActionUsed{ 0b0 }, durabilityActionUsed{ 0b0 };
 	uint32_t numTouchSkillsUsed{ 0b0 }, numSynthSkillsUsed{ 0b0 }, numDurabilitySkillsUsed{ 0b0 };
 	uint32_t touchTime{ 0 }, synthTime{ 0 };
@@ -70,12 +71,21 @@ public:
 		case SkillName::MUSCLEMEMORY:
 			synthActionUsed |= 0b1;
 			break;
+		case SkillName::VENERATION:
+			veneration |= 0b1;
+			synthActionUsed |= 0b1;
 		default:
 			break;
 		}
 		if (BuffHistory(synthActionUsed, 0b1)) {
 			++numSynthSkillsUsed;
-			synthTime += 3;
+			if (skillName == SkillName::VENERATION) {
+				synthTime += 2;
+				venerationHistory &= 0b0;			// removes the trailing buff duration
+			}
+			else {
+				synthTime += 3;
+			}
 		}
 	}
 
@@ -87,6 +97,7 @@ public:
 		prudentTouch  <<= 1;
 		prepTouch	  <<= 1;
 		refinedTouch  <<= 1;
+		innovation <<= 1;
 		touchActionUsed <<= 1;
 		switch (skillName) {
 		case SkillName::BASICTOUCH:
@@ -120,13 +131,24 @@ public:
 		case SkillName::REFLECT:
 			touchActionUsed |= 0b1;
 			break;
+		case SkillName::INNOVATION:
+			innovation |= 0b1;
+			touchActionUsed |= 0b1;
+			break;
 		default:
 			break;
 		}
 		// If adding delicate synthesis to this, condition for X number of touch skills used must be reviewed
 		if (BuffHistory(touchActionUsed, 0b1)) {
 			++numTouchSkillsUsed;
-			touchTime += 3;
+			if (skillName == SkillName::INNOVATION) {
+				touchTime += 2;
+				innovationHistory &= 0b0;			// removes the trailing buff duration
+			}
+			else {
+				touchTime += 3;
+			}
+			
 		}
 	}
 
@@ -146,23 +168,22 @@ public:
 	void ProgressBuffs(bool venerationBuff, bool wasteNotBuff, bool strideBuff, bool innoBuff, bool muscleBuff) {
 		venerationHistory <<= 1;
 		venerationHistory |= venerationBuff;
-		if (venerationBuff)	synthTime += 2;
 		wasteNotHistory <<= 1;
 		wasteNotHistory |= wasteNotBuff;
 		strideHistory <<= 1;
 		strideHistory |= strideBuff;
 		innovationHistory <<= 1;
 		innovationHistory |= innoBuff;
-		if (innoBuff)	touchTime += 2;
 		muscleHistory <<= 1;
 		muscleHistory |= muscleBuff;
 	}
 
 	inline void Progress(SkillName skillName, bool venerationBuff, bool wasteNotBuff, bool strideBuff, bool innoBuff, bool muscleBuff) {
-		ProgressSynthSkills(skillName);
-		ProgressTouchActions(skillName);
 		ProgressDurabilityActions(skillName);
 		ProgressBuffs(venerationBuff, wasteNotBuff, strideBuff, innoBuff, muscleBuff);
+		// Use after buffs so that they can correct and apply the buff on the right turn
+		ProgressSynthSkills(skillName);
+		ProgressTouchActions(skillName);
 	}
 
 	/* BACKTRACK */
@@ -173,8 +194,14 @@ public:
 		groundwork >>= 1;
 		if (BuffHistory(synthActionUsed, 0b1)) {
 			--numSynthSkillsUsed;
-			synthTime -= 3;
+			if (BuffHistory(veneration, 0b1)) {
+				synthTime -= 2;
+			}
+			else {
+				synthTime -= 3;
+			}
 		}
+		veneration >>= 1;
 		synthActionUsed >>= 1;
 
 	}
@@ -187,10 +214,17 @@ public:
 		prudentTouch >>= 1;
 		prepTouch >>= 1;
 		refinedTouch >>= 1;
+		
 		if (BuffHistory(touchActionUsed, 0b1)) {
 			--numTouchSkillsUsed;
-			touchTime -= 3;
+			if (BuffHistory(innovation, 0b1)) {
+				touchTime -= 2;
+			}
+			else {
+				touchTime -= 3;
+			}
 		}
+		innovation >>= 1;
 		touchActionUsed >>= 1;
 	}
 
@@ -200,11 +234,9 @@ public:
 	}
 
 	inline void BacktrackBuffs() {
-		if (BuffHistory(venerationHistory, 0b1))	synthTime -= 2;
 		venerationHistory >>= 1;
 		wasteNotHistory >>= 1;
 		strideHistory >>= 1;
-		if (BuffHistory(innovationHistory, 0b1))	touchTime -= 2;
 		innovationHistory >>= 1;
 		muscleHistory >>= 1;
 	}
