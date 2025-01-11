@@ -381,7 +381,8 @@ void Crafter::OtherCraft() {
 
 bool Crafter::SimilarTrees(SkillName skillName) {
 	if (((ActionTracker::BuffHistory(actionTracker.venerationHistory, 0b1)) != playerState.buffInfo.venerationActive)					// only proceed if the veneration history is actually the same
-		|| ((ActionTracker::BuffHistory(actionTracker.wasteNotHistory, 0b1)) != playerState.buffInfo.wasteNotActive))	return false;	// only proceed if the waste not history is actually the same
+		|| ((ActionTracker::BuffHistory(actionTracker.wasteNotHistory, 0b1)) != playerState.buffInfo.wasteNotActive)					// only proceed if the waste not history is actually the same
+		|| (ActionTracker::BuffHistory(actionTracker.muscleHistory, 0b1) != playerState.buffInfo.muscleMemoryActive))	return false;	// only proceed if the muscle memory history is actually the same
 
 	bool basic = ActionTracker::BuffHistory(actionTracker.basicSynthesis, 0b1);
 	bool careful = ActionTracker::BuffHistory(actionTracker.carefulSynthesis, 0b1);
@@ -476,7 +477,7 @@ inline void Crafter::SaveCraftingHistory(SkillName skillName) {
 	SaveCraftingRecord(skillName);
 	craftingHistory.at(playerState.currentTurn) = craftingRecord;
 	actionTracker.Progress(skillName, craftingRecord.player.buffInfo.venerationActive, craftingRecord.player.buffInfo.wasteNotActive,
-		craftingRecord.player.buffInfo.greatStridesActive, craftingRecord.player.buffInfo.innovationActive);
+		craftingRecord.player.buffInfo.greatStridesActive, craftingRecord.player.buffInfo.innovationActive, craftingRecord.player.buffInfo.muscleMemoryActive);
 }
 
 inline void Crafter::DeleteCraftingHistory() {

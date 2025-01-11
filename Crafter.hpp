@@ -40,8 +40,7 @@ private:
 	void OtherCraft();
 
 	// For example, BasicSynthesis->CarefulSynthesis and CarefulSynthesis->BasicSynthesis are the same if both buffed or unbuffed
-	//@TODO update to include muscle memory buff
-		// Only cancel out one order pair, the other will be tried out
+	// Only cancel out one order pair, the other will be tried out
 	bool SimilarTrees(SkillName skillName);
 	void ContinueCraft();
 

@@ -8,7 +8,7 @@ public:
 	ActionTracker() {};
 	~ActionTracker() {};
 
-	uint32_t venerationHistory{ 0b0 }, wasteNotHistory{ 0b0 }, strideHistory{ 0b0 }, innovationHistory{ 0b0 };
+	uint32_t venerationHistory{ 0b0 }, wasteNotHistory{ 0b0 }, strideHistory{ 0b0 }, innovationHistory{ 0b0 }, muscleHistory{ 0b0 };
 	uint32_t basicSynthesis{ 0b0 }, carefulSynthesis{ 0b0 }, prudentSynthesis{ 0b0 }, groundwork{ 0b0 };
 	uint32_t basicTouch{ 0b0 }, standardTouch{ 0b0 }, advancedTouch{ 0b0 }, byregots{ 0b0 }, prudentTouch{ 0b0 }, prepTouch{ 0b0 }, refinedTouch{ 0b0 };
 	uint32_t synthActionUsed{ 0b0 }, touchActionUsed{ 0b0 }, durabilityActionUsed{ 0b0 };
@@ -143,7 +143,7 @@ public:
 		if (BuffHistory(durabilityActionUsed, 0b1)) ++numDurabilitySkillsUsed;
 	}
 
-	void ProgressBuffs(bool venerationBuff, bool wasteNotBuff, bool strideBuff, bool innoBuff) {
+	void ProgressBuffs(bool venerationBuff, bool wasteNotBuff, bool strideBuff, bool innoBuff, bool muscleBuff) {
 		venerationHistory <<= 1;
 		venerationHistory |= venerationBuff;
 		if (venerationBuff)	synthTime += 2;
@@ -154,13 +154,15 @@ public:
 		innovationHistory <<= 1;
 		innovationHistory |= innoBuff;
 		if (innoBuff)	touchTime += 2;
+		muscleHistory <<= 1;
+		muscleHistory |= muscleBuff;
 	}
 
-	inline void Progress(SkillName skillName, bool venerationBuff, bool wasteNotBuff, bool strideBuff, bool innoBuff) {
+	inline void Progress(SkillName skillName, bool venerationBuff, bool wasteNotBuff, bool strideBuff, bool innoBuff, bool muscleBuff) {
 		ProgressSynthSkills(skillName);
 		ProgressTouchActions(skillName);
 		ProgressDurabilityActions(skillName);
-		ProgressBuffs(venerationBuff, wasteNotBuff, strideBuff, innoBuff);
+		ProgressBuffs(venerationBuff, wasteNotBuff, strideBuff, innoBuff, muscleBuff);
 	}
 
 	/* BACKTRACK */
@@ -204,6 +206,7 @@ public:
 		strideHistory >>= 1;
 		if (BuffHistory(innovationHistory, 0b1))	touchTime -= 2;
 		innovationHistory >>= 1;
+		muscleHistory >>= 1;
 	}
 
 	inline void Backtrack() {
