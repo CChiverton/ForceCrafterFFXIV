@@ -3,7 +3,7 @@
 #include <iostream>
 
 /* PUBLIC */
-Player::Player(int maximumCP, float progressPerHundred, float qualityPerHundred) : 
+Player::Player(int32_t maximumCP, float progressPerHundred, float qualityPerHundred) : 
 	progressPerOne(progressPerHundred/100.0f), qualityPerOne(qualityPerHundred/100.0f), maxCP(maximumCP) {
 	ResetPlayerStats();
 	PreComputeQualityEfficiency();
@@ -42,15 +42,15 @@ const Player::PlayerState& Player::GetPlayerState() const {
 	return playerState;
 }
 
-inline const unsigned char Player::GetCurrentTurn() const {
+inline const uint8_t Player::GetCurrentTurn() const {
 	return playerState.currentTurn;
 }
 
-inline const unsigned char Player::GetCurrentTime() const {
+inline const uint8_t Player::GetCurrentTime() const {
 	return playerState.currentTime;
 }
 
-const unsigned char Player::GetBuffDuration(SkillName skillName) const {
+const uint8_t Player::GetBuffDuration(SkillName skillName) const {
 	switch (skillName) {
 	case SkillName::MUSCLEMEMORY:
 		return playerState.buffInfo.muscleMemory;
@@ -77,7 +77,7 @@ const unsigned char Player::GetBuffDuration(SkillName skillName) const {
 
 
 /* ITEM CONTROL */
-void Player::AddItem(const int& maxProgress, const int& maxQuality, const int& maxDurability) {
+void Player::AddItem(const uint16_t& maxProgress, const uint16_t& maxQuality, const int16_t& maxDurability) {
 	ResetPlayerStats();
 	craftableItem = Item(maxProgress, maxQuality, maxDurability);
 }
@@ -143,7 +143,7 @@ bool Player::CastSkill(const Skills::SkillTest& skill) {
 	return successfulCast;
 }
 
-void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabilityCost, int skillEfficiency) {
+void Player::SynthesisSkills(const SkillName skillName, const int16_t& skillDurabilityCost, uint16_t skillEfficiency) {
 	switch (skillName) {
 	case Skills::SkillName::PRUDENTSYNTHESIS:
 		if (!playerState.buffInfo.wasteNotActive) {
@@ -179,7 +179,7 @@ void Player::SynthesisSkills(const SkillName skillName, const int& skillDurabili
 }
 
 //@TODO Change the way cp cost is checked so combo works
-void Player::TouchSkills(const SkillName skillName, const int skillDurabilityCost, int& skillCPCost) {
+void Player::TouchSkills(const SkillName skillName, const int16_t skillDurabilityCost, int32_t& skillCPCost) {
 	switch (skillName) {
 	case Skills::SkillName::BASICTOUCH:
 		craftableItem.AddQuality(CalculateQuality(skillName), skillDurabilityCost);
@@ -290,7 +290,7 @@ void Player::RepairSkills(const SkillName skillName) {
 	}
 }
 
-void Player::OtherSkills(const SkillName skillName, const int& skillDurabilityCost) {
+void Player::OtherSkills(const SkillName skillName, const int16_t& skillDurabilityCost) {
 	switch (skillName) {
 	case SkillName::DELICATESYNTHESIS:
 		craftableItem.AddQuality(CalculateQuality(SkillName::BASICTOUCH), 0);
@@ -305,13 +305,13 @@ void Player::OtherSkills(const SkillName skillName, const int& skillDurabilityCo
 
 /* PRIVATE */
 
-const int Player::CalculateProgress(const int16_t efficiency) {
-	int result = progressPerOne * efficiency;
+const uint16_t Player::CalculateProgress(const int16_t efficiency) {
+	uint16_t result = progressPerOne * efficiency;
 	SynthesisBuffs(result);
 	return result;
 }
 
-const int Player::CalculateQuality(SkillName skillName) {
+const uint16_t Player::CalculateQuality(SkillName skillName) {
 	if (playerState.buffInfo.innovationActive) {
 		if (playerState.buffInfo.greatStridesActive) {
 			playerState.buffInfo.greatStrides = 0;
@@ -329,7 +329,7 @@ const int Player::CalculateQuality(SkillName skillName) {
 }
 
 
-void Player::AddInnerQuiet(unsigned char stacks) {
+void Player::AddInnerQuiet(uint8_t stacks) {
 	playerState.innerQuiet += stacks;
 	if (playerState.innerQuiet > 10) {
 		playerState.innerQuiet = 10;
@@ -342,7 +342,7 @@ inline const float Player::InnerQuietEfficiencyMultiplier() const {
 
 
 /* BUFFS */
-void Player::SynthesisBuffs(int& skillEfficiency) {
+void Player::SynthesisBuffs(uint16_t& skillEfficiency) {
 	int baseSkillEfficiency = skillEfficiency;
 	if (playerState.buffInfo.muscleMemory) {
 		skillEfficiency += baseSkillEfficiency;
@@ -354,7 +354,7 @@ void Player::SynthesisBuffs(int& skillEfficiency) {
 	}
 }
 
-void Player::TouchBuffs(int& skillEfficiency) {
+void Player::TouchBuffs(uint16_t& skillEfficiency) {
 	int baseSkillEfficiency = skillEfficiency;
 	if (playerState.buffInfo.innovationActive) {
 		skillEfficiency += baseSkillEfficiency / 2;

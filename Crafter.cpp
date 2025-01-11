@@ -2,13 +2,14 @@
 
 #define ProgressUpdate 1
 
-Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress, int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit)
+Crafter::Crafter(std::vector<Skills::SkillTest> startingMoves, int32_t maxCP, float progressPerHundred, float qualityPerHundred, uint16_t maxProgress,
+	uint16_t maxQuality, int16_t maxDurability, bool forceQuality, bool greaterByregot, uint8_t maximumTurnLimit)
 	: forceMaxQuality(forceQuality), forceGreaterByregot(greaterByregot), maxTurnLimit(maximumTurnLimit),
 	Player(maxCP, progressPerHundred, qualityPerHundred) {
 	AddItem(maxProgress, maxQuality, maxDurability);
 
-	int durabilityCosts{ 0 };
-	int twentyCosts{ 0 };
+	int16_t durabilityCosts{ 0 };
+	uint8_t twentyCosts{ 0 };
 	SaveCraftingHistory(SkillName::NONE);
 	if (forceMaxQuality) {
 		FindFastestQuality(durabilityCosts, twentyCosts);
@@ -44,7 +45,7 @@ Crafter::~Crafter() {
 	PrintSuccessfulCrafts();
 }
 
-void Crafter::FindFastestQuality(int& durabilityCosts, int& twentyCosts) {
+void Crafter::FindFastestQuality(int16_t& durabilityCosts, uint8_t& twentyCosts) {
 	playerState.currentTurn = 2;
 	FindMinQualityForMax();
 	if (successfulQualityCrafts.empty()) {
@@ -53,7 +54,7 @@ void Crafter::FindFastestQuality(int& durabilityCosts, int& twentyCosts) {
 	}
 	minTouchSkills = successfulQualityCrafts[bestQualityTime][0].size();
 	AddItem(craftableItem.GetMaxProgress(), craftableItem.GetMaxQuality(), craftableItem.GetMaxDurability());
-	int durability = 0;
+	int32_t CP = 0;
 	for (const auto& skill : successfulQualityCrafts[bestQualityTime][0]) {
 		if (skill == SkillName::NONE)	continue;
 		for (const auto& entry : skillTest) {		// find skill efficiency
@@ -62,7 +63,7 @@ void Crafter::FindFastestQuality(int& durabilityCosts, int& twentyCosts) {
 					BuffSkills(skill);
 				}
 				else {
-					TouchSkills(skill, 0, durability);
+					TouchSkills(skill, 0, CP);
 					durabilityCosts += entry.costDurability;
 					if (entry.costDurability == 20) ++twentyCosts;
 				}
@@ -73,7 +74,7 @@ void Crafter::FindFastestQuality(int& durabilityCosts, int& twentyCosts) {
 
 		bestQuality.emplace(bestQuality.begin(), craftableItem.GetRemainingQuality());
 	}
-	int difference = bestQuality[0];
+	int32_t difference = bestQuality[0];
 	for (auto& entry : bestQuality) {
 		entry -= difference;
 	}
@@ -81,7 +82,7 @@ void Crafter::FindFastestQuality(int& durabilityCosts, int& twentyCosts) {
 		std::cout << "The minimum number of touch skills required to achieve max quality is " << minTouchSkills << '\n';
 }
 
-void Crafter::FindFastestSynth(int& durabilityCosts, int& twentyCosts) {
+void Crafter::FindFastestSynth(int16_t& durabilityCosts, uint8_t& twentyCosts) {
 	playerState.currentTurn = 3;
 	LoadLastCraftingRecord();
 	FindMinSynthForMax();
@@ -91,7 +92,7 @@ void Crafter::FindFastestSynth(int& durabilityCosts, int& twentyCosts) {
 	}
 	minSynthSkills = successfulSynthCrafts[bestSynthTime][0].size();
 	AddItem(craftableItem.GetMaxProgress(), craftableItem.GetMaxQuality(), craftableItem.GetMaxDurability());
-	int durability = 0;
+	int16_t durability = 0;
 	for (const auto& skill : successfulSynthCrafts[bestSynthTime][0]) {
 		if (skill == SkillName::NONE)	continue;
 		for (const auto& entry : skillTest) {		// find skill efficiency
@@ -109,14 +110,14 @@ void Crafter::FindFastestSynth(int& durabilityCosts, int& twentyCosts) {
 		bestSynth.emplace(bestSynth.begin(), craftableItem.GetRemainingProgress());
 		//std::cout << craftableItem.GetRemainingProgress() << '\n';
 	}
-	int difference = bestSynth[0];
+	int32_t difference = bestSynth[0];
 	for (auto& entry : bestSynth) {
 		entry -= difference;
 	}
 	std::cout << "The minimum number of synth skills required to craft the item is " << minSynthSkills << '\n';
 }
 
-void Crafter::FindDurabilityCost(int& durabilityCosts, int& twentyCosts) {
+void Crafter::FindDurabilityCost(int16_t& durabilityCosts, uint8_t& twentyCosts) {
 	std::cout << "The total durability lost to attain crafted item is: " << durabilityCosts << '\n';
 	durabilityCosts -= 10;		// emulating starter move
 	while (durabilityCosts > craftableItem.GetMaxDurability()) {
@@ -146,7 +147,7 @@ void Crafter::ForceCraft() {
 	}
 	else {
 		bool requireQuality = forceMaxQuality && !craftableItem.IsItemMaxQuality();
-		int remainingTime = bestTime - craftingRecord.currentTime;
+		int16_t remainingTime = bestTime - craftingRecord.currentTime;
 		
 		bool synthActionRequired = remainingTime < 5
 				|| actionTracker.ActionsUsedDuringBuff(4, craftingRecord.player.buffInfo.veneration, 3, actionTracker.synthActionUsed, 2)				// Requires a synth action
@@ -168,7 +169,7 @@ void Crafter::ForceCraft() {
 
 			if (!synthActionRequired) {
 				BuffCraft();
-				int repairableDurability = craftableItem.GetRemainingDurability();
+				uint8_t repairableDurability = craftableItem.GetRemainingDurability();
 				if ((repairableDurability >= 25)) {
 					RepairCraft(repairableDurability);
 				}
@@ -194,17 +195,17 @@ void Crafter::CraftAndRecord(const SkillTest& move) {
 			return;
 		}
 
-		const int remainingCraftTurns = maxTurnLimit - playerState.currentTurn;
-		const int remainingCraftTime = bestTime - playerState.currentTime;
-		int minQualityTurnsLeft = 0;
-		int maxQualityTime = 0;
+		const int16_t remainingCraftTurns = maxTurnLimit - playerState.currentTurn;
+		const int16_t remainingCraftTime = bestTime - playerState.currentTime;
+		int16_t minQualityTurnsLeft = 0;
+		int16_t maxQualityTime = 0;
 
 		if (requireQuality && remainingCraftTurns < minTouchSkills) {
 			CalculateRemainingQualityTime(minQualityTurnsLeft, maxQualityTime);
 		}
 
-		int minSynthTurnsLeft = 1;
-		int maxSynthTime = 0;
+		int16_t minSynthTurnsLeft = 1;
+		int16_t maxSynthTime = 0;
 		CalculateRemainingSynthTime(minSynthTurnsLeft, maxSynthTime);
 		int minDurabilityTurnsLeft = minDurabilitySkills - actionTracker.numDurabilitySkillsUsed;
 		if (minDurabilityTurnsLeft < 0)	minDurabilityTurnsLeft = 0;
@@ -298,8 +299,8 @@ void Crafter::SynthOnlyCrafts(const SkillTest& move) {
 	}
 }
 
-void Crafter::CalculateRemainingQualityTime(int& minQualityTurnsLeft, int& maxQualityTime) {
-	int remainingQuality = craftableItem.GetRemainingQuality();
+void Crafter::CalculateRemainingQualityTime(int16_t& minQualityTurnsLeft, int16_t& maxQualityTime) {
+	int32_t remainingQuality = craftableItem.GetRemainingQuality();
 	minQualityTurnsLeft = 1;
 	//std::cout << maxQualityTime << '\n';
 	for (minQualityTurnsLeft; remainingQuality > bestQuality[minQualityTurnsLeft]; ++minQualityTurnsLeft) {
@@ -312,8 +313,8 @@ void Crafter::CalculateRemainingQualityTime(int& minQualityTurnsLeft, int& maxQu
 	}
 }
 
-void Crafter::CalculateRemainingSynthTime(int& minSynthTurnsLeft, int& maxSynthTime) {
-	int remainingProgress = craftableItem.GetRemainingProgress();
+void Crafter::CalculateRemainingSynthTime(int16_t& minSynthTurnsLeft, int16_t& maxSynthTime) {
+	int32_t remainingProgress = craftableItem.GetRemainingProgress();
 	for (minSynthTurnsLeft; remainingProgress > bestSynth[minSynthTurnsLeft]; ++minSynthTurnsLeft) {
 		if (bestSynth[minSynthTurnsLeft] == bestSynth[minSynthTurnsLeft - 1]) {
 			maxSynthTime += 2;
@@ -364,7 +365,7 @@ void Crafter::BuffCraft() {
 	}
 }
 
-void Crafter::RepairCraft(int repairableDurability) {
+void Crafter::RepairCraft(uint8_t repairableDurability) {
 	for (const SkillTest& move : repairSkills) {
 		if (playerState.lastSkillUsed == SkillName::MASTERSMEND)	continue;		//If previously used this skill, it would have been more effective to use Immaculate Mend
 		if (move.skillName == SkillName::IMMACULATEMEND && repairableDurability <= 30)	continue;	// better to use masters mend here
@@ -484,7 +485,7 @@ inline void Crafter::DeleteCraftingHistory() {
 
 inline std::vector<SkillName> Crafter::CompileSuccessfulCraft() {
 	std::vector<SkillName> success{};
-	for (int i{ 2 }; i <= playerState.currentTurn; ++i) {
+	for (uint8_t i{ 2 }; i <= playerState.currentTurn; ++i) {
 		success.emplace_back(craftingHistory[i].skillName);
 	}
 	return success;
@@ -505,13 +506,13 @@ void Crafter::AddSuccessfulSynthCraft() {
 void Crafter::AddSuccessfulCraft(SkillName skillName) {
 	SaveCraftingRecord(skillName);
 	if (bestTime > craftingRecord.currentTime) {
-		std::cout << "New best time found!: " << craftingRecord.currentTime << "s\n";
+		std::cout << "New best time found!: " << (uint16_t)craftingRecord.currentTime << "s\n";
 		//std::cout << actionTracker.numDurabilitySkillsUsed << " durability actions used\n";
 	}
 	bestTime = craftingRecord.currentTime;		// Time restraints already managed by force craft
 
 	std::vector<SkillName> success{};
-	for (int i{ 1 }; i < playerState.currentTurn; ++i) {
+	for (uint8_t i{ 1 }; i < playerState.currentTurn; ++i) {
 		success.emplace_back(craftingHistory[i].skillName);
 	}
 	success.emplace_back(craftingRecord.skillName);
@@ -536,7 +537,7 @@ void Crafter::PrintCrafts() {
 void Crafter::PrintSuccessfulCrafts() {
 	std::cout << "The fastest time was " << bestTime << " seconds.\n";
 	std::cout << "Ways to achieve this are:\n";
-	int i{ 1 };
+	uint16_t i{ 1 };
 	for (const auto& entry : successfulCrafts[bestTime]) {
 		std::cout << "Solution " << i << ": ";
 		for (const auto& move : entry) {

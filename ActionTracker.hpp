@@ -22,13 +22,13 @@ public:
 		std::cout << "ground: " << BuffHistory(groundwork, 0b1000) << BuffHistory(groundwork, 0b100) << BuffHistory(groundwork, 0b10) << BuffHistory(groundwork, 0b1) << '\n';
 	}
 
-	inline static constexpr int BuffHistory(int history, int bitmask) {
+	inline static constexpr uint32_t BuffHistory(int history, int bitmask) {
 		return history & bitmask;
 	}
 
-	bool ActionsUsedDuringBuff(int maxBuffDuration, int buffDurationRemaining, int checkUnderRemaining, int actionHistory, int numberOfActionsNeeded) {
+	bool ActionsUsedDuringBuff(uint8_t maxBuffDuration, uint8_t buffDurationRemaining, uint8_t checkUnderRemaining, uint8_t actionHistory, uint8_t numberOfActionsNeeded) {
 		if (buffDurationRemaining == 0 || buffDurationRemaining >= checkUnderRemaining) return false;
-		int bitmaskTurnsCount = 0;
+		uint8_t bitmaskTurnsCount = 0;
 
 		for (int i{ 0 }; i < maxBuffDuration - buffDurationRemaining; ++i) {
 			bitmaskTurnsCount += BuffHistory(actionHistory, 0b1);

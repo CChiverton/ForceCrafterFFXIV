@@ -104,19 +104,19 @@ namespace Skills {
 
 	const struct Skill {
 		SkillType type;
-		int costCP;
-		int costDurability;
-		int efficiency;
-		int castTime;
+		int32_t costCP;
+		int16_t costDurability;
+		uint16_t efficiency;
+		int8_t castTime;
 	};
 
 	const struct SkillTest {
 		SkillName skillName;
 		SkillType type;
-		int costCP;
-		int costDurability;
-		int efficiency;
-		int castTime;
+		int32_t costCP;
+		int16_t costDurability;
+		uint16_t efficiency;
+		int8_t castTime;
 	};
 
 	inline const std::array<SkillTest , 24>skillTest =			/*CP	Durability	Efficiency	Time*/

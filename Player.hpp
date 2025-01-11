@@ -11,30 +11,30 @@ using namespace Skills;
 class Player {
 
 public:
-	Player(int maximumCP, float progressPerHundred, float qualityPerHundred);
+	Player(int32_t maximumCP, float progressPerHundred, float qualityPerHundred);
 
 	struct BuffInfo {
-		unsigned char muscleMemory = 0;
+		uint8_t muscleMemory = 0;
 		bool muscleMemoryActive = false;
-		unsigned char wasteNot = 0;
+		uint8_t wasteNot = 0;
 		bool wasteNotActive = false;
-		unsigned char greatStrides = 0;
+		uint8_t greatStrides = 0;
 		bool greatStridesActive = false;
-		unsigned char innovation = 0;
+		uint8_t innovation = 0;
 		bool innovationActive = false;
-		unsigned char veneration = 0;
+		uint8_t veneration = 0;
 		bool venerationActive = false;
-		unsigned char finalAppraisal = 0;
+		uint8_t finalAppraisal = 0;
 		bool finalAppraisalActive = false;
-		unsigned char manipulation = 0;
+		uint8_t manipulation = 0;
 		bool manipulationActive = false;
 	};
 
 	struct PlayerState {
-		int currentCP{ 0 };
-		int currentTurn{ 1 };
-		unsigned char currentTime{ 0 };
-		unsigned char innerQuiet{ 0 };;
+		int32_t currentCP{ 0 };
+		uint8_t currentTurn{ 1 };
+		uint8_t currentTime{ 0 };
+		uint8_t innerQuiet{ 0 };;
 		BuffInfo buffInfo{};
 		Skills::SkillName lastSkillUsed{ Skills::SkillName::NONE };
 	}playerState;
@@ -44,43 +44,43 @@ public:
 	
 	/* Getters */
 	const PlayerState& GetPlayerState() const;
-	inline const unsigned char GetCurrentTime() const;
-	inline const unsigned char GetCurrentTurn() const;
-	const unsigned char GetBuffDuration(SkillName skillName) const;
+	inline const uint8_t GetCurrentTime() const;
+	inline const uint8_t GetCurrentTurn() const;
+	const uint8_t GetBuffDuration(SkillName skillName) const;
 
 protected:
 	/* Item control */
 	Item craftableItem;
-	void AddItem(const int& maxProgress, const int& maxQuality, const int& maxDurability);
+	void AddItem(const uint16_t& maxProgress, const uint16_t& maxQuality, const int16_t& maxDurability);
 	void RemoveItem();
 
 	/* Skills application */
 	bool CastSkill(const Skills::SkillTest& skillName);
-	void SynthesisSkills(const SkillName skillName, const int& skillDurabilityCost, int skillEfficiency);
-	void TouchSkills(const SkillName skillName, const int skillDurabilityCost, int& skillCPCost);
+	void SynthesisSkills(const SkillName skillName, const int16_t& skillDurabilityCost, uint16_t skillEfficiency);
+	void TouchSkills(const SkillName skillName, const int16_t skillDurabilityCost, int32_t& skillCPCost);
 	void BuffSkills(const SkillName skillName);
 	void RepairSkills(const SkillName skillName);
-	void OtherSkills(const SkillName skillName, const int& skillDurabilityCost);
+	void OtherSkills(const SkillName skillName, const int16_t& skillDurabilityCost);
 private:
 	/* Calculations */
-	const int CalculateProgress(const int16_t efficiency);
-	const int CalculateQuality(SkillName skillName);
+	const uint16_t CalculateProgress(const int16_t efficiency);
+	const uint16_t CalculateQuality(SkillName skillName);
 
 	/* Inner Quiet*/
-	void AddInnerQuiet(unsigned char stacks);
+	void AddInnerQuiet(uint8_t stacks);
 	inline const float InnerQuietEfficiencyMultiplier() const;
 
 	/* Buffs */
-	void SynthesisBuffs(int& skillEfficiency);
-	void TouchBuffs(int& skillEfficiency);
+	void SynthesisBuffs(uint16_t& skillEfficiency);
+	void TouchBuffs(uint16_t& skillEfficiency);
 	void DecrementBuffs();
 
 	inline void PreComputeQualityEfficiency();
 
-	static constexpr unsigned char maxInnerQuiet{ 10 };
+	static constexpr uint8_t maxInnerQuiet{ 10 };
 	std::array<std::array<int16_t, SkillName::REFINEDTOUCH + 1>, maxInnerQuiet + 1> preComputeQualityEfficiency, preComputeQualityTouchEfficiency,
 		preComputeQualityStrideEfficiency, preComputeQualityTouchStrideEfficiency;
-	const int maxCP{};
+	const int32_t maxCP{};
 	const float progressPerOne{}, qualityPerOne{};
 	bool successfulCast{ true };
 };

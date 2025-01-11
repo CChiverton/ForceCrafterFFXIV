@@ -12,31 +12,31 @@
 
 class Crafter : public Player {
 public:
-	Crafter(std::vector<Skills::SkillTest> startingMoves, int maxCP, float progressPerHundred, float qualityPerHundred, int maxProgress,
-		int maxQuality, int maxDurability, bool forceQuality, bool greaterByregot, int maximumTurnLimit);
+	Crafter(std::vector<Skills::SkillTest> startingMoves, int32_t maxCP, float progressPerHundred, float qualityPerHundred, uint16_t maxProgress,
+		uint16_t maxQuality, int16_t maxDurability, bool forceQuality, bool greaterByregot, uint8_t maximumTurnLimit);
 	~Crafter();
 
 	void ForceCraft();
 
 private:
 	/*******************CRAFTING**********************/
-	void FindFastestQuality(int& durabilityCosts, int& twentyCosts);
-	void FindFastestSynth(int& durabilityCosts, int& twentyCosts);
-	void FindDurabilityCost(int& durabilityCosts, int& twentyCosts);
+	void FindFastestQuality(int16_t& durabilityCosts, uint8_t& twentyCosts);
+	void FindFastestSynth(int16_t& durabilityCosts, uint8_t& twentyCosts);
+	void FindDurabilityCost(int16_t& durabilityCosts, uint8_t& twentyCosts);
 	void CraftAndRecord(const SkillTest& move);
 	void FindMinQualityForMax();
 	void FindMinSynthForMax();
 	void QualityOnlyCrafts(const SkillTest& move);
 	void SynthOnlyCrafts(const SkillTest& move);
 
-	void CalculateRemainingQualityTime(int& minQualityTurnsLeft, int& maxQualityTime);
-	void CalculateRemainingSynthTime(int& minSynthTurnsLeft, int& maxSynthTime);
+	void CalculateRemainingQualityTime(int16_t& minQualityTurnsLeft, int16_t& maxQualityTime);
+	void CalculateRemainingSynthTime(int16_t& minSynthTurnsLeft, int16_t& maxSynthTime);
 
 	void StarterCraft();
 	void SynthesisCraft();
 	void QualityCraft();
 	void BuffCraft();
-	void RepairCraft(int remainingDurability);
+	void RepairCraft(uint8_t remainingDurability);
 	void OtherCraft();
 
 	// For example, BasicSynthesis->CarefulSynthesis and CarefulSynthesis->BasicSynthesis are the same if both buffed or unbuffed
@@ -66,21 +66,21 @@ private:
 	struct CraftingHistory {
 		Player::PlayerState player;
 		Item::ItemState item;
-		int currentTime{ 0 };
+		uint8_t currentTime{ 0 };
 		SkillName skillName{ SkillName::NONE };
 	}craftingRecord;
 
 	ActionTracker actionTracker;
 	std::array<CraftingHistory, 60> craftingHistory;
-	std::vector<int> bestQuality{}, bestSynth{};
+	std::vector<uint16_t> bestQuality{}, bestSynth{};
 	uint16_t bestTime{ 99 }, bestQualityTime{ 99 }, bestSynthTime{ 99 };
-	std::map<int, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{}, successfulQualityCrafts{}, successfulSynthCrafts{};
-	const unsigned char maxTurnLimit;
+	std::map<uint8_t, std::vector<std::vector<Skills::SkillName>>> successfulCrafts{}, successfulQualityCrafts{}, successfulSynthCrafts{};
+	const uint8_t maxTurnLimit;
 	int16_t minTouchSkills{ 0 }, minSynthSkills{ 0 }, minDurabilitySkills{ 0 };
 
 	/* Constructor controlled */
 	bool invalid{ false };
-	int16_t baseTurn{};
+	uint8_t baseTurn{};
 	const bool forceMaxQuality, forceGreaterByregot;
 
 

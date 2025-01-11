@@ -4,7 +4,7 @@
 
 class Item {
 public:
-	Item(int maxProgress, int maxQuality, int maxDurability) {
+	Item(uint16_t maxProgress, uint16_t maxQuality, int16_t maxDurability) {
 		maxItemState.progress = maxProgress;
 		currentItemState.progress = 0;
 		maxItemState.quality = maxQuality;
@@ -21,9 +21,9 @@ public:
 		currentItemState.durability = 0;
 	}
 	struct ItemState {
-		int progress{};
-		int quality{};
-		int durability{};
+		uint16_t progress{};
+		uint16_t quality{};
+		int16_t durability{};
 	};
 	inline ItemState GetItemState() const {
 		return currentItemState;
@@ -33,27 +33,27 @@ public:
 	}
 
 	/* CHANGE ITEM STATS */
-	void UpdateDurability(int durability) {
+	void UpdateDurability(int16_t durability) {
 		currentItemState.durability += durability;
 		if (currentItemState.durability > maxItemState.durability)	currentItemState.durability = maxItemState.durability;
 	}
-	void AddProgress(int progress, int durabilityCost) {
+	void AddProgress(uint16_t progress, int16_t durabilityCost) {
 		currentItemState.progress += progress;
 		UpdateDurability(-durabilityCost);
 	}
-	void AddQuality(int quality, int durabilityCost) {
+	void AddQuality(uint16_t quality, int16_t durabilityCost) {
 		currentItemState.quality += quality;
 		UpdateDurability(-durabilityCost);
 	}
 
 	/* PROGRESS */
-	inline int GetCurrentProgress() const {
+	inline uint16_t GetCurrentProgress() const {
 		return currentItemState.progress;
 	}
-	inline int GetMaxProgress() const {
+	inline uint16_t GetMaxProgress() const {
 		return maxItemState.progress;
 	}
-	inline int GetRemainingProgress() const {
+	inline int32_t GetRemainingProgress() const {
 		return maxItemState.progress - currentItemState.progress;
 	}
 	bool IsItemCrafted() const {
@@ -61,13 +61,13 @@ public:
 	}
 
 	/* QUALITY */
-	inline int GetCurrentQuality() const {
+	inline uint16_t GetCurrentQuality() const {
 		return currentItemState.quality;
 	}
-	inline int GetMaxQuality() const {
+	inline uint16_t GetMaxQuality() const {
 		return maxItemState.quality;
 	}
-	inline int GetRemainingQuality() const {
+	inline int32_t GetRemainingQuality() const {
 		return maxItemState.quality - currentItemState.quality;
 	}
 	bool IsItemMaxQuality() const {
@@ -75,13 +75,13 @@ public:
 	}
 
 	/* DURABILITY*/
-	inline int GetCurrentDurability() const {
+	inline int16_t GetCurrentDurability() const {
 		return currentItemState.durability;
 	}
-	inline int GetMaxDurability() const {
+	inline int16_t GetMaxDurability() const {
 		return maxItemState.durability;
 	}
-	inline int GetRemainingDurability() const {
+	inline int16_t GetRemainingDurability() const {
 		return maxItemState.durability - currentItemState.durability;
 	}
 
